@@ -1,0 +1,10 @@
+import { DEFAULTS,blankProspect,applyResearch } from '../../lib/hr-ops/model.mjs';
+export const now=new Date('2026-09-25T12:00:00Z');
+export function evidence(id='site',excerpt='Fictional Labs, US software company. Alex Doe CTO. Remote worldwide. Two backend jobs.',at=now.toISOString()) {return {id,url:'https://fictional.example/careers',excerpt,observed_at:at,source_type:'primary'};}
+export function fact(value,confidence='observed') {return {value,confidence,evidence:['site']};}
+export function input() {return {name:'Fictional Labs',website:'https://fictional.example',icp:'startup',evidence:[evidence()]};}
+export function payload() {return {facts:{us_market:fact(true),employee_count:fact(40),latam_compatibility:fact('yes'),service_fit:fact('Additional backend sourcing may help fill parallel searches','inferred'),recruiting_pain:fact('mixed','inferred')},openings:[1,2].map(n=>({title:'Backend Engineer '+n,url:`https://fictional.example/jobs/${n}`,role_family:'backend',status:'open',hiring_for:'self',verified_at:now.toISOString(),evidence:['site']})),contacts:[{name:'Alex Doe',title:'CTO',url:'https://fictional.example/team',verified_at:now.toISOString(),evidence:['site']}]};}
+export function prospect() {return applyResearch(blankProspect(input(),now),payload(),now);}
+export function config() {const c=structuredClone(DEFAULTS);c.firm={...c.firm,name:'Test Firm',sender_name:'Test Sender',email:'sender@example.com',services:['recruiting']};return c;}
+export function draft(p) {return {channel:'linkedin',purpose:'initial',contact_id:p.contacts[0].id,body:'Alex, your backend openings caught my attention. Could LATAM recruiting support be useful for these searches?',claims:[{text:'your backend openings',kind:'observed',evidence:['site']},{text:'Could LATAM recruiting support be useful for these searches?',kind:'hypothesis',evidence:['site']}]};}
+export function auth() {return {actor:'human',reference:'test conversation 1',statement:'I sent this message; please record it.'};}

@@ -1,3 +1,7 @@
+# HR-Ops architecture
+
+The active client-acquisition architecture is documented in [the HR-Ops operating guide](HR_OPS.md). It retains local file storage, shared skills and provider/locking helpers. Candidate scoring and application flows below are retained legacy architecture and run only on explicit Career-Ops invocation.
+
 # Architecture
 
 This file describes the runtime flows. Design principles and the

@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   add-to-wall:
-    if: github.event.label.name == 'hired-verified'
+    if: github.repository == 'career-ops-hq/career-ops' && (github.event.label.name == 'hired-verified')
     runs-on: ubuntu-latest
     concurrency:
       group: hired-wall

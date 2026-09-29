@@ -35,6 +35,7 @@ concurrency:
 
 jobs:
   direction-gate:
+    if: github.repository == 'career-ops-hq/career-ops'
     name: direction-gate
     runs-on: ubuntu-latest
     steps:

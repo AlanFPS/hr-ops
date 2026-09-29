@@ -1,3 +1,9 @@
+# HR-Ops data contract addendum
+
+The HR workspace uses the existing user/system separation. HR user files are `config/profile.yml` (`hr_ops` subtree), `modes/_custom.md`, `data/hr-ops/`, `reports/hr-ops/` and the optional `.hr-ops-data` root marker. They must stay out of Git. Prospect JSON is canonical; mutate through `hr-ops.mjs` or its repository API with expected revisions. Derived Markdown can be regenerated. Back up the entire data root.
+
+HR system files are `hr-ops.mjs`, `lib/hr-ops/`, `modes/hr-ops/`, the shared HR skill and wrappers, tests, provenance and documentation. Upstream automatic apply/rollback is disabled in this fork. See [storage and schemas](docs/HR_OPS.md#storage-and-crm-extension). The retained legacy contract below governs candidate tools only.
+
 # Data Contract
 
 This document defines which files belong to the **system** (auto-updatable) and which belong to the **user** (never touched by updates).

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Career-Ops (legacy)"
+  short_description: "Explicit legacy candidate job-search workflows"
+policy:
+  allow_implicit_invocation: false

@@ -41,7 +41,7 @@ jobs:
         with:
           # Test code (fork code, in a merge_group) must not find a token in .git/config.
           persist-credentials: false
-      - name: Set up Node 18 for syntax compatibility
+      - name: Set up Node 24 for syntax checks
         uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -53,9 +53,15 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: '1.26'
+      - name: Validate workflow expressions
+        if: runner.os == 'Linux'
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint" -shellcheck= -pyflakes=
       # Skip the postinstall (npx playwright install chromium); the tests
       # never launch a browser, so the ~170 MB download is pure CI overhead.
       - run: npm install --ignore-scripts
+      - run: npm run test:hr
       - run: node test-all.mjs --quick
       - name: Go dashboard tests
         run: go test ./...
@@ -86,6 +92,9 @@ jobs:
           if-no-files-found: ignore
   upgrade-gate:
     name: Upgrade regression gate
+    # HR-Ops intentionally forbids upstream apply/rollback. Keep the historical
+    # release-upgrade matrix available to Career-Ops; fork behavior has HR tests.
+    if: github.repository == 'career-ops-hq/career-ops'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

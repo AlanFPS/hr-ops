@@ -32,6 +32,7 @@ jobs:
             // voice-dna.md is omitted on purpose: it ships as a populated
             // system default, so edits to it are legit.
             const USER_PATHS = [
+              /^\.hr-ops-data$/,
               /^cv\.md$/,
               /^config\/profile\.yml$/,
               /^modes\/_profile\.md$/,

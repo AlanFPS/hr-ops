@@ -1,12 +1,13 @@
 {
-  "name": "career-ops",
+  "name": "hr-ops",
   "version": "1.33.0",
-  "description": "Open-source AI job search that runs locally in your AI coding CLI: scan job portals, evaluate listings into a structured A-H report with a 1-5 score, tailor your CV, track applications",
+  "description": "Local LATAM recruiting client acquisition: evidence-backed prospects, qualification, drafts and human-reported follow-ups",
   "author": {
     "name": "santifer",
     "url": "https://santifer.io"
   },
   "skills": [
+    "./.agents/skills/hr-ops",
     "./.agents/skills/career-ops"
   ]
 }

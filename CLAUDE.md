@@ -1,3 +1,3 @@
 @AGENTS.md
 
-<!-- Add Claude Code-specific guidance here only when it has no AGENTS.md counterpart. -->
+<!-- HR-Ops is the default. /hr-ops loads the shared HR skill; /career-ops is explicit legacy use. -->

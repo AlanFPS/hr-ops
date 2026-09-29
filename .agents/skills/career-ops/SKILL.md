@@ -1,6 +1,8 @@
 ---
 name: career-ops
+disable-model-invocation: true
 description: >-
+  Legacy candidate tools, only when the user explicitly requests Career-Ops.
   AI job search command center -- evaluate offers, generate CVs, scan portals,
   track applications. Use when the user pastes a job URL or JD, asks to scan
   portals, generate a CV/PDF, track applications, prepare for interviews, draft

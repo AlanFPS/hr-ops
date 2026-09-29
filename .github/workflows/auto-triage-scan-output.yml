@@ -25,7 +25,7 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     # Never auto-close issues opened by the owner or org members.
-    if: ${{ github.event.issue.author_association != 'OWNER' && github.event.issue.author_association != 'MEMBER' }}
+    if: github.repository == 'career-ops-hq/career-ops' && (github.event.issue.author_association != 'OWNER' && github.event.issue.author_association != 'MEMBER')
     steps:
       - uses: actions/github-script@v9
         with:

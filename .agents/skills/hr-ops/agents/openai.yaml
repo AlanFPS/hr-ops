@@ -1,0 +1,6 @@
+interface:
+  display_name: "HR-Ops"
+  short_description: "Research recruiting clients and prepare outreach"
+  default_prompt: "Use $hr-ops to discover and evaluate U.S. recruiting prospects."
+policy:
+  allow_implicit_invocation: true

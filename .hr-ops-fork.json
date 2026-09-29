@@ -1,0 +1,10 @@
+{
+  "product": "hr-ops",
+  "upstream": "https://github.com/career-ops-hq/career-ops.git",
+  "baseline_commit": "5c97c24e092871cd6374c2122ee7f021d69d3d6e",
+  "baseline_version": "1.33.0",
+  "baseline_ref": "hr-ops-baseline-1.33.0",
+  "upstream_checked_commit": "a0de5cf95b650413fb9ffd5b78e547652967763a",
+  "checked_on": "2026-09-25",
+  "update_policy": "review-and-selectively-incorporate"
+}

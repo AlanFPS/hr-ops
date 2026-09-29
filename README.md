@@ -1,3 +1,33 @@
+# HR-Ops
+
+Local client acquisition for a LATAM recruiting firm selling to U.S. companies. Discover prospects → research hiring needs → qualify → identify contacts → draft personalized outreach → track human-reported follow-ups.
+
+HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Nothing is sent automatically.**
+
+```bash
+npm install --ignore-scripts
+node hr-ops.mjs init
+node hr-ops.mjs doctor
+npm run test:hr
+```
+
+Use Node 24. Start your AI client in this checkout and say **“Use HR-Ops to find and evaluate 10 potential U.S. clients hiring backend/full-stack engineers.”** Then **“Prepare outreach for the top 3.”** Headless: `codex exec --sandbox workspace-write "Use HR-Ops to research the strongest prospects"`.
+
+Commands: `discover`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
+
+Firm facts and configurable ICPs live under `hr_ops` in `config/profile.yml`. State lives in `data/hr-ops/`; generated dossiers in `reports/hr-ops/`. All are local user data ignored by Git. New checkouts start with no private prospects or invented firm credentials.
+
+- [Operating guide, architecture, schemas and scoring](docs/HR_OPS.md)
+- [Validation and live pilot](docs/HR_OPS_VALIDATION.md)
+- [Upstream provenance and selective updates](docs/UPSTREAM.md)
+- [Future OpenClaw operator contract](OPENCLAW_INTEGRATION.md)
+- [Codex usage](docs/CODEX.md)
+
+Career-Ops by Santiago Fernández de Valderrama is retained under its MIT license. Its providers, file/lock abstractions and shared-skill architecture are reused. Candidate tools remain available only by explicit legacy invocation; their README follows for reference. The original dashboards and installer remain candidate tools.
+
+<details>
+<summary>Retained Career-Ops README (legacy candidate tools)</summary>
+
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.svg"><img src="docs/wordmark-light.svg" alt="career-ops" width="250" height="56"></picture></p>
 
 <table align="center">
@@ -628,3 +658,5 @@ endorsement.
 [![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/santifer)
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/8pRpHETxa4)
 [![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hi@santifer.io)
+
+</details>

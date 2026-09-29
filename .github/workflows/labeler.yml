@@ -6,6 +6,7 @@ on:
 
 jobs:
   label:
+    if: github.repository == 'career-ops-hq/career-ops'
     runs-on: ubuntu-latest
     permissions:
       contents: read

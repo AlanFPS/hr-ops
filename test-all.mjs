@@ -4924,7 +4924,8 @@ if (
   // Phase 2b (#1449): the language-market pipeline mirrors must wire the same
   // opt-in extractor, so non-English users get the token saving too.
   const langPipelines = readdirSync(join(ROOT, 'modes'), { withFileTypes: true })
-    .filter((e) => e.isDirectory())
+    // HR-Ops is a separate domain workflow, not a translated candidate pipeline.
+    .filter((e) => e.isDirectory() && e.name !== 'hr-ops')
     .map((e) => `modes/${e.name}/pipeline.md`)
     .filter((p) => existsSync(join(ROOT, p)));
   const langMissing = langPipelines.filter((m) => {

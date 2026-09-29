@@ -1,13 +1,13 @@
 {
-  "name": "career-ops",
+  "name": "hr-ops",
   "version": "1.33.0",
-  "description": "Open-source AI job search that runs locally in your AI coding CLI: scan job portals, evaluate listings into a structured A-H report with a 1-5 score, tailor your CV, track applications",
+  "description": "Local LATAM recruiting client acquisition: evidence-backed prospects, qualification, drafts and human-reported follow-ups",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "scripts": {
-    "doctor": "node doctor.mjs",
+    "doctor": "node hr-ops.mjs doctor",
     "or": "node openrouter-runner.mjs",
     "or:scan": "node openrouter-runner.mjs scan",
     "or:pipeline": "node openrouter-runner.mjs pipeline",
@@ -68,9 +68,16 @@
     "build:dashboard": "node build-dashboard.mjs",
     "serve:dashboard": "cd dashboard && go run .",
     "postinstall": "npx playwright install chromium --with-deps || npx playwright install chromium --with-deps",
-    "manifesto": "node manifesto.mjs"
+    "manifesto": "node manifesto.mjs",
+    "doctor:career": "node doctor.mjs",
+    "hr": "node hr-ops.mjs",
+    "test:hr": "node --test tests/hr-ops/*.test.mjs"
   },
   "keywords": [
+    "hr-ops",
+    "recruiting",
+    "latam",
+    "client-acquisition",
     "ai",
     "job-search",
     "claude-code",
@@ -88,10 +95,10 @@
     "ai-agent-skill"
   ],
   "author": "Santiago Fernández de Valderrama <hi@santifer.io> (https://santifer.io)",
-  "homepage": "https://career-ops.org",
+  "homepage": "https://github.com/AlanFPS/hr-ops",
   "repository": {
     "type": "git",
-    "url": "https://github.com/career-ops-hq/career-ops"
+    "url": "https://github.com/AlanFPS/hr-ops"
   },
   "license": "MIT",
   "dependencies": {

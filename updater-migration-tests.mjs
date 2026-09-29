@@ -9,7 +9,7 @@
 
 import { readFileSync, existsSync, rmSync } from 'fs';
 import { execFileSync, spawnSync } from 'child_process';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import { createReexecMarker, consumeReexecMarker } from './update-system.mjs';
 
 let passed = 0;
@@ -62,7 +62,7 @@ try {
 try {
   const cwd = process.cwd();
   const toplevel = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd, encoding: 'utf8' }).trim();
-  if (toplevel !== cwd) {
+  if (resolve(toplevel) !== resolve(cwd)) {
     const fixtureGitDir = join(cwd, '.git');
     if (!existsSync(fixtureGitDir)) {
       process.on('exit', () => {
@@ -130,12 +130,14 @@ function runApplyWithEnv(env, args = ['apply']) {
   });
 }
 
+// The fork adds a stronger refusal before upstream confirmation checks.
+const refusalPattern = existsSync('.hr-ops-fork.json') ? /upstream apply\/rollback is disabled/ : /Installation requires explicit confirmation/;
 const envOnlyConfirmation = runApplyWithEnv({
   CAREER_OPS_UPDATE_CONFIRM: '1',
   CAREER_OPS_UPDATE_REEXEC: '',
 });
 if (envOnlyConfirmation.status !== 0 &&
-    /Installation requires explicit confirmation/.test(envOnlyConfirmation.stderr)) {
+    refusalPattern.test(envOnlyConfirmation.stderr)) {
   pass('environment-only confirmation cannot authorize initial apply');
 } else {
   fail(`environment-only confirmation can authorize initial apply (${applyFailure(envOnlyConfirmation)})`);
@@ -146,7 +148,7 @@ const envOnlyForce = runApplyWithEnv({
   CAREER_OPS_UPDATE_REEXEC: '',
 });
 if (envOnlyForce.status !== 0 &&
-    /Installation requires explicit confirmation/.test(envOnlyForce.stderr)) {
+    refusalPattern.test(envOnlyForce.stderr)) {
   pass('environment-only force cannot authorize initial apply');
 } else {
   fail(`environment-only force can authorize initial apply (${applyFailure(envOnlyForce)})`);
@@ -154,7 +156,7 @@ if (envOnlyForce.status !== 0 &&
 
 const forceWithoutConfirmation = runApplyWithEnv({}, ['apply', '--force']);
 if (forceWithoutConfirmation.status !== 0 &&
-    /Installation requires explicit confirmation/.test(forceWithoutConfirmation.stderr)) {
+    refusalPattern.test(forceWithoutConfirmation.stderr)) {
   pass('force without confirmation cannot authorize initial apply');
 } else {
   fail(`force without confirmation can authorize initial apply (${applyFailure(forceWithoutConfirmation)})`);
@@ -166,7 +168,7 @@ const forgedReexec = runApplyWithEnv({
   CAREER_OPS_UPDATE_CONFIRM: '1',
 });
 if (forgedReexec.status !== 0 &&
-    /Installation requires explicit confirmation/.test(forgedReexec.stderr)) {
+    refusalPattern.test(forgedReexec.stderr)) {
   pass('forged reexec marker cannot authorize initial apply');
 } else {
   fail(`forged reexec marker can authorize initial apply (${applyFailure(forgedReexec)})`);
@@ -182,7 +184,7 @@ const forgedLegacyReexec = runApplyWithEnv({
 if (createdLegacyBranch.status !== 0) {
   fail(`could not create the matching backup branch fixture: ${createdLegacyBranch.stderr}`);
 } else if (forgedLegacyReexec.status !== 0 &&
-    /Installation requires explicit confirmation/.test(forgedLegacyReexec.stderr)) {
+    refusalPattern.test(forgedLegacyReexec.stderr)) {
   pass('legacy reexec with a matching backup branch still needs an active parent lock');
 } else {
   fail(`legacy reexec with a matching backup branch can authorize initial apply without an active parent lock (${applyFailure(forgedLegacyReexec)})`);

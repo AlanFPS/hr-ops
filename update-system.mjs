@@ -126,6 +126,13 @@ export const REEXEC_BUFFER_TIMEOUT_MS = parsePositiveInt(process.env.CAREER_OPS_
 
 // System layer paths — ONLY these files get updated
 const SYSTEM_PATHS = [
+  'hr-ops.mjs',
+  '.hr-ops-fork.json',
+  'lib/hr-ops/',
+  'modes/hr-ops/',
+  '.agents/skills/hr-ops/',
+  '.agents/skills/career-ops/agents/',
+  'OPENCLAW_INTEGRATION.md',
   // .gitattributes governs how every other path below is written to disk, and
   // `apply` checks paths out one at a time in this order: if it landed later,
   // everything before it would be written under the old core.autocrlf setting
@@ -2797,6 +2804,13 @@ if (isCli) {
   const cmd = process.argv[2] || 'check';
 
   try {
+    if (existsSync(join(ROOT, '.hr-ops-fork.json'))) {
+      if (cmd === 'apply' || cmd === 'rollback') throw new Error('HR-Ops preserves its fork: upstream apply/rollback is disabled. Review upstream Git diffs and selectively incorporate changes.');
+      if (cmd === 'check') {
+        console.log(JSON.stringify({ status: 'fork-preserved', upstream: 'career-ops-hq/career-ops', guidance: 'Use git fetch upstream and review changes; never overwrite HR-Ops with Career-Ops system files.' }));
+        process.exit(0);
+      }
+    }
     switch (cmd) {
       case 'check': await check(); break;
       case 'apply': await apply(); break;

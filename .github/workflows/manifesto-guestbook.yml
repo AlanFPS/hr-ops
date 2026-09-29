@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   post:
+    if: github.repository == 'career-ops-hq/career-ops'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v9

@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   welcome:
+    if: github.repository == 'career-ops-hq/career-ops'
     runs-on: ubuntu-latest
     steps:
       # Counting is done with the search API instead of actions/first-interaction:

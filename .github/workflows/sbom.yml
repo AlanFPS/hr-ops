@@ -8,6 +8,7 @@ permissions:
 
 jobs:
   sbom:
+    if: github.repository == 'career-ops-hq/career-ops'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

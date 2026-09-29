@@ -1,3 +1,21 @@
+# HR-Ops in Codex
+
+Start Codex in the repository root. Codex reads `AGENTS.md` and discovers `.agents/skills/hr-ops/SKILL.md`. Root `CODEX.md` is retained as a compatibility pointer, not a prerequisite for automatic instruction loading. The same HR modes are used by Claude Code.
+
+```bash
+node hr-ops.mjs doctor
+codex
+codex exec --sandbox workspace-write "Use HR-Ops to find and evaluate 10 U.S. clients hiring backend/full-stack engineers"
+```
+
+Ask: “Research the five strongest prospects”, “Why did we qualify Acme?”, “Prepare outreach for the top 3”, or “Who needs a follow-up today?”. The agent must carry tasks through research and saved drafts, not stop at CLI briefs. Configure public search permissions appropriate to your Codex runtime. No MCP server is used; native Codex slash commands are not assumed.
+
+Read [the operating guide](HR_OPS.md) for setup and payloads. The CLI never sends or makes external CRM writes. Missing firm identity and unknown evidence remain visible. Candidate onboarding and Career-Ops auto-updates do not apply to HR-Ops work.
+
+## Retained legacy Codex guide
+
+The following applies only when explicitly requesting Career-Ops candidate tools.
+
 # Codex Guide
 
 Career-ops supports Codex through the same shared router used by the other CLI integrations.
