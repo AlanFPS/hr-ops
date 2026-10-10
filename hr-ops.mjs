@@ -2,6 +2,8 @@
 import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
+import { requireRuntime } from "./lib/hr-ops/client.mjs";
+import { saveExport } from "./lib/hr-ops/export-file.mjs";
 import { writeFileAtomic } from "./tracker-utils.mjs";
 import {
   LocalRepository,
@@ -49,7 +51,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   status <company> [--markdown]        Full dossier, history and evidence
   followups [--due today|YYYY-MM-DD]   Due contacts; never records drafts as sent
   record <company> --input event.json --revision N
-  export [--format json|csv|markdown]  Local stdout export, no CRM connection
+  export [--format json|csv|markdown] [--output local/exports/pipeline.json]
 Options: --json (default), --summary, --dry-run, --help. --input - reads stdin.
 research/outreach without input return tasks/briefs for your agent, not completed research/drafts.
 No send, purchase, terms-acceptance or external CRM write capability exists.
@@ -58,7 +60,7 @@ function parse(args) {
   const options = {},
     pos = [];
   const flags = ["json", "summary", "dry-run", "markdown", "help", "starter"];
-  const values = ["input", "revision", "top", "due", "format", "icp", "limit", "run"];
+  const values = ["input", "revision", "top", "due", "format", "icp", "limit", "run", "output"];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--")) {
@@ -118,6 +120,7 @@ async function publish(repo, id) {
 }
 export async function main(args = process.argv.slice(2)) {
   const { command, selector, options: o } = parse(args);
+  assert(!o.output || (command === 'export' && !o.summary && !o['dry-run']), '--output requires export without --summary or --dry-run');
   if (command === "help" || o.help) {
     console.log(HELP);
     return;
@@ -127,7 +130,7 @@ export async function main(args = process.argv.slice(2)) {
   const c = loadConfig(root);
   const dryRun = !!o["dry-run"];
   const now = new Date();
-  let result;
+  let result, exportRecordCount;
   const needSelector = () =>
     assert(selector, "Company or prospect ID required");
   const mutationOpts = () => ({
@@ -318,6 +321,7 @@ export async function main(args = process.argv.slice(2)) {
     );
   } else if (command === "export") {
     const all = repo.list();
+    exportRecordCount = all.length;
     const format = o.format ?? "json";
     assert(
       ["json", "csv", "markdown"].includes(format),
@@ -360,16 +364,20 @@ export async function main(args = process.argv.slice(2)) {
       result.report_warning = `Canonical record saved; derived report failed: ${error.message}`;
     }
   }
-  console.log(
+  const serialized =
     typeof result === "string"
       ? result
       : o.summary
         ? summary(result)
-        : JSON.stringify(result, null, 2),
-  );
+        : JSON.stringify(result, null, 2);
+  if (o.output) {
+    assert(command === 'export' && !o.summary && !dryRun, '--output requires export without --summary or --dry-run');
+    const path = saveExport(root, o.output, serialized + '\n');
+    console.log(JSON.stringify({ saved: path, records: exportRecordCount, node: process.version, executable: process.execPath }));
+  } else console.log(serialized);
 }
 if (isMainModule(import.meta.url))
-  main().catch((error) => {
+  Promise.resolve().then(() => { requireRuntime(); return main(); }).catch((error) => {
     console.error(JSON.stringify({ ok: false, error: error.message }));
     process.exitCode = 1;
   });

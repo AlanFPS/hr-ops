@@ -1,0 +1,15 @@
+# Running affected operating checks
+
+The shared skill remains the same for Codex and Claude. These checks validate specific regressions, not production certification or broad live prospecting quality.
+
+Use Node >=24 in the actual agent shell. `lib/hr-ops/client.mjs` exposes `runHr(args, options)` (JSON stdin/output, nonzero exits throw) and `withReservation(run, attempt, dispatch, options)`. The latter invokes the callback only after a successful real reservation. Prefer `capture` for public GETs. Native tools remain governed by agent compliance; the ledger is not a security boundary against an agent with direct tools/filesystem access.
+
+For help, summaries, Markdown or CSV stdout, use `runHrText(args, options)`, which checks the exit code and returns the raw text. `runHr` rejects non-JSON output modes before dispatch, including on mutating commands. `export --format csv|markdown --output ...` still works through `runHr` because the CLI writes the document to disk and returns a JSON receipt.
+
+Per-company page caps cover page/API reads, including failed attempts. The separate global query cap covers searches. A page cap does not prevent a separately reserved search; search snippets do not establish primary-page verification. Never reset the run ID to get more budget.
+
+`export --output local/exports/pipeline.json` saves the full JSON export directly under the selected data root and prints a small receipt with record count, runtime and executable. CSV/Markdown also support output. Paths outside `local/exports/`, traversal and linked path components are rejected. Existing exports at the exact same path are replaced. `pipeline` remains a compact view. No shell redirection or hand transcription is needed.
+
+For paired acceptance, prepare two separate clones with dependencies, initialized isolated data roots and the same code snapshot. Run `scripts/hr-ops-acceptance.ps1` separately for each client with `-Workspace`, `-Client codex|claude`, `-NodeExe` (verified absolute Node >=24 path) and `-PromptFile`. The launcher records metadata and logs, starts a persistent session, and injects the absolute Node command into the prompt. Its Claude allowlist includes only that Node executable for Bash, preventing accidental generic `node` execution. This is data isolation, not a filesystem sandbox. The script never sends outreach; the test prompt must also prohibit external communications and changes outside its workspace.
+
+Required checks: malformed and exhausted reservations never dispatch; a separately reserved query after a page cap is allowed; ATS UUID draft links pass but unsupported prose numbers fail; vacancy-only pain stays unknown, while explicitly supported inferred capacity pain earns at most half need points; direct exports reload exactly with evidence/drafts intact. Retain input fixtures, actual outputs, runtime receipts and transcripts. Clearly distinguish fictional controlled fixtures from real-company research. Run `node --test tests/hr-ops/operating-fixes.test.mjs` and `npm run test:hr` before the operator check.

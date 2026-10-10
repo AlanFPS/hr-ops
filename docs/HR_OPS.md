@@ -4,7 +4,7 @@ HR-Ops is a local client-acquisition workspace for a LATAM recruiting firm. An A
 
 ## Run
 
-Use Node 24 (the retained upstream test suite requires it) and `npm install --ignore-scripts`. HR-Ops itself does not require Chromium, Go or the legacy web dashboard. Run `node hr-ops.mjs init`, then `node hr-ops.mjs doctor`. Edit the user-owned `config/profile.yml` under `hr_ops` to specify the firm's actual services and identity. Initialization preserves an existing profile. `init --input file.json` accepts an HR-Ops configuration subtree on first initialization only.
+Use Node >=24 (enforced by the HR-Ops CLI) and `npm install --ignore-scripts`. HR-Ops itself does not require Chromium, Go or the legacy web dashboard. Run `node hr-ops.mjs init`, then `node hr-ops.mjs doctor`. With a pinned runtime, use its absolute executable path in the actual agent shell; inherited PATH alone is insufficient. Edit the user-owned `config/profile.yml` under `hr_ops` to specify the firm's actual services and identity. Initialization preserves an existing profile. `init --input file.json` accepts an HR-Ops configuration subtree on first initialization only.
 
 Start Codex or Claude Code in this checkout and ask:
 
@@ -39,7 +39,7 @@ Headless: `codex exec --sandbox workspace-write "Use HR-Ops to find and evaluate
 | `status "Acme" --markdown` | Render the full dossier; JSON includes revision and history |
 | `followups --due today` | Return due contacts and their last actual message |
 | `record "Acme" --input event.json --revision N` | Log an explicitly user-reported event; never deliver anything |
-| `export --format json\|csv\|markdown` | Export locally to stdout; no external CRM write |
+| `export --format json\|csv\|markdown [--output local/exports/pipeline.json]` | Full local export to stdout or file; no external CRM write |
 
 Prefix every command with `node hr-ops.mjs`. JSON is the default output. `--input -` reads stdin. `--dry-run` validates proposed mutations without changing state. A company selector can be a stable ID, exact name or canonical domain; quote names with spaces. Failed validation writes nothing for that prospect, exits 1 and returns a JSON error. A batch discovery is incremental, not an all-or-nothing transaction.
 
@@ -48,6 +48,10 @@ Discovery validates command options and input shapes before writing. Imports hon
 Provider discovery and collection commit together under the workspace lock, after complete record validation. Invalid collected metadata cannot leave a newly created identity behind. Initialization validates the exact generated YAML before writing; flow mappings and explicit document endings may be normalized while preserving existing configuration values and standalone comments.
 
 **Research tasks and outreach briefs are not finished work.** The skill instructs the operating agent to execute public searches, read source pages, assess relevance and import the results. Without a search-capable agent or configured boards, the CLI honestly returns an empty result plus tasks. It does not conceal that limitation behind example companies. Search/page reservations are enforced by the local helper; native research tools depend on operator compliance. No external LLM calls occur inside the HR-Ops CLI.
+
+Research reservation payloads are `{"kind":"query","target":"search terms"}` or `{"kind":"page","company":"https://example.com","target":"https://example.com/careers"}`. Page targets must be URLs only, without notes. Native requests require exit 0 and a matching receipt with `dispatch_allowed: true`, `dry_run: false`; failure stops dispatch. A per-company page cap stops page/API reads for that company; separately reserved searches may continue within the global query cap. Snippets are leads, not primary-page verification. Keep the same run ID across retries and report gaps.
+
+`capture` accepts `{"company":"https://example.com","url":"https://example.com/careers"}` plus optional `excerpt`, `excerpt_kind`, `source_type`, `published_at`. Evidence metadata requires an excerpt. Capture reserves its own attempt; do not reserve twice. For fail-fast scripted helpers, full exports and pinned-runtime acceptance launch instructions, see [operating checks](HR_OPS_OPERATING_CHECKS.md).
 
 Configure public readers under `hr_ops.discovery.sources`. Each entry has `name`, `website`, `icp`, `provider` (`ashby`, `greenhouse` or `lever`), `careers_url` (the verified ATS board URL) and `identity_evidence` (the evidence object described below, citing the official company page linking to that board). An explicit `api` URL is also accepted by the retained providers, subject to their host restrictions. Agency sources additionally need `hiring_for: client` after verifying the board represents client placements; without it, openings stay `unknown` and do not qualify the agency. Custom sites and other ATS providers are researched by the agent in this MVP. No source needs credentials.
 
@@ -91,6 +95,10 @@ Collection updates unreviewed rows and retains the latest observations in `colle
 Explicitly unreviewed openings never contribute to qualifying demand or outreach readiness. Research briefs list `unreviewed_openings` by ID. Legacy rows without the flag retain their prior reviewed treatment; new scanner rows require actual research. Contact ranking distinguishes business ownership and managing partnerships from Product Owner/HR Business Partner titles, and assistant-to roles from Assistant Vice President rank. Explicit former/departed titles are not current contacts. The ranking remains a heuristic, so verify each person's actual responsibility.
 
 ## Evidence and research input
+
+Positive `recruiting_pain` (`mixed` or `strong`) requires `basis` and a nonempty `rationale` in addition to confidence and evidence. Allowed bases are `employer_reported_difficulty` (an explicit statement that hiring is difficult), `documented_capacity_gap` (an explicit mismatch between recruiting capacity and demand), and `explicit_partner_request` (a request for external recruiting delivery). Sources must support the chosen basis; labels do not prove semantics. An inferred assessment is capped at half need points. A specialist vacancy, multiple openings, funding, small team, or an old/reposted vacancy alone is insufficient. Without corroborating difficulty/capacity evidence, retain these as demand/risk context and leave pain unknown. `none` requires evidence too; silence is unknown.
+
+Example fictional pain fact: `{"value":"mixed","confidence":"inferred","evidence":["capacity-statement"],"basis":"documented_capacity_gap","rationale":"The employer says its recruiting team has no capacity for the additional searches; partner support may help."}`. Historical pain facts lacking a basis remain readable but earn zero need points and no need coverage. Requalification updates saved scores; current recommendations already use this rule. Previous exports remain historical snapshots. Do not relabel old sources merely to preserve a score.
 
 All timestamps use ISO 8601 with timezone. Every external fact references immutable evidence IDs. An evidence record is:
 
@@ -144,7 +152,7 @@ Optional opening fields: `posted_at`, `employer`. Optional contact `email` must 
 }
 ```
 
-Email additionally requires `subject`. `purpose` is `initial` or `followup`; follow-up requires a recorded sent event. Each factual claim must be represented in `claims`, with its exact text occurring in the draft. Firm claims use `kind:"firm"` and `firm_field` (`services`, `name`, `sender_name`, `fees`, `guarantees`, `candidate_availability`). The field must be configured; the agent must also check the wording matches it. Numeric and selected commercial-claim checks catch common mistakes but cannot prove all natural-language claims true.
+Email additionally requires `subject`. `purpose` is `initial` or `followup`; follow-up requires a recorded sent event. Each factual claim must be represented in `claims`, with its exact text occurring in the draft. Firm claims use `kind:"firm"` and `firm_field` (`services`, `name`, `sender_name`, `fees`, `guarantees`, `candidate_availability`). The field must be configured; the agent must also check the wording matches it. Numeric and selected commercial-claim checks catch common mistakes but cannot prove all natural-language claims true. HTTP(S) URL digits are excluded from numeric prose checks, including in supporting excerpts; Markdown link labels and numerical assertions outside URLs still need evidence.
 
 Follow-up drafts must target the recipient of the latest actual sent event. Saving binds `reply_to` to that event ID; an explicitly supplied `reply_to` must match. A later contact changes that binding and invalidates older follow-up drafts. A legacy follow-up draft without a binding must be regenerated before becoming actionable. Switching to a previously uncontacted decision maker is not a routine follow-up and requires separate planning; it must not inherit another person's message history.
 
