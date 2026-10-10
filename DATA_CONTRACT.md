@@ -4,6 +4,8 @@ The HR workspace uses the existing user/system separation. HR user files are `co
 
 HR system files are `hr-ops.mjs`, `lib/hr-ops/`, `modes/hr-ops/`, the shared HR skill and wrappers, tests, provenance and documentation. Upstream automatic apply/rollback is disabled in this fork. See [storage and schemas](docs/HR_OPS.md#storage-and-crm-extension). The retained legacy contract below governs candidate tools only.
 
+The system-owned starter catalog is `templates/hr-ops-sources.json`; overrides belong in `config/profile.yml` under `hr_ops.discovery`. Research attempt ledgers are user data at `data/hr-ops/research-runs/<run-id>.json`. Preserve them on backup; reserve attempts through the CLI/API, not direct file edits. Evidence may retain excerpt type, retrieval precision and publication time; old evidence remains immutable.
+
 # Data Contract
 
 This document defines which files belong to the **system** (auto-updatable) and which belong to the **user** (never touched by updates).

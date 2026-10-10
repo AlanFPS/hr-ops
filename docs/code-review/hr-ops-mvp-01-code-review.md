@@ -10,7 +10,7 @@
 
 **Second-pass result**: The [independent review](hr-ops-mvp-02-code-review.md) confirmed these nine findings and added M8 (YAML initialization) and M9 (calendar validation). The combined, deduplicated total is **0 Critical, 2 High, 9 Minor, 0 Nit**.
 
-**Method**: Applied `C:/Users/alan_/.cursor/commands/audit.md`: correctness, security boundaries, runtime validation, concurrency, performance and architecture. Every finding below was reproduced locally using synthetic data. No production prospect was edited and no external communication occurred. The required independent second pass is recorded separately in `hr-ops-mvp-02-code-review.md`.
+**Method**: Applied `~/.cursor/commands/audit.md`: correctness, security boundaries, runtime validation, concurrency, performance and architecture. Every finding below was reproduced locally using synthetic data. No production prospect was edited and no external communication occurred. The required independent second pass is recorded separately in `hr-ops-mvp-02-code-review.md`.
 
 ## Critical Issues
 

@@ -8,7 +8,7 @@
 
 **Severity Summary**: 0 Critical, 0 High, 2 Minor, 0 Nit **additional findings**. Combined with the confirmed first pass: **0 Critical, 2 High, 9 Minor, 0 Nit**; eleven distinct findings, without double counting.
 
-**Method**: Performed the independent `code-audit-second` review required by `C:/Users/alan_/.cursor/commands/audit.md`. Read the implementation, cross-checked the first review, reran its eight behavioral reproductions, and wrote separate synthetic probes for additional cases. No production state or implementation was changed, and nothing was sent externally.
+**Method**: Performed the independent `code-audit-second` review required by `~/.cursor/commands/audit.md`. Read the implementation, cross-checked the first review, reran its eight behavioral reproductions, and wrote separate synthetic probes for additional cases. No production state or implementation was changed, and nothing was sent externally.
 
 ## Critical Issues
 

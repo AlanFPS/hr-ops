@@ -13,7 +13,9 @@ npm run test:hr
 
 Use Node 24. Start your AI client in this checkout and say **“Use HR-Ops to find and evaluate 10 potential U.S. clients hiring backend/full-stack engineers.”** Then **“Prepare outreach for the top 3.”** Headless: `codex exec --sandbox workspace-write "Use HR-Ops to research the strongest prospects"`.
 
-Commands: `discover`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
+Commands: `discover`, `sources`, `budget`, `capture`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
+
+Inspect the verified research starter catalog with `node hr-ops.mjs sources --starter`. It includes API and manual research sources, not prequalified clients. See [source configuration and research controls](docs/HR_OPS_RESEARCH.md).
 
 Firm facts and configurable ICPs live under `hr_ops` in `config/profile.yml`. State lives in `data/hr-ops/`; generated dossiers in `reports/hr-ops/`. All are local user data ignored by Git. New checkouts start with no private prospects or invented firm credentials.
 

@@ -6,6 +6,8 @@ Create the documented research JSON with evidence, facts, openings, contacts, ri
 
 Describe the service-fit hypothesis as inferred unless the company explicitly requests such a service. Recruiting pain inferred from concurrent searches is `mixed`, not an observed admission. Do not classify a referral program as proof of openness to delivery subcontracting. Distinguish the firm's own remote work policy from its clients' hiring eligibility.
 
+Check for explicit no-agency policies before preparing outreach; record them as observed blockers. An agency recruiting in LATAM is not automatically a LATAM specialist, but overlap is a material risk. Do not mark `latam_specialist: false` as observed from silence on a general services page. Leave it unknown without direct support. Explain what we could add beyond the agency's existing coverage, and keep subcontracting demand unknown unless stated. Similarly, a company already hiring internationally may have no need for a sourcing partner. A qualifying score is provisional prioritization, not validated buying intent.
+
 Persist with `research COMPANY --input FILE --revision N`. This validates and scores the dossier and invalidates old drafts. Finish with the score, supporting signals, unknowns and risks. Refresh relevant evidence before outreach.
 
 Review `latest_collection` in the work brief when available. Scanner observations do not overwrite previously reviewed classifications or renew their verification dates. Reconcile changed postings against actual pages before importing them as reviewed research. New decision events retain score/configuration and before/after snapshots; do not claim old history without snapshots is fully reconstructable.

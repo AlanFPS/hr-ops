@@ -12,6 +12,32 @@ import { providerFetchContext } from './_ip-guard.mjs';
 export { BROWSER_LIKE_USER_AGENT, MACOS_BROWSER_LIKE_USER_AGENT };
 
 const DEFAULT_TIMEOUT_MS = 10_000;
+const ERROR_BODY_MAX_BYTES = 8192;
+
+// Bound retained bytes, including the last chunk, on both success and failure.
+// Native fetch exposes a reader for every non-null body. Never fall back to an
+// unbounded text() call if a custom transport does not implement that contract.
+async function readTextHead(res, maxBytes) {
+  if (res.body === null) return '';
+  const reader = res.body?.getReader?.();
+  if (!reader) throw new Error('Bounded response reading requires a body stream');
+  const chunks = [];
+  let total = 0;
+  let ended = false;
+  try {
+    while (total < maxBytes) {
+      const { done, value } = await reader.read();
+      if (done) { ended = true; break; }
+      const take = Math.min(value.byteLength, maxBytes - total);
+      chunks.push(Buffer.from(value.subarray(0, take)));
+      total += take;
+    }
+  } finally {
+    try { await reader.cancel(); } catch { /* closed or aborted */ }
+  }
+  // Do not turn a UTF-8 character cut by the cap into a replacement character.
+  return new TextDecoder().decode(Buffer.concat(chunks, total), { stream: !ended });
+}
 
 async function fetchWithTimeout(url, opts = {}, consume) {
   // Mark this request as provider traffic for the whole of its async life, so
@@ -52,12 +78,12 @@ async function fetchInContext(url, { timeoutMs = DEFAULT_TIMEOUT_MS, headers = {
       signal: controller.signal,
     });
     if (!res.ok) {
-      const responseText = await res.text().catch(() => '');
+      const responseText = await readTextHead(res, ERROR_BODY_MAX_BYTES).catch(() => '');
       // WAF/CDN challenge pages (seen live: Workday 429s) carry no actionable
       // text — HTML markup or a generic interstitial message, not worth
       // parsing or displaying. The status code and its standard reason
-      // phrase are what a log line needs; the raw body is still attached as
-      // err.body for callers that want to inspect it.
+      // phrase are what a log line needs; only a bounded diagnostic excerpt is
+      // attached as err.body for callers that want to inspect it.
       const err = new Error(`HTTP ${res.status}${res.statusText ? ` ${res.statusText}` : ''}`);
       err.status = res.status;
       err.body = responseText;
@@ -101,27 +127,8 @@ export async function fetchJson(url, opts = {}) {
  */
 export async function fetchTextHead(url, opts = {}) {
   const maxBytes = opts.maxBytes ?? 8192;
-  return fetchWithTimeout(url, opts, async (res) => {
-    const reader = res.body?.getReader?.();
-    if (!reader) return String(await res.text()).slice(0, maxBytes);
-    const chunks = [];
-    let total = 0;
-    try {
-      while (total < maxBytes) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(Buffer.from(value));
-        total += value.length;
-      }
-    } finally {
-      try {
-        await reader.cancel();
-      } catch {
-        /* body already closed */
-      }
-    }
-    return Buffer.concat(chunks).toString('utf8');
-  });
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw new Error('Invalid response byte limit');
+  return fetchWithTimeout(url, opts, (res) => readTextHead(res, maxBytes));
 }
 
 export async function fetchText(url, opts = {}) {
@@ -226,6 +233,8 @@ export function isRefusedRedirectError(err) {
  * isRefusedRedirectError() above for how it's distinguished.
  */
 export function isRetryableError(err) {
+  // Policy denials (for example a research quota) cannot recover on retry.
+  if (err?.retryable === false) return false;
   const status = err?.status;
   if (status === 429) return true;
   if (typeof status === 'number' && status >= 500) return true;

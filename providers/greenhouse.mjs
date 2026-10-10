@@ -177,9 +177,11 @@ export default {
           assertGreenhouseUrl(officesUrl);
           officeMap = buildOfficeMap(await ctx.fetchJson(officesUrl, { redirect: 'error' }));
         } catch (err) {
+          // Policy denials must reach the caller, even for optional enrichment.
+          if (err?.retryable === false) throw err;
           // No /offices on this board, or it failed — fall back to the bare
-          // work-model string. Enrichment is best-effort; a scan must never
-          // fail because the secondary lookup did. Logged so a persistent
+          // work-model string. Ordinary enrichment failures are best-effort;
+          // policy denials above still stop collection. Logged so a persistent
           // regression is distinguishable from a board that simply has no
           // /offices, which is expected and harmless.
           // `err` is not guaranteed to be an Error — a promise may reject with

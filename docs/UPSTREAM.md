@@ -3,10 +3,10 @@
 This is the HR-Ops fork at `https://github.com/AlanFPS/hr-ops`, derived from `https://github.com/career-ops-hq/career-ops`. GitHub's fork parent/source metadata was checked before implementation. Upstream is the current Career-Ops project; this checkout intentionally starts from an older preserved release.
 
 - Original clean baseline: `5c97c24e092871cd6374c2122ee7f021d69d3d6e`, Career-Ops 1.33.0.
-- Preservation tag: `hr-ops-baseline-1.33.0`.
+- Local preservation tag: `hr-ops-baseline-1.33.0`. The full baseline commit above is the portable reference; a fresh clone may not contain this tag.
 - Implementation branch: `hr-ops-mvp`.
 - Upstream snapshot fetched September 25, 2026: `a0de5cf95b650413fb9ffd5b78e547652967763a`, 111 commits ahead, release 1.34.0. This is a dated observation, not a claim that upstream will remain at that revision.
-- Git remote `upstream` retains the Career-Ops URL. `.hr-ops-fork.json` preserves machine-readable provenance. MIT license and original attribution remain.
+- The original workspace's Git remote `upstream` retains the Career-Ops URL. Git does not copy additional remotes when cloning; `.hr-ops-fork.json` preserves machine-readable provenance for new checkouts. MIT license and original attribution remain.
 
 The original README, AGENTS legacy section, modes, providers, CV/application tools and cross-client integration were inspected before transformation. Codex already operated directly through `AGENTS.md`, `.agents/skills/career-ops/SKILL.md`, natural-language prompts and `codex exec`; Claude Code used the same router via its skill integration. No MCP integration was necessary.
 
@@ -39,9 +39,11 @@ The standalone updater failure was diagnosed as a Windows slash mismatch in a te
 ## Selective upstream updates
 
 ```bash
+# Once per fresh clone, if `git remote -v` does not list upstream:
+git remote add upstream https://github.com/career-ops-hq/career-ops.git
 git fetch upstream --tags
-git log --oneline hr-ops-baseline-1.33.0..upstream/main
-git diff hr-ops-baseline-1.33.0 upstream/main -- providers/ pipeline-lock.mjs tracker-utils.mjs
+git log --oneline 5c97c24e092871cd6374c2122ee7f021d69d3d6e..upstream/main
+git diff 5c97c24e092871cd6374c2122ee7f021d69d3d6e upstream/main -- providers/ pipeline-lock.mjs tracker-utils.mjs
 ```
 
 Review useful commits on a separate branch and selectively port/cherry-pick them, resolving HR-specific behavior explicitly. Re-run HR and relevant retained tests. Do not merge all upstream instructions over the HR workflow. The old updater's `apply` and `rollback` entrypoints are disabled when the fork marker exists. Its `check` returns `fork-preserved`. Upstream-specific release/publishing and community bots are guarded to run only in the upstream repository. Retained package version 1.33.0 records the underlying Career-Ops baseline; HR-Ops is an MVP, not an upstream release.

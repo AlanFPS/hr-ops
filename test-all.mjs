@@ -15821,7 +15821,7 @@ try {
 // whether it's raw HTML markup or a human-readable challenge page ("Security
 // Check ... Support ID: ... Client IP: ..."), neither tells the caller
 // anything useful. The status code and its standard reason phrase carry the
-// signal instead; the raw body is still attached as err.body for callers
+// signal instead; a bounded body excerpt is attached as err.body for callers
 // that parse it (providers/glints.mjs does, for its own error detail
 // extraction).
 
@@ -15831,13 +15831,9 @@ try {
   const { fetchJson } = await import(pathToFileURL(join(ROOT, 'providers/_http.mjs')).href);
   const originalFetch = globalThis.fetch;
 
-  const mockFetch = (status, statusText, body, headers = {}) => async () => ({
-    ok: false,
-    status,
-    statusText,
-    text: async () => body,
-    headers: { get: (name) => headers[name.toLowerCase()] ?? null },
-  });
+  // Exercise the native response stream used by the bounded diagnostic reader.
+  const mockFetch = (status, statusText, body, headers = {}) => async () =>
+    new Response(body, { status, statusText, headers });
 
   try {
     globalThis.fetch = mockFetch(429, 'Too Many Requests', '<!DOCTYPE html><html><body><style>body{color:red}</style>Security Check Enable JavaScript and cookies to continue Support ID: 0000000000000000 – Client IP: 203.0.113.42</body></html>', { 'content-type': 'text/html; charset=utf-8' });
@@ -15856,7 +15852,7 @@ try {
     if (err?.status === 429) pass('_http.mjs sets err.status from the response');
     else fail(`err.status = ${JSON.stringify(err?.status)}, expected 429`);
     if (err?.body?.includes('Support ID')) {
-      pass('_http.mjs still attaches the raw body as err.body for callers that need it (e.g. providers/glints.mjs)');
+      pass('_http.mjs retains short diagnostic bodies as err.body for callers that need them (e.g. providers/glints.mjs)');
     } else {
       fail(`err.body missing or altered: ${JSON.stringify(err?.body)}`);
     }

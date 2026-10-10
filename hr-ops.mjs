@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
 import { writeFileAtomic } from "./tracker-utils.mjs";
@@ -21,7 +21,7 @@ import {
 } from "./lib/hr-ops/model.mjs";
 import {
   research,
-  qualify,
+  requalify,
   researchTasks,
   outreachBrief,
   saveDraft,
@@ -30,12 +30,17 @@ import {
   dossier,
 } from "./lib/hr-ops/operations.mjs";
 import { discoverSources, discoveryQueries } from "./lib/hr-ops/discovery.mjs";
+import { effectiveSources, inspectSources } from "./lib/hr-ops/sources.mjs";
+import { researchBudget, reserveResearch, captureSource } from "./lib/hr-ops/research-run.mjs";
 
 const HELP = `HR-Ops — local recruiting client operations (draft-only)
 Usage: node hr-ops.mjs <command> [company-or-id] [options]
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
   doctor                              Check configuration and persistent records
-  discover [--input prospects.json] [--icp both|agency|startup] [--limit 10]
+  sources [--starter]                  Inspect configured/starter research sources
+  discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
+  budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
+  capture --run ID --input source.json   Budgeted public GET with retrieval timestamp
   research <company> [--input research.json --revision N]
   qualify <company>                   Deterministic evidence-based evaluation
   contacts <company>                  Ranked, verified contacts
@@ -52,8 +57,8 @@ See docs/HR_OPS.md for payloads and the shared skill for complete agent workflow
 function parse(args) {
   const options = {},
     pos = [];
-  const flags = ["json", "summary", "dry-run", "markdown", "help"];
-  const values = ["input", "revision", "top", "due", "format", "icp", "limit"];
+  const flags = ["json", "summary", "dry-run", "markdown", "help", "starter"];
+  const values = ["input", "revision", "top", "due", "format", "icp", "limit", "run"];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--")) {
@@ -94,7 +99,7 @@ function summary(result) {
       rows
         .map(
           (p) =>
-            `${p.id ?? ""} | ${p.name ?? p.company ?? ""} | ${p.status ?? ""} | ${p.score?.total ?? ""} | ${p.due ?? ""}`,
+            `${p.id ?? ""} | ${p.name ?? p.company ?? ""} | ${p.status ?? ""} | ${p.score?.total ?? ""}${p.due || p.next_followup ? ` | ${p.due ?? p.next_followup}` : ""}`,
         )
         .join("\n") || "No matching records."
     );
@@ -134,6 +139,11 @@ export async function main(args = process.argv.slice(2)) {
     result = await initialize(root, o.input ? input(o.input) : {}, { dryRun });
   else if (command === "doctor") {
     const records = repo.list();
+    const sourceErrors = inspectSources(c, { now }).diagnostics;
+    const ledgerDir = join(repo.dir, "research-runs");
+    const researchRuns = existsSync(ledgerDir)
+      ? readdirSync(ledgerDir).filter(f => f.endsWith(".json")).map(f => researchBudget(repo, c, f.slice(0, -5)))
+      : [];
     result = {
       ok:
         existsSync(join(root, "config/profile.yml")) &&
@@ -142,14 +152,23 @@ export async function main(args = process.argv.slice(2)) {
         ),
       root,
       prospects: records.length,
+      research_runs: researchRuns.length,
+      source_errors: sourceErrors,
       initialized: isInitialized(root),
       missing_firm_fields: ["name", "sender_name", "email"].filter(
         (k) => !c.firm[k],
       ),
       send_enabled: false,
     };
-    if (!result.initialized) result.ok = false;
+    if (!result.initialized || sourceErrors.length) result.ok = false;
     if (!result.ok) process.exitCode = 1;
+  } else if (command === "sources") {
+    result = effectiveSources(c, { starter: o.starter || c.discovery.starter_sources, now });
+  } else if (command === "budget") {
+    result = o.input ? await reserveResearch(repo, c, o.run, input(o.input), { dryRun, now }) : researchBudget(repo, c, o.run);
+  } else if (command === "capture") {
+    assert(o.input, "--input required");
+    result = await captureSource(repo, c, o.run, input(o.input), { dryRun });
   } else if (command === "discover") {
     if (o.input) {
       const icp = o.icp ?? "both",
@@ -191,6 +210,8 @@ export async function main(args = process.argv.slice(2)) {
         limit: o.limit ? integer(o.limit, "--limit") : c.discovery.limit,
         dryRun,
         now,
+        starter: o.starter || c.discovery.starter_sources,
+        run: o.run,
       });
   } else if (command === "pipeline") {
     if (o.icp) assert(["agency", "startup"].includes(o.icp), "Invalid ICP");
@@ -229,7 +250,7 @@ export async function main(args = process.argv.slice(2)) {
       : researchTasks(repo.get(selector), c, now);
   } else if (command === "qualify") {
     needSelector();
-    result = await repo.update(selector, "qualify", (p) => qualify(p, c, now), {
+    result = await repo.update(selector, "qualify", (p) => requalify(p, c, now), {
       dryRun,
       now,
     });

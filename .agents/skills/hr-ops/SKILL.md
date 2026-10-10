@@ -1,7 +1,6 @@
 ---
 name: hr-ops
 description: Discover and evaluate U.S. recruiting clients for a LATAM recruiting firm, research hiring needs, identify contacts, draft outreach, and maintain prospect follow-ups. Use for HR-Ops modes and client-acquisition requests.
-argument-hint: "[discover | pipeline | qualify | research | contacts | outreach | followups | status]"
 license: MIT
 ---
 
@@ -26,3 +25,5 @@ In Codex, use ordinary prompts or `codex exec --sandbox workspace-write "Use HR-
 The Node CLI performs deterministic collection, validation and persistence. Research/outreach without input return work briefs: **you must do the research or drafting**, then import the result. Do not stop after displaying a brief when the user asked for the complete task. Use `node hr-ops.mjs --help` and `docs/HR_OPS.md` for exact schemas. A prompt to find/evaluate clients authorizes internal discovery → research → qualification → contacts → draft preparation; never external contact.
 
 No delegation is required. Use public information and the current client's search tools. If search is unavailable, use configured public sources and report the coverage limitation; do not pretend a seed list is broad discovery. Unknown facts remain unknown. Never invent approval references, contact details, inventory or commercial terms.
+
+For repeatable discovery, inspect `sources --starter`; catalog companies still need independent qualification. Follow the shared research-run budget procedure and preserve quote/summary, retrieval precision and publication dates. A score and weighted signal coverage do not establish buying intent. Check no-agency policies and existing LATAM coverage before drafting.

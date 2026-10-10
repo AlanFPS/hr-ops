@@ -1,6 +1,10 @@
 # HR-Ops validation
 
+Latest: [October 9 operating acceptance repairs](HR_OPS_ACCEPTANCE_REPAIRS.md) records the paired-run findings, code fixes, corrected research and focused rechecks. Earlier pilot tables below are historical; in particular, the main PostHog record is now disqualified under its no-agency policy.
+
 The transformation started from an installed, tested Career-Ops baseline. See [UPSTREAM.md](UPSTREAM.md) for the original results and preserved revisions. Tests never sent outreach or wrote to an external CRM.
+
+The [September 29 clean-checkout acceptance record](HR_OPS_ACCEPTANCE.md) covers the pushed commit, installation, empty-workspace behavior, regression checks and a fictional backup/restore drill. It distinguishes those checks from the remaining operating-client validation.
 
 ## Automated verification
 
