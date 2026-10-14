@@ -1,4 +1,16 @@
 #!/usr/bin/env node
+import * as yaml from "js-yaml";
+import {
+  diagnostics,
+  buildInfo,
+  effectiveConfig,
+  backup,
+  restore,
+  migrate,
+  operatingReport,
+  exposureReport,
+} from "./lib/hr-ops/maintenance.mjs";
+import { updateRun } from "./lib/hr-ops/research-run.mjs";
 import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
@@ -30,15 +42,32 @@ import {
   recordInteraction,
   dueFollowups,
   dossier,
+  draftCurrent,
 } from "./lib/hr-ops/operations.mjs";
 import { discoverSources, discoveryQueries } from "./lib/hr-ops/discovery.mjs";
-import { effectiveSources, inspectSources } from "./lib/hr-ops/sources.mjs";
-import { researchBudget, reserveResearch, captureSource } from "./lib/hr-ops/research-run.mjs";
+import {
+  effectiveSources,
+  inspectSources,
+  sourceCatalog,
+} from "./lib/hr-ops/sources.mjs";
+import {
+  researchBudget,
+  reserveResearch,
+  captureSource,
+} from "./lib/hr-ops/research-run.mjs";
 
-const HELP = `HR-Ops — local recruiting client operations (draft-only)
+const HELP = `HR-Ops - local recruiting client operations (draft-only)
 Usage: node hr-ops.mjs <command> [company-or-id] [options]
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
-  doctor                              Check configuration and persistent records
+  doctor [--recovery]                  Check all records; recovery returns labelled partial data
+  config                              Effective HR settings with origins
+  build                               Runtime, schema, revision and dirty state
+  backup [--dry-run]                   Local consistent data snapshot
+  restore BACKUP --destination DIR [--apply]  Verify and preview; apply only into absent DIR
+  migrate [--apply]                    Preview schema upgrade; apply creates backup
+  report                              Research/source/outcome totals
+  retention                           Read-only exposure inventory
+  run --run ID --action inspect|complete|resume
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
@@ -59,8 +88,34 @@ See docs/HR_OPS.md for payloads and the shared skill for complete agent workflow
 function parse(args) {
   const options = {},
     pos = [];
-  const flags = ["json", "summary", "dry-run", "markdown", "help", "starter"];
-  const values = ["input", "revision", "top", "due", "format", "icp", "limit", "run", "output"];
+  const flags = [
+    "json",
+    "summary",
+    "dry-run",
+    "markdown",
+    "help",
+    "starter",
+    "apply",
+    "recovery",
+    "gaps",
+    "stale",
+    "current-drafts",
+    "catalog",
+  ];
+  const values = [
+    "input",
+    "revision",
+    "top",
+    "due",
+    "format",
+    "icp",
+    "limit",
+    "run",
+    "output",
+    "action",
+    "tier",
+    "destination",
+  ];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (!a.startsWith("--")) {
@@ -92,7 +147,9 @@ function integer(value, label) {
   return n;
 }
 function input(path) {
-  return JSON.parse(readFileSync(path === "-" ? 0 : path, "utf8"));
+  return JSON.parse(
+    readFileSync(path === "-" ? 0 : path, "utf8").replace(/^\uFEFF/, ""),
+  );
 }
 function summary(result) {
   const rows = Array.isArray(result) ? result : (result.prospects ?? null);
@@ -120,7 +177,10 @@ async function publish(repo, id) {
 }
 export async function main(args = process.argv.slice(2)) {
   const { command, selector, options: o } = parse(args);
-  assert(!o.output || (command === 'export' && !o.summary && !o['dry-run']), '--output requires export without --summary or --dry-run');
+  assert(
+    !o.output || (command === "export" && !o.summary && !o["dry-run"]),
+    "--output requires export without --summary or --dry-run",
+  );
   if (command === "help" || o.help) {
     console.log(HELP);
     return;
@@ -138,14 +198,43 @@ export async function main(args = process.argv.slice(2)) {
     now,
     expectedRevision: integer(o.revision, "--revision"),
   });
-  if (command === "init")
+  if (command === "build") result = buildInfo();
+  else if (command === "config")
+    result = effectiveConfig(
+      c,
+      existsSync(join(root, "config/profile.yml"))
+        ? (yaml.load(readFileSync(join(root, "config/profile.yml"), "utf8"))
+            ?.hr_ops ?? {})
+        : {},
+    );
+  else if (command === "backup") result = await backup(repo, { dryRun });
+  else if (command === "restore") {
+    needSelector();
+    assert(o.destination, "--destination required");
+    result = restore(selector, o.destination, { dryRun: !o.apply || dryRun });
+  } else if (command === "migrate")
+    result = await migrate(repo, c, { dryRun: !o.apply || dryRun, now });
+  else if (command === "report") result = operatingReport(repo, c, now);
+  else if (command === "retention") result = exposureReport(repo);
+  else if (command === "run")
+    result = await updateRun(
+      repo,
+      c,
+      o.run,
+      { action: o.action ?? "inspect" },
+      { dryRun },
+    );
+  else if (command === "init")
     result = await initialize(root, o.input ? input(o.input) : {}, { dryRun });
   else if (command === "doctor") {
-    const records = repo.list();
+    const diagnostic = diagnostics(repo);
+    const records = diagnostic.records;
     const sourceErrors = inspectSources(c, { now }).diagnostics;
     const ledgerDir = join(repo.dir, "research-runs");
     const researchRuns = existsSync(ledgerDir)
-      ? readdirSync(ledgerDir).filter(f => f.endsWith(".json")).map(f => researchBudget(repo, c, f.slice(0, -5)))
+      ? readdirSync(ledgerDir)
+          .filter((f) => f.endsWith(".json"))
+          .map((f) => researchBudget(repo, c, f.slice(0, -5)))
       : [];
     result = {
       ok:
@@ -154,6 +243,13 @@ export async function main(args = process.argv.slice(2)) {
           (p) => Array.isArray(p.history) && Array.isArray(p.evidence),
         ),
       root,
+      build: buildInfo(),
+      errors: diagnostic.errors,
+      partial: diagnostic.partial,
+      ...(o.recovery ? { healthy_records: records } : {}),
+      migration_needed: records
+        .filter((p) => p.schema_version < 2)
+        .map((p) => p.id),
       prospects: records.length,
       research_runs: researchRuns.length,
       source_errors: sourceErrors,
@@ -163,19 +259,32 @@ export async function main(args = process.argv.slice(2)) {
       ),
       send_enabled: false,
     };
-    if (!result.initialized || sourceErrors.length) result.ok = false;
+    if (!result.initialized || sourceErrors.length || !diagnostic.ok)
+      result.ok = false;
     if (!result.ok) process.exitCode = 1;
   } else if (command === "sources") {
-    result = effectiveSources(c, { starter: o.starter || c.discovery.starter_sources, now });
+    result = o.catalog
+      ? sourceCatalog()
+      : effectiveSources(c, {
+          starter: o.starter || c.discovery.starter_sources,
+          now,
+        });
   } else if (command === "budget") {
-    result = o.input ? await reserveResearch(repo, c, o.run, input(o.input), { dryRun, now }) : researchBudget(repo, c, o.run);
+    result = o.input
+      ? await reserveResearch(repo, c, o.run, input(o.input), { dryRun, now })
+      : researchBudget(repo, c, o.run);
   } else if (command === "capture") {
     assert(o.input, "--input required");
     result = await captureSource(repo, c, o.run, input(o.input), { dryRun });
   } else if (command === "discover") {
+    if (o.run)
+      assert(
+        researchBudget(repo, c, o.run).status !== "complete",
+        "Completed run must be explicitly resumed",
+      );
     if (o.input) {
       const icp = o.icp ?? "both",
-        queries = discoveryQueries(icp);
+        queries = discoveryQueries(icp, c);
       const limit = o.limit
         ? integer(o.limit, "--limit")
         : c.discovery.max_candidates;
@@ -231,7 +340,20 @@ export async function main(args = process.argv.slice(2)) {
         hold: p.hold,
         score: scoreProspect(p, c, now),
         next_followup: p.next_followup,
+        current_drafts: p.drafts
+          .filter((d) => d.ready && draftCurrent(d, p, c, now))
+          .map((d) => d.id),
+        stale:
+          researchTasks(p, c, now).stale_fields.length > 0 ||
+          p.openings.some((o) => o.reconciliation_needed),
       }))
+      .filter(
+        (p) =>
+          (!o.tier || p.score.tier === o.tier) &&
+          (!o.gaps || p.score.gaps.length) &&
+          (!o.stale || p.stale) &&
+          (!o["current-drafts"] || p.current_drafts.length),
+      )
       .sort(
         (a, b) => b.score.total - a.score.total || a.name.localeCompare(b.name),
       );
@@ -253,10 +375,15 @@ export async function main(args = process.argv.slice(2)) {
       : researchTasks(repo.get(selector), c, now);
   } else if (command === "qualify") {
     needSelector();
-    result = await repo.update(selector, "qualify", (p) => requalify(p, c, now), {
-      dryRun,
-      now,
-    });
+    result = await repo.update(
+      selector,
+      "qualify",
+      (p) => requalify(p, c, now),
+      {
+        dryRun,
+        now,
+      },
+    );
   } else if (command === "contacts") {
     needSelector();
     result = rankedContacts(repo.get(selector), c, now);
@@ -320,7 +447,8 @@ export async function main(args = process.argv.slice(2)) {
       mutationOpts(),
     );
   } else if (command === "export") {
-    const all = repo.list();
+    const recovery = o.recovery ? diagnostics(repo) : null;
+    const all = recovery ? recovery.records : repo.list();
     exportRecordCount = all.length;
     const format = o.format ?? "json";
     assert(
@@ -352,11 +480,18 @@ export async function main(args = process.argv.slice(2)) {
                   .join(","),
               ),
             ].join("\n")
-          : all;
+          : recovery
+            ? { ...recovery, partial: true, recovery_mode: true }
+            : all;
   } else
     throw new Error(
       `Unsupported command ${command}. No external action is available. Use --help.`,
     );
+  if (command === "discover" && o.run && !dryRun)
+    await updateRun(repo, c, o.run, {
+      action: "link",
+      prospects: (result.prospects ?? []).map((p) => p.id),
+    });
   if (result?.prospect && !dryRun && !result.unchanged) {
     try {
       await publish(repo, result.prospect.id);
@@ -371,13 +506,28 @@ export async function main(args = process.argv.slice(2)) {
         ? summary(result)
         : JSON.stringify(result, null, 2);
   if (o.output) {
-    assert(command === 'export' && !o.summary && !dryRun, '--output requires export without --summary or --dry-run');
-    const path = saveExport(root, o.output, serialized + '\n');
-    console.log(JSON.stringify({ saved: path, records: exportRecordCount, node: process.version, executable: process.execPath }));
+    assert(
+      command === "export" && !o.summary && !dryRun,
+      "--output requires export without --summary or --dry-run",
+    );
+    const path = saveExport(root, o.output, serialized + "\n");
+    console.log(
+      JSON.stringify({
+        saved: path,
+        records: exportRecordCount,
+        node: process.version,
+        executable: process.execPath,
+      }),
+    );
   } else console.log(serialized);
 }
 if (isMainModule(import.meta.url))
-  Promise.resolve().then(() => { requireRuntime(); return main(); }).catch((error) => {
-    console.error(JSON.stringify({ ok: false, error: error.message }));
-    process.exitCode = 1;
-  });
+  Promise.resolve()
+    .then(() => {
+      requireRuntime();
+      return main();
+    })
+    .catch((error) => {
+      console.error(JSON.stringify({ ok: false, error: error.message }));
+      process.exitCode = 1;
+    });

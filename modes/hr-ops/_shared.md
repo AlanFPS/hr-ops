@@ -18,4 +18,6 @@ Use `node hr-ops.mjs research COMPANY --input payload.json --revision N` to pers
 
 No messages are sent. Do not use email, LinkedIn, CRM, browser forms or unrelated connectors to bypass draft-only operation. A request to draft is not permission to log a sent event. `record` requires the actual user instruction's reference and wording, not an agent-generated permission. Existing authorization in the conversation is sufficient; do not ask repeatedly.
 
-For contact or commercial history, preserve the user's reported time, channel, exact message and response. Do not assume a meeting, agreement or client win from research. Replies stop automatic follow-ups; a genuinely user-requested date may create a manual reminder through the supported event types. Opt-out, hold and closure block both kinds. Suppression survives rediscovery.
+For contact or commercial history, preserve the user's reported time, channel, exact message and response. Do not assume a meeting, agreement or client win from research. Replies stop automatic follow-ups for their contact across channels; a genuinely user-requested date may create a manual reminder through the supported event types. Opt-out, hold and closure block both kinds. Suppression survives rediscovery.
+
+For schema 1 data inspect `migrate` and use the backed-up procedure in docs/HR_OPS_LOCAL_EDITION.md before writes. PROVISIONAL is a research tier, not a commercial stage. Complete runs explicitly and resume the same ledger.

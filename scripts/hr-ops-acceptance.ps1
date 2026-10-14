@@ -38,7 +38,7 @@ if ($Client -eq 'codex') {
 } else {
     $allowNode = 'Bash("' + $nodeCommand + '" *)'
     $allowNodeUnquoted = 'Bash(' + $nodeCommand + ' *)'
-    $promptText | & claude --print --verbose --output-format stream-json --session-id $sessionId --name 'HR-Ops affected operating checks' --permission-mode dontAsk --strict-mcp-config --tools 'Bash,Read,Write,Edit,Glob,Grep' --allowedTools 'Read' 'Write' 'Edit' 'Glob' 'Grep' $allowNode $allowNodeUnquoted 1> local/acceptance/transcript.jsonl 2> local/acceptance/stderr.log
+    $promptText | & claude --print --verbose --output-format stream-json --session-id $sessionId --name 'HR-Ops local edition acceptance' --permission-mode dontAsk --strict-mcp-config --tools 'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch' --allowedTools 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'WebSearch' 'WebFetch' $allowNode $allowNodeUnquoted 1> local/acceptance/transcript.jsonl 2> local/acceptance/stderr.log
 }
 $runExit = $LASTEXITCODE
 @{ exit_code=$runExit; finished_at=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content -LiteralPath local/acceptance/exit.json -Encoding utf8

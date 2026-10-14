@@ -1,5 +1,7 @@
 # Instructions for GitHub Copilot in this repository
 
+HR-Ops is the default product. Follow the HR section of AGENTS.md and `.agents/skills/hr-ops/SKILL.md` for client acquisition. Do not request a CV or write candidate trackers. Job-search instructions below apply only to explicit legacy Career-Ops work.
+
 This repository is two things at once, and which one you are working on depends on what you were asked.
 
 **A. Helping a person with their job search.** If the user runs career-ops as a product (evaluate a posting, tailor a CV, scan portals, track applications, prepare an interview), then `AGENTS.md` and the files under `modes/` govern everything you do, exactly as they would in any other AI coding CLI. Ignore the rest of this file.
@@ -8,7 +10,7 @@ This repository is two things at once, and which one you are working on depends 
 
 ## Setup, build and validate
 
-- Install: `npm install --ignore-scripts` (there is no lock file in the repo). Never install without `--ignore-scripts`, never add or upgrade dependencies.
+- Install: `npm ci --ignore-scripts` (the root lockfile is tracked). Never install without `--ignore-scripts`, never add or upgrade dependencies.
 - Full suite: `node test-all.mjs --quick` (skips the dashboard build). Run it before you finish, every time.
 - One area: `node test-all.mjs --only <substring>` (for example `--only providers/themuse`).
 - Syntax: `npm run lint`.

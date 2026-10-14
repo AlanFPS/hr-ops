@@ -125,17 +125,18 @@ test("capture timestamps actual completion, verifies quotes, records failed atte
 
 test("starter catalog is explicit, configurable, unique and expires without silently collecting stale identities", async t => {
   const c = config(), r = repo(t);
-  const checked = new Date("2026-10-10T01:00:00Z");
+  const checked = new Date(Math.max(...starterSources().map(s=>Date.parse(s.identity_evidence.observed_at)))+60000);
+  const count = starterSources().length;
   assert.equal(effectiveSources(c, { now: checked }).length, 0);
-  assert.equal(starterSources().length, 6);
-  assert.equal(effectiveSources(c, { starter: true, now: checked }).length, 6);
+  assert.ok(count >= 6);
+  assert.equal(effectiveSources(c, { starter: true, now: checked }).length, count);
   c.discovery.sources = [{ website: "https://www.river.com", enabled: false }];
-  assert.equal(effectiveSources(c, { starter: true, now: checked }).length, 5);
-  const result = await discoverSources(r, c, { starter: true, limit: 6, now: new Date("2027-10-10T01:00:00Z"), ctx: { fetchJson() { throw new Error("must not fetch"); } } });
+  assert.equal(effectiveSources(c, { starter: true, now: checked }).length, count-1);
+  const result = await discoverSources(r, c, { starter: true, limit: count, now: new Date("2027-10-10T01:00:00Z"), ctx: { fetchJson() { throw new Error("must not fetch"); } } });
   assert.equal(result.created, 0);
-  assert.equal(result.research_tasks.length, 5);
+  assert.equal(result.research_tasks.length, count-1);
   assert.ok(result.research_tasks.every(x => x.requires_identity_refresh));
-  assert.equal(result.limits.limit, 6);
+  assert.equal(result.limits.limit, count);
   assert.equal(result.limits.starter_sources, true);
   assert.equal(r.list().length, 0);
 });

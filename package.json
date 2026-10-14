@@ -67,10 +67,13 @@
     "application:init": "node application-artifacts.mjs --init",
     "build:dashboard": "node build-dashboard.mjs",
     "serve:dashboard": "cd dashboard && go run .",
-    "postinstall": "npx playwright install chromium --with-deps || npx playwright install chromium --with-deps",
+    "setup:legacy-browser": "playwright install chromium --with-deps",
     "manifesto": "node manifesto.mjs",
     "doctor:career": "node doctor.mjs",
     "hr": "node hr-ops.mjs",
+    "hr:pipeline": "node hr-ops.mjs pipeline",
+    "hr:discover": "node hr-ops.mjs discover",
+    "hr:followups": "node hr-ops.mjs followups",
     "test:hr": "node --test tests/hr-ops/*.test.mjs"
   },
   "keywords": [

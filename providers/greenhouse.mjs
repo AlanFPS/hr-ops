@@ -209,6 +209,9 @@ export default {
       }
       const description = contentToText(j.content);
       return {
+      provider: 'greenhouse',
+      posting_id: j.id == null ? undefined : String(j.id),
+      requisition_id: j.requisition_id == null ? undefined : String(j.requisition_id),
         title: j.title || '',
         url: j.absolute_url,
         company: entry.name,

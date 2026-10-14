@@ -10,6 +10,12 @@ import { decodeEntities } from './_html-entities.mjs';
 // normal on these boards, and scan payloads must stay sane.
 export const DESCRIPTION_CAP = 4000;
 
+// Browser-visible source text: entity-escaped angle brackets are literal text,
+// not a second layer of markup. Provider payloads use htmlToText below instead.
+export function htmlToVisibleText(content, cap = DESCRIPTION_CAP) {
+  return decodeEntities(stripMarkup(content)).replace(/\s+/g, ' ').trim().slice(0, cap);
+}
+
 // A tag ends at an unquoted `>`. Attribute values may contain angle brackets,
 // so the common `<[^>]+>` shortcut can stop midway through a tag and expose
 // the remaining attributes as description text. Requiring content between the
@@ -37,7 +43,7 @@ function stripMarkup(content) {
  * @param {unknown} content
  * @returns {string}
  */
-export function htmlToText(content) {
+export function htmlToText(content, cap = DESCRIPTION_CAP) {
   if (typeof content !== 'string' || !content) return '';
   // Strip literal markup before decoding: quote entities inside a quoted
   // attribute are data, and decoding them first would turn them into false
@@ -51,5 +57,5 @@ export function htmlToText(content) {
     .replace(/<(?=\/?[a-z!?])/gi, '')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, DESCRIPTION_CAP);
+    .slice(0, cap);
 }

@@ -208,6 +208,9 @@ export default {
     ));
     const jobs = Array.isArray(json?.jobs) ? json.jobs : [];
     return jobs.map(/** @param {any} j */ (j) => ({
+      provider: 'ashby',
+      posting_id: j.id == null ? undefined : String(j.id),
+      requisition_id: j.requisition_id == null ? undefined : String(j.requisition_id),
       title: j.title || '',
       url: j.jobUrl || '',
       company: entry.name,

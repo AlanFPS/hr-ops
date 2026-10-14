@@ -30,6 +30,9 @@
  *                               `descriptionPlain`; most providers omit it.
  *                               Consumed by scan.mjs's content_filter; an
  *                               empty/absent value always passes the filter.
+ * @property {string} [provider] Public ATS provider identifier.
+ * @property {string} [posting_id] Native posting identifier, not necessarily a vacancy.
+ * @property {string} [requisition_id] Native requisition identifier, when explicitly supplied.
  * @property {number} [postedAt] Epoch ms when the posting was published.
  *                               Omitted when the source doesn't expose a
  *                               usable date. scan.mjs ignores it; consumers

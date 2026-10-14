@@ -5,7 +5,7 @@ Local client acquisition for a LATAM recruiting firm selling to U.S. companies. 
 HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Nothing is sent automatically.**
 
 ```bash
-npm install --ignore-scripts
+npm ci --ignore-scripts
 node hr-ops.mjs init
 node hr-ops.mjs doctor
 npm run test:hr
@@ -21,6 +21,7 @@ Firm facts and configurable ICPs live under `hr_ops` in `config/profile.yml`. St
 
 - [Operating guide, architecture, schemas and scoring](docs/HR_OPS.md)
 - [Validation and live pilot](docs/HR_OPS_VALIDATION.md)
+- [Readiness assessment and supervised operating conditions](docs/HR_OPS_READINESS.md)
 - [Upstream provenance and selective updates](docs/UPSTREAM.md)
 - [Future OpenClaw operator contract](OPENCLAW_INTEGRATION.md)
 - [Codex usage](docs/CODEX.md)
@@ -662,3 +663,5 @@ endorsement.
 [![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hi@santifer.io)
 
 </details>
+
+Local edition: [schema 2, recovery, migration and verification](docs/HR_OPS_LOCAL_EDITION.md). HR aliases: `npm run hr:pipeline`, `hr:discover`, `hr:followups`. Other inherited npm commands remain legacy Career-Ops tools. Optional candidate PDF rendering requires `npm run setup:legacy-browser`.

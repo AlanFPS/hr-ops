@@ -88,6 +88,9 @@ export default {
     const json = await ctx.fetchJson(apiUrl, { redirect: 'error', timeoutMs: LEVER_TIMEOUT_MS });
     if (!Array.isArray(json)) return [];
     return json.map(j => ({
+      provider: 'lever',
+      posting_id: j.id == null ? undefined : String(j.id),
+      requisition_id: j.requisition_id == null ? undefined : String(j.requisition_id),
       title: j.text || '',
       url: j.hostedUrl || '',
       company: entry.name,

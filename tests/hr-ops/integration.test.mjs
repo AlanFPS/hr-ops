@@ -60,6 +60,6 @@ test('shared client entrypoints resolve and candidate skill is explicit only',()
   const legacy=yaml.load(readFileSync(join(ROOT,'.agents/skills/career-ops/agents/openai.yaml'),'utf8'));assert.equal(legacy.policy.allow_implicit_invocation,false);
 });
 test('upstream mutation workflows remain valid YAML and are guarded in the fork',()=>{
-  const keep=new Set(['test.yml','web-ci.yml','codeql.yml','dependency-review.yml','no-user-data.yml','plugin-registry-validate.yml','copilot-setup-steps.yml']);
+  const keep=new Set(['hr.yml','test.yml','web-ci.yml','codeql.yml','dependency-review.yml','no-user-data.yml','plugin-registry-validate.yml','copilot-setup-steps.yml']);
   for(const file of readdirSync(join(ROOT,'.github/workflows')).filter(f=>f.endsWith('.yml'))){const parsed=yaml.load(readFileSync(join(ROOT,'.github/workflows',file),'utf8'));assert.ok(parsed.jobs,file);if(!keep.has(file))for(const job of Object.values(parsed.jobs))assert.ok(job.if?.includes("github.repository == 'career-ops-hq/career-ops'"),file);}
 });

@@ -318,7 +318,7 @@ test("F08 invalid options cannot mutate imports; ICP and unique-company limits a
     ["discover", "--input", "-", "--icp", "startup", "--limit", "1"],
     { prospects: entries },
   );
-  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.status, 0, JSON.stringify({stderr:r.stderr,stdout:r.stdout,error:r.error?.message,signal:r.signal}));
   assert.equal(JSON.parse(r.stdout).prospects.length, 1);
   assert.equal(new LocalRepository(root).list().length, 1);
 });
@@ -391,8 +391,8 @@ test("F11 invalid writes are atomic and doctor identifies corrupt persisted fiel
   writeFileSync(file, JSON.stringify(broken));
   const health = cli(root, ["doctor"]);
   assert.equal(health.status, 1);
-  assert.match(health.stderr, /facts/);
-  assert.match(health.stderr, new RegExp(p.id));
+  assert.match(health.stdout, /facts/);
+  assert.match(health.stdout, new RegExp(p.id));
 });
 test("F12 interaction retry identity ignores nested object key order but rejects changed content", () => {
   const p = prospect(),
@@ -416,7 +416,7 @@ test("mixed-state CLI handoff selects initial prospects, surfaces requested foll
   await initialize(root, config());
   const run = (args, data) => {
     const r = cli(root, args, data);
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, JSON.stringify({stderr:r.stderr,stdout:r.stdout,error:r.error?.message,signal:r.signal}));
     return JSON.parse(r.stdout);
   };
   const freshAt = new Date().toISOString();
@@ -465,6 +465,7 @@ test("mixed-state CLI handoff selects initial prospects, surfaces requested foll
       run(
         ["research", p.id, "--input", "-", "--revision", String(p.revision)],
         {
+          openings: patch.openings.map(o => ({...o, eligibility:{status:'unknown',evidence:[]}})),
           facts: {
             latam_compatibility: {
               value: null,

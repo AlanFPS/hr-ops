@@ -1,0 +1,31 @@
+name: HR operating checks
+on:
+  push:
+    branches: [main, hr-ops-mvp, 'codex/**']
+  pull_request:
+    branches: [main, hr-ops-mvp]
+  workflow_dispatch:
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  group: hr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  hr:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run test:hr
+      - run: node validate-system-paths-coverage.mjs

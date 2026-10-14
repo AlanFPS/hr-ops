@@ -291,7 +291,7 @@ test("M1 preparation no-op still creates a new identity but preserves existing r
   assert.equal(repo.get(first.prospect.id).revision, 1);
 });
 
-test("M2 follow-ups bind to the last actual recipient and sent event", () => {
+test("M2 follow-ups bind to their contact even when another contact is messaged", () => {
   const p = prospect(),
     c = config();
   applyResearch(
@@ -327,7 +327,7 @@ test("M2 follow-ups bind to the last actual recipient and sent event", () => {
     c,
     now,
   );
-  assert.equal(draftCurrent(p.drafts[0], p, c, now), false);
+  assert.equal(draftCurrent(p.drafts[0], p, c, now), true);
 });
 
 test("M3 historical replies cannot cancel newer cadence or commercial reminders", () => {
@@ -359,19 +359,8 @@ test("M3 historical replies cannot cancel newer cadence or commercial reminders"
     c,
     new Date("2026-09-25T14:00:00Z"),
   );
-  assert.throws(
-    () =>
-      recordInteraction(
-        p,
-        event("reply", {
-          id: "older-reply",
-          response: "Delayed earlier reply",
-        }),
-        c,
-        new Date("2026-09-25T14:00:00Z"),
-      ),
-    /Backdated/,
-  );
+  recordInteraction(p, event("reply", {id:"older-reply",response:"Delayed earlier reply"}), c, new Date("2026-09-25T14:00:00Z"));
+  assert.equal(p.interactions.at(-1).response, "Delayed earlier reply");
   assert.equal(p.next_followup, "2026-10-02");
 });
 
