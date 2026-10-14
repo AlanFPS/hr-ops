@@ -32,6 +32,7 @@ import {
   rankedContacts,
   localDate,
   scoreProspect,
+  fresh,
 } from "./lib/hr-ops/model.mjs";
 import {
   research,
@@ -147,9 +148,10 @@ function integer(value, label) {
   return n;
 }
 function input(path) {
-  return JSON.parse(
-    readFileSync(path === "-" ? 0 : path, "utf8").replace(/^\uFEFF/, ""),
-  );
+  let decoded;
+  try { decoded = new TextDecoder('utf-8', {fatal:true,ignoreBOM:true}).decode(readFileSync(path === '-' ? 0 : path)); }
+  catch(error) { throw new Error(`Input must be readable UTF-8 JSON: ${error.message}`); }
+  return JSON.parse(decoded.replace(/^\uFEFF/, ''));
 }
 function summary(result) {
   const rows = Array.isArray(result) ? result : (result.prospects ?? null);
@@ -345,7 +347,8 @@ export async function main(args = process.argv.slice(2)) {
           .map((d) => d.id),
         stale:
           researchTasks(p, c, now).stale_fields.length > 0 ||
-          p.openings.some((o) => o.reconciliation_needed),
+          p.openings.some((o) => o.reconciliation_needed || (o.status === 'open' && (!fresh(o.verified_at,c.freshness.openings,now) || o.evidence.some(id=>!fresh(p.evidence.find(e=>e.id===id).observed_at,c.freshness.openings,now))))) ||
+          rankedContacts(p,c,now).some(contact=>!contact.current),
       }))
       .filter(
         (p) =>
@@ -451,6 +454,7 @@ export async function main(args = process.argv.slice(2)) {
     const all = recovery ? recovery.records : repo.list();
     exportRecordCount = all.length;
     const format = o.format ?? "json";
+    assert(!o.recovery || format === "json", "Recovery export requires JSON to preserve partial-result diagnostics");
     assert(
       ["json", "csv", "markdown"].includes(format),
       "Unsupported export format",

@@ -481,3 +481,18 @@ test('malformed Greenhouse entries cannot become a complete empty collection',as
  assert.equal(result.diagnostics[0].complete,false);
  assert.equal(repo.get(result.prospects[0].id).collection.complete,false);
 });
+
+
+test('UTF-8 decoder rejects invalid byte sequences instead of saving replacement characters',t=>{
+ const root=temporary(t),env={...process.env,HR_OPS_ROOT:root};
+ const bytes=Buffer.concat([Buffer.from('{"prospects":[{"name":"'),Buffer.from([0xff]),Buffer.from('"}]}')]);
+ const r=spawnSync(process.execPath,['hr-ops.mjs','discover','--input','-'],{env,input:bytes,encoding:'utf8'});
+ assert.equal(r.status,1);assert.match(r.stderr,/UTF-8/);assert.equal(existsSync(join(root,'data/hr-ops/prospects')),false);
+});
+test('restore validates research ledgers in addition to record checksums',async t=>{
+ const root=temporary(t),repo=new LocalRepository(root);await initialize(root);
+ mkdirSync(join(repo.dir,'research-runs'),{recursive:true});
+ writeFileSync(join(repo.dir,'research-runs','invalid.json'),JSON.stringify({schema_version:1,run:'invalid',limits:{queries:0,pages_per_company:6},attempts:[]}));
+ const saved=await backup(repo);
+ assert.throws(()=>restore(saved.path,join(root,'restored-invalid'),{dryRun:false}),/research limits/);
+});
