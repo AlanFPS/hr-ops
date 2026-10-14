@@ -496,3 +496,10 @@ test('restore validates research ledgers in addition to record checksums',async 
  const saved=await backup(repo);
  assert.throws(()=>restore(saved.path,join(root,'restored-invalid'),{dryRun:false}),/research limits/);
 });
+
+
+test('backup refuses nested checkouts inside its data allowlist',async t=>{
+ const root=temporary(t),repo=new LocalRepository(root);await initialize(root);
+ mkdirSync(join(repo.dir,'nested-repository','.git'),{recursive:true});
+ await assert.rejects(()=>backup(repo),/nested checkout/);
+});

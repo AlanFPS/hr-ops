@@ -113,6 +113,6 @@ Firm email is still unconfigured. Protected disaster recovery and commercial cal
 | M10 | Dedicated Node 24 Windows/Linux HR workflow with push/PR/manual triggers |
 | M11 | Acceptance and benchmark launcher manifest entries |
 
-The local edition HR suite currently passes 123 tests. Retained Greenhouse/Ashby/Lever harnesses pass 41/32/27 assertions. Final broader and isolated client evidence will be recorded in the release validation report; these statements do not claim those runs are already complete.
+The local edition HR suite currently passes 124 tests. Retained Greenhouse/Ashby/Lever harnesses pass 41/32/27 assertions. Final broader and isolated client evidence will be recorded in the release validation report; these statements do not claim those runs are already complete.
 
 Measured on this Windows workspace with Node 24.21.0: 100 generated prospects with 25 history entries each used 17 MB and loaded/validated in 441 ms; 1,000 with 50 history entries used 331 MB and took 7,078 ms. Scoring took 4/27 ms. Run scripts/hr-ops-benchmark.mjs to reproduce synthetic workloads. Full-record validation makes larger writes slower too. JSON remains appropriate for the current small workload; these measurements are a scaling limitation, not a throughput guarantee.
