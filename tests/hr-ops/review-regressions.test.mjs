@@ -260,7 +260,12 @@ test("M1 collection transactions preserve reviewed research under concurrent dis
   );
   assert.equal(repo.list().length, 1);
   assert.equal(repo.get(p.id).revision, 4);
-  assert.deepEqual(repo.get(p.id).openings, original);
+  // A newly observed provider identity must not be merged into a manually
+  // reviewed role merely because its URL matches. Reviewed rows stay intact.
+  assert.deepEqual(repo.get(p.id).openings.filter(o => o.reviewed !== false), original);
+  const observations = repo.get(p.id).openings.filter(o => o.reviewed === false);
+  assert.equal(observations.length, 1);
+  assert.equal(observations[0].posting_id, '1');
   const before = readFileSync(join(repo.records, p.id + ".json"), "utf8");
   await assert.rejects(
     () =>

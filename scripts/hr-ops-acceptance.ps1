@@ -31,16 +31,31 @@ $sessionId = if ($Client -eq 'claude') { [guid]::NewGuid().ToString() } else { $
 $promptText = @"
 Runtime contract: use the absolute executable "$nodeCommand" for EVERY Node command in your actual shell, including version checks and helper scripts. Never use bare node or npm. Do not rely on inherited PATH. This workspace is $Workspace. Do not operate outside it except reading/executing the pinned runtime. No external messages or CRM writes.
 
-"@ + (Get-Content -LiteralPath $PromptFile -Raw)
+"@ + (Get-Content -LiteralPath $PromptFile -Raw -Encoding utf8)
 $promptText | Set-Content -LiteralPath local/acceptance/prompt.txt -Encoding utf8
-if ($Client -eq 'codex') {
-    $promptText | & codex --ask-for-approval never exec --sandbox danger-full-access --json --output-last-message local/acceptance/final.txt - 1> local/acceptance/transcript.jsonl 2> local/acceptance/stderr.log
-} else {
-    $allowNode = 'Bash("' + $nodeCommand + '" *)'
-    $allowNodeUnquoted = 'Bash(' + $nodeCommand + ' *)'
-    $promptText | & claude --print --verbose --output-format stream-json --session-id $sessionId --name 'HR-Ops local edition acceptance' --permission-mode dontAsk --strict-mcp-config --tools 'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch' --allowedTools 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'WebSearch' 'WebFetch' $allowNode $allowNodeUnquoted 1> local/acceptance/transcript.jsonl 2> local/acceptance/stderr.log
+Get-Command $Client -ErrorAction Stop | Out-Null
+# Windows PowerShell 5 treats redirected native stderr as ErrorRecord objects.
+# A warning must not abort the pipeline before the actual exit code is saved.
+$savedErrorPreference = $ErrorActionPreference
+$savedOutputEncoding = $OutputEncoding
+$savedConsoleEncoding = [Console]::OutputEncoding
+try {
+    $ErrorActionPreference = 'Continue'
+    $OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+    [Console]::OutputEncoding = $OutputEncoding
+    if ($Client -eq 'codex') {
+        $promptText | & codex --search --ask-for-approval never exec --sandbox danger-full-access --json --output-last-message local/acceptance/final.txt - 2> local/acceptance/stderr.log | Out-File -LiteralPath local/acceptance/transcript.jsonl -Encoding utf8
+    } else {
+        $allowNode = 'Bash("' + $nodeCommand + '" *)'
+        $allowNodeUnquoted = 'Bash(' + $nodeCommand + ' *)'
+        $promptText | & claude --print --verbose --output-format stream-json --session-id $sessionId --name 'HR-Ops local edition acceptance' --permission-mode dontAsk --strict-mcp-config --tools 'Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch' --allowedTools 'Read' 'Write' 'Edit' 'Glob' 'Grep' 'WebSearch' 'WebFetch' $allowNode $allowNodeUnquoted 2> local/acceptance/stderr.log | Out-File -LiteralPath local/acceptance/transcript.jsonl -Encoding utf8
+    }
+    $runExit = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $savedErrorPreference
+    $OutputEncoding = $savedOutputEncoding
+    [Console]::OutputEncoding = $savedConsoleEncoding
 }
-$runExit = $LASTEXITCODE
 @{ exit_code=$runExit; finished_at=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content -LiteralPath local/acceptance/exit.json -Encoding utf8
 Write-Output "$Client finished with exit code $runExit; logs: $Workspace\local\acceptance"
 exit $runExit

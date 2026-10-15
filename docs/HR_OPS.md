@@ -20,6 +20,16 @@ Headless: `codex exec --sandbox workspace-write "Use HR-Ops to find and evaluate
 
 See [local edition contracts, recovery and migration](HR_OPS_LOCAL_EDITION.md) for schema 2, admission rules and additional commands.
 
+## Opening identity and research completion
+
+Opening records are distinct from source URLs and scored vacancies. Multiple roles can share a careers page. Published posting IDs scoped to provider/board identify collected records; supported requisition IDs or reviewed duplicate groups consolidate demand. Otherwise URL, title, location, employer and hiring attribution distinguish manual listings. Repeat imports preserve IDs. Use the saved opening `id` when correcting those fields or adding provider identifiers, and retain URL aliases. A title alone never proves two hires. Ambiguous listings remain visible for review without a multiple-vacancy score bonus.
+
+Existing stored IDs and historical snapshots remain unchanged. Previously overwritten openings cannot be recovered automatically: re-read retained evidence and import supported missing roles through the research API with the expected revision. Do not manufacture historical decisions. A complete collection reconciles missing posting identities even if another role shares the URL; it does not automatically close the missing role.
+
+A U.S. location without an explicit role restriction means unknown LATAM eligibility. Research must establish any positive or restrictive judgment from the cited text. This semantic check is an operator responsibility, not a keyword-based policy engine. Discovery completion must distinguish researched identities from verified relevant-demand prospects, and disclose a concrete stopping reason if the target is missed while budget remains. Scripted CLI orchestration uses `runHr` / `withReservation` from `lib/hr-ops/client.mjs`; native research-tool compliance remains procedural.
+
+The isolated PowerShell acceptance launcher enables Codex live search, reads prompts as UTF-8, retains warnings without treating them as process failure, and records the actual client exit code. An exit of zero means the client completed, not that its acceptance verdict passed.
+
 ## Commands and agent responsibilities
 
 | Command | Deterministic behavior |
