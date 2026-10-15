@@ -8,12 +8,14 @@ import { requireRuntime, runHr } from './lib/hr-ops/client.mjs';
 import { assert } from './lib/hr-ops/model.mjs';
 import { linkedinPlan, LinkedinBrowser, attemptPath, attemptLinkedinSend, annotateConfirmedAttempt } from './lib/hr-ops/linkedin-browser.mjs';
 import { isMainModule } from './lib/is-main-module.mjs';
+import { inboxCli } from './lib/hr-ops/inbox-cli.mjs';
 
 export async function main(args = process.argv.slice(2)) {
   requireRuntime();
+  if(['inbox','inbox-review'].includes(args[0]))return inboxCli(args[0],args.slice(1));
   if (args.length === 0 || args.includes('--help')) {
     console.log('Usage: node hr-ops-linkedin.mjs preview|send PROSPECT --draft ID --profile-url URL --sender-profile-url URL --revision N\nPreview is offline. Send requires a human-operated interactive terminal, a dedicated browser login and exact-message confirmation. No batch sending, connection requests, InMail, account-checkpoint bypass or automatic retries.');
-    return;
+    console.log('Inbox: node hr-ops-linkedin.mjs inbox --help | inbox-review --help');return;
   }
   const [mode, selector, ...rest] = args;
   assert(['preview', 'send'].includes(mode) && selector && rest.length % 2 === 0, 'Invalid command; use --help');

@@ -15,6 +15,7 @@ import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
 import { requireRuntime } from "./lib/hr-ops/client.mjs";
+import { inboxSummary } from './lib/hr-ops/inbox-state.mjs';
 import { saveExport } from "./lib/hr-ops/export-file.mjs";
 import { writeFileAtomic } from "./tracker-utils.mjs";
 import {
@@ -69,7 +70,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   migrate [--apply]                    Preview schema upgrade; apply creates backup
   report                              Research/source/outcome totals
   retention                           Read-only exposure inventory
-  run --run ID --action inspect|complete|resume|configure [--input scope.json]
+  run --run ID --action inspect|complete|resume|configure|outcome [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
@@ -80,7 +81,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   outreach [company | --top 3] [--input draft.json --revision N]
   pipeline [--icp agency|startup]      Current pipeline and next research gaps
   status <company> [--markdown]        Full dossier, history and evidence
-  followups [--due today|YYYY-MM-DD]   Due contacts; never records drafts as sent
+  followups [--due today|YYYY-MM-DD] [--with-inbox]   Due contacts and optional inbox coverage
   record <company> --input event.json --revision N
   export [--format json|csv|markdown] [--output local/exports/pipeline.json]
 Options: --json (default), --summary, --dry-run, --help. --input - reads stdin.
@@ -103,6 +104,7 @@ function parse(args) {
     "stale",
     "current-drafts",
     "catalog",
+    "with-inbox",
   ];
   const values = [
     "input",
@@ -224,7 +226,7 @@ export async function main(args = process.argv.slice(2)) {
       repo,
       c,
       o.run,
-      { action: o.action ?? "inspect", ...(o.input ? {scope: input(o.input)} : {}) },
+      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:{scope: input(o.input)}) : {}) },
       { dryRun },
     );
   else if (command === "init")
@@ -432,13 +434,14 @@ export async function main(args = process.argv.slice(2)) {
       }
       result = prospects.map((p) => outreachBrief(p, c, now));
     }
-  } else if (command === "followups")
+  } else if (command === "followups") {
     result = dueFollowups(
       repo.list(),
       c,
       o.due && o.due !== "today" ? o.due : localDate(now, c.timezone),
     );
-  else if (command === "record") {
+    if(o['with-inbox'])result={due:result,inbox:inboxSummary(repo)};
+  } else if (command === "record") {
     needSelector();
     assert(o.input, "--input required");
     const event = input(o.input);

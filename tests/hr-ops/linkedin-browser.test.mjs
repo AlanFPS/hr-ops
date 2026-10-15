@@ -81,7 +81,7 @@ test('CLI refuses piped or headless send before opening a browser',()=>{
 
 const browserAvailable=existsSync(chromium.executablePath());
 test('Playwright fixture verifies exact profile, composer, body and one send click', {skip:!browserAvailable&&'Optional Chromium is not installed; no download or live LinkedIn test'},async t=>{
- const browser=await chromium.launch({headless:true});t.after(()=>browser.close());const page=await browser.newPage();
+ const browser=await chromium.launch({headless:true,proxy:{server:'http://127.0.0.1:9'}});t.after(()=>browser.close());const page=await browser.newPage({serviceWorkers:'block'});
  // All URLs are intercepted. This test never contacts LinkedIn or another server.
  await page.route('**/*',r=>r.fulfill({contentType:'text/html',body:`<main><h1>Alex Doe</h1><button onclick="document.querySelector('.msg-overlay-conversation-bubble').style.display='block'">Message</button></main>
  <div class="msg-overlay-conversation-bubble" style="display:none"><div class="msg-overlay-bubble-header"><a href="/in/alex-doe">Alex Doe</a></div><div class="msg-form__contenteditable" contenteditable="true" role="textbox"></div><button onclick="window.sends=(window.sends||0)+1">Send</button></div>`}));

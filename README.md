@@ -4,6 +4,8 @@ Local client acquisition for a LATAM recruiting firm selling to U.S. companies. 
 
 HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Research and drafting never send.** An optional [human-operated Playwright sender](docs/HR_OPS_LINKEDIN.md) handles one individually confirmed LinkedIn direct message at a time. It is not a LinkedIn-approved integration and has not been validated against a live account.
 
+An explicit [LinkedIn inbox check](docs/HR_OPS_INBOX.md) opens a private browser for human login, then reads and imports clear business interactions. Uncertain identity, history or timestamps stay in review. Source-attributed research reports help compare discovery results across both ICPs.
+
 ```bash
 npm ci --ignore-scripts
 node hr-ops.mjs init

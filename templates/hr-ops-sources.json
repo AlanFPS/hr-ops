@@ -10,10 +10,10 @@
       "careers_url": "https://jobs.ashbyhq.com/river",
       "notes": "Official careers URL redirects to this board. Review each job for LATAM eligibility; direct international hiring does not establish agency demand.",
       "identity_evidence": {
-        "id": "starter-river-20261009",
+        "id": "starter-river-20261015",
         "url": "https://river.com/careers",
         "excerpt": "The official River careers URL redirects to jobs.ashbyhq.com/river.",
-        "observed_at": "2026-10-10T00:24:00Z",
+        "observed_at": "2026-10-15T21:35:56.456Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
         "retrieval_precision": "approximate"
@@ -27,13 +27,13 @@
       "careers_url": "https://railway.com/careers",
       "notes": "Official careers page lists engineering openings and global work. Verify current roles, internal recruiting resources and a specific service-fit hypothesis.",
       "identity_evidence": {
-        "id": "starter-railway-20261009",
+        "id": "starter-railway-20261015",
         "url": "https://railway.com/careers",
         "excerpt": "Railway publishes its current engineering openings on its own careers page.",
-        "observed_at": "2026-10-10T00:24:00Z",
+        "observed_at": "2026-10-15T21:35:58.731Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
+        "retrieval_precision": "exact"
       }
     },
     {
@@ -44,13 +44,13 @@
       "careers_url": "https://www.perrystreet.com/careers/",
       "notes": "Official page links to Zoho Recruit. Existing South America hiring is a compatibility signal, not evidence of needing an agency.",
       "identity_evidence": {
-        "id": "starter-perry-20261009",
+        "id": "starter-perrystreetsoftware-20261015",
         "url": "https://www.perrystreet.com/careers/",
         "excerpt": "Perry Street Software's careers page links to its Zoho Recruit openings.",
-        "observed_at": "2026-10-10T00:24:00Z",
+        "observed_at": "2026-10-15T21:35:59.919Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
+        "retrieval_precision": "exact"
       }
     },
     {
@@ -62,13 +62,13 @@
       "hiring_for": "client",
       "notes": "Board attributes roles to clients. Many roles are U.S.-restricted; verify individual locations and client openness to LATAM. Recruiter count and LATAM specialization require separate evidence.",
       "identity_evidence": {
-        "id": "starter-redfish-20261009",
+        "id": "starter-redfishtechnology-20261015",
         "url": "https://www.redfishtech.com/job-board/",
         "excerpt": "Redfish Technology publishes client engineering vacancies on its own job board.",
-        "observed_at": "2026-10-10T00:24:00Z",
+        "observed_at": "2026-10-15T21:36:01.475Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
+        "retrieval_precision": "exact"
       }
     },
     {
@@ -80,10 +80,10 @@
       "hiring_for": "client",
       "notes": "Official site links to hatchpad jobs. Inspect employer attribution and geography: mission/defense roles may impose citizenship, clearance or onsite restrictions.",
       "identity_evidence": {
-        "id": "starter-hatch-20261009",
+        "id": "starter-hatchit-20261015",
         "url": "https://www.hatchit.io/",
         "excerpt": "The official hatch I.T. website links to www.myhatchpad.com/jobs/.",
-        "observed_at": "2026-10-10T00:24:59.416Z",
+        "observed_at": "2026-10-15T21:36:05.023Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
         "retrieval_precision": "exact"
@@ -97,13 +97,13 @@
       "careers_url": "https://www.metabase.com/jobs",
       "notes": "Identity/source verified only. Recheck active demand, size, U.S. market, agency policies and LATAM eligibility. Not an automatically qualified prospect.",
       "identity_evidence": {
-        "id": "starter-metabase-20261014",
+        "id": "starter-metabase-20261015",
         "url": "https://www.metabase.com/jobs",
-        "excerpt": "Metabase operates an official jobs page describing its engineering-led distributed team.",
-        "observed_at": "2026-10-14T16:10:42.493120Z",
+        "excerpt": "Metabase operates an official jobs page describing its small engineering-led team.",
+        "observed_at": "2026-10-15T21:36:05.984Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
+        "retrieval_precision": "exact"
       }
     },
     {
@@ -114,33 +114,15 @@
       "careers_url": "https://jobs.ashbyhq.com/socket",
       "notes": "Identity/source verified only. Recheck active demand, size, U.S. market, agency policies and LATAM eligibility. Not an automatically qualified prospect.",
       "identity_evidence": {
-        "id": "starter-socket-20261014",
+        "id": "starter-socket-20261015",
         "url": "https://www.socket.dev/careers",
         "excerpt": "Socket links its official careers page to jobs.ashbyhq.com/socket.",
-        "observed_at": "2026-10-14T16:10:42.493120Z",
+        "observed_at": "2026-10-15T21:36:08.144Z",
         "source_type": "primary",
         "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
+        "retrieval_precision": "exact"
       },
       "api": "https://api.ashbyhq.com/posting-api/job-board/socket"
-    },
-    {
-      "name": "Cadre",
-      "website": "https://www.yourcadre.com",
-      "icp": "agency",
-      "provider": "manual",
-      "careers_url": "https://www.yourcadre.com/roles/founding-engineer",
-      "notes": "Identity/source verified only. Recheck active demand, size, U.S. market, agency policies and LATAM eligibility. Not an automatically qualified prospect. Cadre says it does not publish jobs; service pages alone cannot verify current client vacancies.",
-      "identity_evidence": {
-        "id": "starter-cadre-20261014",
-        "url": "https://www.yourcadre.com/roles/founding-engineer",
-        "excerpt": "Cadre describes its software engineering recruiting service and founding-engineer searches.",
-        "observed_at": "2026-10-14T16:10:42.493120Z",
-        "source_type": "primary",
-        "excerpt_kind": "summary",
-        "retrieval_precision": "approximate"
-      },
-      "hiring_for": "client"
     }
   ],
   "controls": [
@@ -190,6 +172,9 @@
   ],
   "queries": {
     "agency": [
+      "US boutique technical recruiting \"client\" \"backend engineer\" jobs",
+      "US engineering recruiting firm \"full stack\" \"job board\"",
+      "US technology staffing \"our client\" \"software engineer\" remote",
       "US technical recruiting agency current client backend engineer job openings",
       "US recruiting firm full stack engineer direct hire remote current openings",
       "IT staffing agency engineering jobs official careers recruiting team United States",
@@ -204,5 +189,25 @@
       "US small software company backend contractor Americas careers",
       "site:ycombinator.com/companies backend engineer remote hiring"
     ]
-  }
+  },
+  "research_references": [
+    {
+      "name": "Cadre",
+      "website": "https://www.yourcadre.com",
+      "icp": "agency",
+      "provider": "manual",
+      "careers_url": "https://www.yourcadre.com/roles/founding-engineer",
+      "notes": "Identity/source verified only. Recheck active demand, size, U.S. market, agency policies and LATAM eligibility. Not an automatically qualified prospect. Cadre says it does not publish jobs; service pages alone cannot verify current client vacancies. Research reference only: this is a service description, not evidence of an active client vacancy.",
+      "identity_evidence": {
+        "id": "starter-cadre-20261015",
+        "url": "https://www.yourcadre.com/roles/founding-engineer",
+        "excerpt": "Cadre describes its software engineering recruiting service and founding-engineer searches.",
+        "observed_at": "2026-10-15T21:36:09.654Z",
+        "source_type": "primary",
+        "excerpt_kind": "summary",
+        "retrieval_precision": "exact"
+      },
+      "hiring_for": "client"
+    }
+  ]
 }

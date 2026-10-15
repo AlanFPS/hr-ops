@@ -31,7 +31,7 @@ Greenhouse, Ashby and Lever retain their legacy array interfaces, with additive 
 
 Complete-board disappearance marks affected reviewed openings `reconciliation_needed` and removes them from current demand. It preserves original evidence and history, and does not close jobs automatically or suspend unrelated boards. Collected claims remain unreviewed until interpreted research is imported.
 
-`templates/hr-ops-sources.json` separates acquisition seeds, directories/query recipes and controls. Eight dated seeds are currently included; twenty is an expansion target, not a gate. Existing LATAM specialist/overlap controls are outside default seeds. Do not copy the retained candidate-oriented portal list into acquisition targets. Configure `hr_ops.discovery.sources` and `queries.agency` / `queries.startup`; inspect `sources --catalog`.
+`templates/hr-ops-sources.json` separates acquisition seeds, directories/query recipes, services-only research references and controls. Seven acquisition seeds are currently included; twenty is an expansion target, not a gate. Existing LATAM specialist/overlap controls are outside default seeds. Do not copy the retained candidate-oriented portal list into acquisition targets. Configure `hr_ops.discovery.sources` and `queries.agency` / `queries.startup`; inspect `sources --catalog`.
 
 Use one research ledger per batch. Queries are per run, pages per company per run, and max_candidates per discovery operation. Failed attempts consume reservations. Resume never resets budgets. Captures and imported prospect IDs link to the run; the summary counts unique prospects. Native agent-tool adherence remains procedural.
 

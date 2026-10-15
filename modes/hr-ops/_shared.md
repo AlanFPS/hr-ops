@@ -20,6 +20,8 @@ Use `node hr-ops.mjs research COMPANY --input payload.json --revision N` to pers
 
 Research and drafting send nothing. The only optional sending workflow is the explicitly invoked, human-operated `modes/hr-ops/linkedin-send.md`. Do not use email, CRM, arbitrary browser forms or unrelated connectors to bypass its limits. A request to draft is not permission to send or log a sent event. `record` requires actual human instructions or confirmation, not agent-generated permission. Existing authorization in the conversation remains valid, but the interactive sender still requires a human to inspect its final browser state and confirm the exact message.
 
+An explicit inbox request uses `modes/hr-ops/inbox.md`. Human login precedes browser observation and automatic import of clear business matches. Browser-observed provenance is distinct from user-reported events and human message review. Never infer that a personal Career-Ops conversation is an HR client relationship.
+
 For contact or commercial history, preserve the user's reported time, channel, exact message and response. Do not assume a meeting, agreement or client win from research. Replies stop automatic follow-ups for their contact across channels; a genuinely user-requested date may create a manual reminder through the supported event types. Opt-out, hold and closure block both kinds. Suppression survives rediscovery.
 
 For schema 1 data inspect `migrate` and use the backed-up procedure in docs/HR_OPS_LOCAL_EDITION.md before writes. PROVISIONAL is a research tier, not a commercial stage. Complete runs explicitly and resume the same ledger.

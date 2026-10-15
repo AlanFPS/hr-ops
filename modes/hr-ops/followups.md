@@ -1,6 +1,6 @@
 # Follow-ups and interaction records
 
-Run `followups --due today`. For each due prospect inspect its last actual sent message and current dossier, refresh stale research and draft a concise follow-up with `purpose: followup`. Do not claim a reply or prior conversation that is not recorded. Saving the draft must not increment attempts or change the contact date.
+Run `followups --due today --with-inbox`. Inspect coverage and pending inbox reviews before interpreting the due list. To check LinkedIn, explicitly invoke `inbox.md`; absence of a recorded reply is not proof the inbox was checked. For each due prospect inspect its last actual sent message and current dossier, refresh stale research and draft a concise follow-up with `purpose: followup`. Do not claim a reply or prior conversation that is not recorded. Saving the draft must not increment attempts or change the contact date.
 
 If the user reports sending a message, log its exact text, channel, contact ID and timestamp through `record`, citing that user instruction. If it came from a stored draft, include the exact draft ID and content hash. Record replies, holds, opt-outs and commercial progress only from user-provided events; do not invent an approval reference.
 
