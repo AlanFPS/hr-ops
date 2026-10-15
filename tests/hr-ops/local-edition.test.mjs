@@ -520,3 +520,15 @@ test('explicit agency delivery requests use current-demand freshness without fic
  p.evidence.push({...p.evidence[0],id:'old-request',observed_at:new Date(now.getTime()-45*86400000).toISOString()});
  p.facts.latam_delivery_request.evidence=['old-request'];assert.equal(scoreProspect(p,c,now).tier,'RESEARCHING');
 });
+
+
+test('backups omit the live lock directory and restored data is immediately writable',async t=>{
+ const root=temporary(t),repo=new LocalRepository(root);await initialize(root);
+ await repo.discover(input(),{now});
+ const saved=await backup(repo);const manifest=verifyBackup(saved.path);
+ assert.ok(manifest.files.every(f=>!f.path.includes('workspace.lock')));
+ const destination=join(root,'writable-restore');restore(saved.path,destination,{dryRun:false});
+ assert.equal(existsSync(join(destination,'data/hr-ops/workspace.lock')),false);
+ const restored=new LocalRepository(destination);await restored.discover({...input(),name:'Second Fixture',website:'https://second.example'},{now});
+ assert.equal(restored.list().length,2);
+});
