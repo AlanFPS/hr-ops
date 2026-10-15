@@ -9,7 +9,7 @@ Schema 2 separates the current evaluation tier from commercial lifecycle. Scores
 | Tier | Required evidence |
 |---|---|
 | Qualified startup | Current attributable engineering demand, an eligible opening, U.S. market presence, supported service-fit hypothesis, threshold and coverage |
-| Provisional startup | Current relevant demand, an opening with supported possible LATAM eligibility, U.S. market presence and supported service-fit hypothesis |
+| Provisional startup | Current relevant demand, an opening with supported possible or eligible LATAM scope, U.S. market presence and supported service-fit hypothesis |
 | Qualified agency | Technology recruiting/ICP fit, LATAM-serviceable client engineering demand or explicit current LATAM engineering delivery request, U.S. market presence, service hypothesis, threshold and coverage |
 | Provisional agency | Verified technology recruiting, current client engineering demand, U.S. market presence and evidence-backed delivery-partner hypothesis |
 
@@ -113,6 +113,10 @@ Firm email is still unconfigured. Protected disaster recovery and commercial cal
 | M10 | Dedicated Node 24 Windows/Linux HR workflow with push/PR/manual triggers |
 | M11 | Acceptance and benchmark launcher manifest entries |
 
-The local edition HR suite currently passes 124 tests. Retained Greenhouse/Ashby/Lever harnesses pass 41/32/27 assertions. Final broader and isolated client evidence will be recorded in the release validation report; these statements do not claim those runs are already complete.
+The local edition HR suite currently passes 126 tests. Retained Greenhouse/Ashby/Lever harnesses pass 41/32/27 assertions. Final broader and isolated client evidence will be recorded in the release validation report; these statements do not claim those runs are already complete.
 
 Measured on this Windows workspace with Node 24.21.0: 100 generated prospects with 25 history entries each used 17 MB and loaded/validated in 441 ms; 1,000 with 50 history entries used 331 MB and took 7,078 ms. Scoring took 4/27 ms. Run scripts/hr-ops-benchmark.mjs to reproduce synthetic workloads. Full-record validation makes larger writes slower too. JSON remains appropriate for the current small workload; these measurements are a scaling limitation, not a throughput guarantee.
+
+Supported eligible scope also satisfies the provisional eligibility gate when qualified score/coverage thresholds are not met. Stronger evidence cannot remove exploratory admission. Unknown and restricted scope remain ineligible for that path.
+
+Explicit LATAM delivery requests use the configured opening freshness window, rather than the longer general company-fact window. They contribute no fictional vacancies.

@@ -503,3 +503,20 @@ test('backup refuses nested checkouts inside its data allowlist',async t=>{
  mkdirSync(join(repo.dir,'nested-repository','.git'),{recursive:true});
  await assert.rejects(()=>backup(repo),/nested checkout/);
 });
+
+
+test('stronger eligible evidence cannot remove provisional admission below qualified thresholds',()=>{
+ const p=prospect(),c=config();p.openings=p.openings.slice(0,1);p.facts.employee_count=unknown();p.facts.recruiting_pain=unknown();
+ p.openings[0].eligibility.status='possible';assert.equal(scoreProspect(p,c,now).tier,'PROVISIONAL');
+ p.openings[0].eligibility.status='eligible';const s=scoreProspect(p,c,now);assert.ok(s.total<65);assert.equal(s.tier,'PROVISIONAL');
+ saveDraft(p,{...draft(p),intent:'exploratory'},c,now);assert.equal(p.status,'RESEARCHING');
+ p.openings[0].eligibility.status='restricted';assert.equal(scoreProspect(p,c,now).tier,'RESEARCHING');
+});
+
+
+test('explicit agency delivery requests use current-demand freshness without fictional vacancies',()=>{
+ const p=prospect(),c=config();p.icp='agency';p.openings=[];p.facts.tech_focus=fact(true);p.facts.recruiter_count=fact(10);p.facts.latam_delivery_request=fact(true);p.contacts[0].title='Founder';p.evidence[0].excerpt=p.evidence[0].excerpt.replace('Alex Doe CTO','Alex Doe Founder');
+ assert.equal(scoreProspect(p,c,now).tier,'QUALIFIED');assert.equal(scoreProspect(p,c,now).opening_count,0);
+ p.evidence.push({...p.evidence[0],id:'old-request',observed_at:new Date(now.getTime()-45*86400000).toISOString()});
+ p.facts.latam_delivery_request.evidence=['old-request'];assert.equal(scoreProspect(p,c,now).tier,'RESEARCHING');
+});
