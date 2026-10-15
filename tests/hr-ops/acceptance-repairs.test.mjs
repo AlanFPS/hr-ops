@@ -183,5 +183,5 @@ test("corrupt research ledgers fail closed in reservations and doctor", async t 
   await assert.rejects(() => reserveResearch(r, c, "corrupt", { kind: "query", target: "retry" }), /research attempt/);
   const result = spawnSync(process.execPath, [join(ROOT, "hr-ops.mjs"), "doctor"], { env: { ...process.env, HR_OPS_ROOT: r.root }, encoding: "utf8" });
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /research attempt/);
+  assert.match(JSON.parse(result.stdout).errors[0].error, /research attempt/);
 });

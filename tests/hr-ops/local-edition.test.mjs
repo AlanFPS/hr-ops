@@ -333,9 +333,10 @@ test("research run completion/resume preserves attempts and links unique prospec
     kind: "query",
     target: "engineering agencies",
   });
+  const discovered = await repo.discover(input(), {now});
   await updateRun(repo, c, "run", {
     action: "link",
-    prospects: ["one", "one"],
+    prospects: [discovered.prospect.id, discovered.prospect.id],
   });
   await updateRun(repo, c, "run", { action: "complete" });
   await assert.rejects(

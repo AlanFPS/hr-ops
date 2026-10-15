@@ -23,6 +23,7 @@ import {
   loadConfig,
   initialize,
   isInitialized,
+  migrationState,
 } from "./lib/hr-ops/store.mjs";
 import {
   assert,
@@ -233,11 +234,22 @@ export async function main(args = process.argv.slice(2)) {
     const records = diagnostic.records;
     const sourceErrors = inspectSources(c, { now }).diagnostics;
     const ledgerDir = join(repo.dir, "research-runs");
-    const researchRuns = existsSync(ledgerDir)
-      ? readdirSync(ledgerDir)
-          .filter((f) => f.endsWith(".json"))
-          .map((f) => researchBudget(repo, c, f.slice(0, -5)))
-      : [];
+    const researchRuns = [], errors = [...diagnostic.errors];
+    if (existsSync(ledgerDir)) {
+      for (const file of readdirSync(ledgerDir).filter(f => f.endsWith('.json'))) {
+        try {
+          researchRuns.push(researchBudget(repo, c, file.slice(0, -5)));
+        } catch (error) {
+          errors.push({file: `research-runs/${file}`, error: error.message});
+        }
+      }
+    }
+    try {
+      if (migrationState(repo)?.status === 'applying')
+        errors.push({file: 'migration-v2.json', error: 'Interrupted migration; resume migrate before writing'});
+    } catch (error) {
+      errors.push({file: 'migration-v2.json', error: error.message});
+    }
     result = {
       ok:
         existsSync(join(root, "config/profile.yml")) &&
@@ -246,8 +258,8 @@ export async function main(args = process.argv.slice(2)) {
         ),
       root,
       build: buildInfo(),
-      errors: diagnostic.errors,
-      partial: diagnostic.partial,
+      errors,
+      partial: errors.length > 0,
       ...(o.recovery ? { healthy_records: records } : {}),
       migration_needed: records
         .filter((p) => p.schema_version < 2)
@@ -261,7 +273,7 @@ export async function main(args = process.argv.slice(2)) {
       ),
       send_enabled: false,
     };
-    if (!result.initialized || sourceErrors.length || !diagnostic.ok)
+    if (!result.initialized || sourceErrors.length || errors.length)
       result.ok = false;
     if (!result.ok) process.exitCode = 1;
   } else if (command === "sources") {

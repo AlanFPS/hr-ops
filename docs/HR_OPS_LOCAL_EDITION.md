@@ -21,7 +21,9 @@ Every reviewed opening has `eligibility: {status,evidence,rationale,geography}`.
 
 Explicit reviewed duplicate groups take precedence, then provider/board requisition identity, posting identity and normalized URL. Posting IDs remain separately stored. Matching titles with different identities are flagged for review, not automatically merged. Preserve URL aliases. A source's IDs are evidence of identity, not a promise that every posting is a separate hire.
 
-Relevant contacts and supplier authority are separate. Secondary commercial contacts remain visible with partial access credit; an evidenced supplier_authority fact can support confirmed authority. Verify title-based heuristics rather than assuming every senior person purchases services.
+Unresolved same-title postings alone cannot earn the multiple-vacancy scoring bonus. Different supported requisitions on the same board, reviewed distinct groups or distinct role titles support that bonus. Every alias across the compared groups must support distinction; adding a known duplicate cannot increase credit. Reported opening counts retain unresolved records and carry an identity-review gap until research resolves them.
+
+Relevant contacts and supplier authority are separate. Secondary commercial contacts remain visible with partial access credit; a current observed supplier_authority fact can support confirmed authority. A strong functional title can earn full access credit as a role heuristic while supplier authority stays unverified. Reading an old announcement again does not renew authority. Verify title-based heuristics rather than assuming every senior person purchases services.
 
 ## Provider and research contracts
 
@@ -43,7 +45,7 @@ CUP Latam's editorial preference is one or two short LinkedIn sentences within a
 
 Conversations default to one per contact across channels. Follow-up drafts reference that contact's latest sent message; replies can reference any valid earlier sent message. Events preserve occurrence (`at`) and entry (`recorded_at`) time. Late replies pause their conversation without rewriting commercial history. Other contacts remain visible for operator engagement review. Ambiguous legacy attribution pauses automatic reminders.
 
-Append `annotation` events referencing `corrects` for corrections. Use explicit `schedule` events for reminder changes, with a contacted recipient and date/null. Holds, suppression and closed stages override all reminders; commercial meeting/opportunity stages stop automatic reminders. No event is permission to send. Genuine user authorization references remain required for consequential records.
+Append `annotation` events referencing `corrects` for corrections. Use explicit `schedule` events for reminder changes, with a contacted recipient and date/null. Reminder overrides follow occurrence time, with entry order breaking ties, so a late-entered older message cannot replace a newer schedule. Holds, suppression and closed stages override all reminders; commercial meeting/opportunity stages stop automatic reminders. No event is permission to send. Genuine user authorization references remain required for consequential records.
 
 ## Commands
 
@@ -78,7 +80,7 @@ Version 1 records remain readable. Writes require version 2. Historical snapshot
 4. Run doctor, inspect changed tiers and drafts, and perform a restore drill into a fresh absent directory.
 5. Never replace the operating root automatically. Review restored data before an explicit root switch.
 
-The allowlisted backup manifest covers config/profile.yml, modes/_custom.md, data/hr-ops (records, ledgers, captures and migration journal) and reports/hr-ops. Code, dependencies, credentials outside those files, arbitrary local exports and backup directories are excluded. Do not put credentials in the profile; the entire profile is backed up. Inventory any required extra artifacts separately. Snapshots hold the workspace writer lock and compare hashes before/after copying to detect configuration changes. Restore verifies checksums and containment before copying, then validates records, configuration and research ledgers.
+The allowlisted backup manifest covers config/profile.yml, modes/_custom.md, data/hr-ops (records, ledgers, captures and migration journal) and reports/hr-ops. Code, dependencies, credentials outside those files, arbitrary local exports and backup directories are excluded. Do not put credentials in the profile; the entire profile is backed up. Inventory any required extra artifacts separately. Snapshots hold the workspace writer lock and compare hashes before/after copying to detect configuration changes. Restore verifies checksums and containment before copying, then validates records, configuration, research ledgers and the migration journal. Invalid journals fail validation. Valid interrupted migrations or older schemas are restored with `writable: false` and migration details; inspect and complete recovery before switching the operating root.
 
 Local backups under local/hr-ops-backups are a convenience, not disaster recovery. Configure a protected destination, access permissions and a backup routine separately. No encryption or automatic off-device backup is claimed.
 
@@ -121,4 +123,4 @@ Supported eligible scope also satisfies the provisional eligibility gate when qu
 
 Explicit LATAM delivery requests use the configured opening freshness window, rather than the longer general company-fact window. They contribute no fictional vacancies.
 
-Backups exclude the entire temporary workspace.lock directory. Restore also skips transient lock files in older manifests, so restored data is writable without waiting for the old owner process.
+Backups exclude temporary workspace.lock and workspace.lock.recover directories. Restore also skips those transient paths in older manifests. Manifests reject traversal, path aliases and files outside the declared data scope before copying. An interrupted migration can resume only with its verified original backup and all journaled records present. Doctor enumerates record, ledger and migration errors; recovery export excludes every participant in a conflicting domain identity rather than choosing a winner.
