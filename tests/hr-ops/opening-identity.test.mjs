@@ -106,6 +106,19 @@ test('location-only evidence stays unknown and cannot admit a startup for LATAM 
   assert.equal(scoreProspect(p,config(),now).tier,'RESEARCHING');
 });
 
+test('a requisition without posting IDs groups demand without overwriting geographic eligibility', () => {
+  const data=shared();
+  data.openings.forEach((o,i)=>Object.assign(o,{title:'Backend Engineer',board:'official',requisition_id:'one-hire',location:i?'Argentina':'United States'}));
+  data.openings.reverse(); // Restricted first: the old merge incorrectly kept only eligible.
+  const p=applyResearch(blankProspect(input(),now),data,now);
+  assert.equal(p.openings.length,2);
+  const s=scoreProspect(p,config(),now);
+  assert.equal(s.opening_count,1);
+  assert.equal(s.eligible_opening_count,0);
+  applyResearch(p,data,now);
+  assert.equal(p.openings.length,2);
+});
+
 test('complete collections reconcile only the missing posting even when its URL survives', async t => {
   const root=mkdtempSync(join(tmpdir(),'hr-opening-reconcile-'));
   t.after(()=>rmSync(root,{recursive:true,force:true}));

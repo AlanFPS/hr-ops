@@ -327,6 +327,9 @@ try {
 
   const originalFetch = globalThis.fetch;
   const seenFetchOptions = [];
+  // This checks redirect handling, not date-window filtering. Keep the mock
+  // article inside the current window; fixed July 2026 data aged out in October.
+  const redirectFixtureDate = new Date(Date.now() - 86400000).toUTCString();
   globalThis.fetch = async (url, options) => {
     seenFetchOptions.push({ url, options });
     if (seenFetchOptions.length === 1) {
@@ -341,7 +344,7 @@ try {
         <item>
           <title>Acme raises $25M Series A</title>
           <link>https://techcrunch.com/acme</link>
-          <pubDate>Wed, 15 Jul 2026 12:00:00 +0000</pubDate>
+          <pubDate>${redirectFixtureDate}</pubDate>
           <description>Acme raises funding.</description>
         </item>
       </channel></rss>`, {
