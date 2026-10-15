@@ -4,7 +4,7 @@ The shared HR-Ops modes load these procedures for Codex and Claude alike. They d
 
 ## Starter catalog
 
-`templates/hr-ops-sources.json` separates acquisition seeds, directories/query recipes and acceptance controls. It contains eight acquisition seeds as of October 14, 2026; counts are a research target, not a release gate. River and Socket use ATS readers; other entries return manual tasks. Recruiting from Scratch is an overlap control outside default acquisition seeds. New seeds include Metabase, Socket and Cadre with dated primary ownership evidence. Cadre publishes no job list: its seed establishes focus, not current client demand. Inclusion never establishes qualification. Identity evidence older than freshness.facts produces a refresh task. `sources --catalog` shows all categories.
+`templates/hr-ops-sources.json` separates acquisition seeds, directories/query recipes, research references and acceptance controls. It contains seven acquisition seeds as of October 15, 2026; counts are a research target, not a release gate. River and Socket use ATS readers; other entries return manual tasks. Recruiting from Scratch is an overlap control outside default acquisition seeds. Metabase and Socket have dated primary ownership evidence. Cadre publishes no job list and is retained only as a services research reference, outside vacancy-discovery seeds. Inclusion never establishes qualification. Identity evidence older than freshness.facts produces a refresh task. `sources --catalog` shows all categories.
 
 Inspect `node hr-ops.mjs sources --starter`. Use `discover --starter --run ID --limit 6` per invocation or set `hr_ops.discovery.starter_sources: true`. The setting defaults to false so upgrading an existing workspace does not silently add network sources. The shared discovery mode explicitly uses the catalog unless the user restricts sources. User entries in `hr_ops.discovery.sources` override catalog entries by canonical domain, including `enabled: false`:
 
@@ -66,3 +66,5 @@ Read explicit supplier/no-agency policies and record them as observed blockers. 
 ## Completion and resume
 
 Use `run --run ID --action complete` when finished and `--action resume` to continue. Resume preserves attempts and pinned budgets. Queries are per run, pages per company per run, and max_candidates per discovery operation. Imports with --run link unique prospect IDs. `report` summarizes reserved effort; native-tool adherence remains procedural.
+
+Reservations and captures support optional source/query attribution. Append interpretation outcomes against actual reservation sequences so reports distinguish access failures, reviewed demand and unresolved gaps. A successful fetch is not a demand match. See [research attribution](HR_OPS_INBOX.md#research-attribution) for payloads and outcome categories.
