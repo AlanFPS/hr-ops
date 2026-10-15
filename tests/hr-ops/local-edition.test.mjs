@@ -396,6 +396,7 @@ test("M1/M2 provider capture preserves descriptions; complete disappearance susp
           openings: [
             {
               ...o,
+              reviewed: true,
               eligibility: {
                 status: "eligible",
                 geography: "Argentina",

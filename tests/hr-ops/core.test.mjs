@@ -43,7 +43,7 @@ test('agency scanner requires board attribution and role review before counting 
   await discoverSources(repo,c,{now,ctx});assert.equal(repo.list()[0].score.opening_count,0);
   c.discovery.sources[0].hiring_for='client';await discoverSources(repo,c,{now,ctx});
   const collected=repo.list()[0];assert.equal(collected.score.opening_count,0);
-  await repo.update(collected.id,'research',p=>{applyResearch(p,{openings:p.openings},now);return qualify(p,c,now);},{now,expectedRevision:collected.revision});
+  await repo.update(collected.id,'research',p=>{applyResearch(p,{openings:p.openings.map(o=>({...o,reviewed:true}))},now);return qualify(p,c,now);},{now,expectedRevision:collected.revision});
   assert.equal(repo.list()[0].score.opening_count,1);
 });
 test('CLI rejects external actions and reports research as tasks',async t=>{const root=temp(t);const repo=new LocalRepository(root);await repo.discover(input(),{now});const env={...process.env,HR_OPS_ROOT:root};assert.throws(()=>execFileSync(process.execPath,[join(ROOT,'hr-ops.mjs'),'send'],{env,stdio:'pipe'}),/Command failed/);const output=JSON.parse(execFileSync(process.execPath,[join(ROOT,'hr-ops.mjs'),'research','Fictional Labs'],{env,encoding:'utf8',cwd:join(ROOT,'docs')}));assert.equal(output.needs_agent_research,true);});

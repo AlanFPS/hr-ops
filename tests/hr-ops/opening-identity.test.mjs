@@ -128,7 +128,7 @@ test('complete collections reconcile only the missing posting even when its URL 
   const first=await discoverSources(repo,c,{now,ctx:{fetchJson:async()=>({jobs})}});
   assert.equal(first.created,1,JSON.stringify(first.diagnostics));
   let p=repo.list()[0]; assert.equal(p.openings.length,2);
-  await repo.update(p.id,'research',x=>research(x,{openings:p.openings},c,now),{expectedRevision:p.revision,now});
+  await repo.update(p.id,'research',x=>research(x,{openings:p.openings.map(o=>({...o,reviewed:true}))},c,now),{expectedRevision:p.revision,now});
   await discoverSources(repo,c,{now,ctx:{fetchJson:async()=>({jobs:[jobs[1]]})}});
   p=repo.get(p.id);
   assert.equal(p.openings.find(o=>o.posting_id==='1').reconciliation_needed,true);

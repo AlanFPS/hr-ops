@@ -1,5 +1,15 @@
 # HR-Ops operating guide
 
+## Bounded pilot controls
+
+Optional run scope: `node hr-ops.mjs run --run pilot --action configure --input scope.json` where the file contains `{"candidates":20,"pages":80,"directory_pages":8}`. Configure once before requests. It does not change legacy `max_candidates` per-operation semantics. Scoped queries include `candidate_names:["Company A","Company B"]` for every named target, or `[]` for broad discovery. Prospect pages/captures include exactly one stable company name; directory pages include `candidate_names:[]` and `directory:true`. Query/page reservations remain mandatory before native tools. Scope is pinned across resume, counts failures and combines page use across domains for the same declared company. `run --action inspect` includes `scope_usage`. The agent must not rename a company, omit targeted names or mislabel a company page as a directory to avoid limits. Native tools and semantic identity cannot be independently enforced by this local ledger.
+
+Capture accepts optional `format: auto|text|json`. Valid JSON detected in auto mode is retained without entity decoding; explicit json rejects malformed/truncated JSON. HTML captures return at most 200 public HTTPS `links` with visible labels and `links_truncated`. Links are untrusted observations, not permission to visit; capture does not follow redirects. Redirect failures show a validated destination for a separately reviewed/reserved request. DNS and timeout failures have bounded diagnostics and still consume attempts. Existing text captures remain readable.
+
+Research honors explicit `reviewed:false`. Omission retains the historical reviewed-import behavior; use explicit true when approving a collected opening. False cannot clear pending reconciliation or contribute demand.
+
+Acceptance sessions use `node scripts/hr-ops-pilot.mjs test` to set all temporary-directory variables in the actual child test process, and `summary` to derive counts from canonical records. Helpers in `lib/hr-ops/acceptance.mjs` reject artifact path traversal and links outside the workspace. Use `writeAcceptance(root, relativePath, value)` for helper outputs. Native Write/Edit paths must independently be checked against the exact workspace. This is not an OS sandbox or a security boundary against arbitrary filesystem access. Summary target matches require observed U.S. fit, reviewed demand and no current blockers/holds/suppression; they do not imply qualification or buying intent.
+
 HR-Ops is a local client-acquisition workspace for a LATAM recruiting firm. An AI client performs public research and writes personalized drafts; a small Node CLI validates evidence, scores prospects and persists state. It never sends messages. It needs neither an MCP server nor OpenClaw.
 
 ## Run

@@ -31,11 +31,13 @@ if (Test-Path -LiteralPath local/acceptance/transcript.jsonl) { throw 'Preserve 
 New-Item -ItemType Directory -Force -Path local/acceptance/tmp | Out-Null
 $env:TEMP = Join-Path $Workspace 'local/acceptance/tmp'
 $env:TMP = $env:TEMP
+$env:TMPDIR = $env:TEMP
 $nodeCommand = $NodeExe.Replace('\','/')
 $sessionId = if ($Client -eq 'claude') { [guid]::NewGuid().ToString() } else { $null }
 @{ client=$Client; session_id=$sessionId; root=$Workspace; node=$version; executable=$NodeExe; started_at=[DateTime]::UtcNow.ToString('o') } | ConvertTo-Json | Set-Content -LiteralPath local/acceptance/launch.json -Encoding utf8
 $promptText = @"
 Runtime contract: use the absolute executable "$nodeCommand" for EVERY Node command in your actual shell, including version checks and helper scripts. Never use bare node or npm. Do not rely on inherited PATH. This workspace is $Workspace. Do not operate outside it except reading/executing the pinned runtime. No external messages or CRM writes.
+Run tests with "$nodeCommand" scripts/hr-ops-pilot.mjs test. It sets local TEMP, TMP and TMPDIR inside the actual test process even when a child shell loses inherited variables. Do not launch the suite separately. For helper artifacts use acceptancePath/writeAcceptance from lib/hr-ops/acceptance.mjs. All native Write/Edit destinations must start with the exact workspace path above; verify it before each write. These helpers are containment checks, not an OS sandbox for arbitrary agent tools. Generate final counts with scripts/hr-ops-pilot.mjs summary; distinguish observed U.S. fit, demand, blockers and tier.
 
 "@ + (Get-Content -LiteralPath $PromptFile -Raw -Encoding utf8)
 $promptText | Set-Content -LiteralPath local/acceptance/prompt.txt -Encoding utf8

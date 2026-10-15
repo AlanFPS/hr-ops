@@ -165,6 +165,22 @@
   ],
   "directories": [
     {
+      "id": "asa-staffing-firms",
+      "icp": "agency",
+      "url": "https://americanstaffing.net/asa-member-directory/",
+      "reader": "agent",
+      "verified_at": "2026-10-15",
+      "notes": "Public association directory with Information Technology, Engineering and Direct Hire filters. Use visible public company links as identity leads; dynamic results may be unavailable. Membership does not establish current vacancies, size or LATAM partner appetite. Do not log in or submit contact forms."
+    },
+    {
+      "id": "techserve-members",
+      "icp": "agency",
+      "url": "https://techservealliance.org/collaborate/member-directory/",
+      "reader": "agent",
+      "verified_at": "2026-10-15",
+      "notes": "Official IT and engineering staffing member directory landing page verified. Use only publicly readable entries; report access/dynamic-content limits. Follow verified official websites to client vacancies and team pages. Directory inclusion alone is not qualification."
+    },
+    {
       "id": "yc-companies",
       "icp": "startup",
       "url": "https://www.ycombinator.com/companies",
@@ -174,6 +190,9 @@
   ],
   "queries": {
     "agency": [
+      "US technical recruiting agency current client backend engineer job openings",
+      "US recruiting firm full stack engineer direct hire remote current openings",
+      "IT staffing agency engineering jobs official careers recruiting team United States",
       "US boutique engineering recruiting agency backend full stack client jobs",
       "US startup recruitment firm technical recruiting delivery partner",
       "US technology recruiting agency founder current engineering searches",

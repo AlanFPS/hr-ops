@@ -251,6 +251,7 @@ const SYSTEM_PATHS = [
   'scan-hn.mjs',
   'scripts/check-syntax.mjs',
   'scripts/hr-ops-acceptance.ps1',
+  'scripts/hr-ops-pilot.mjs',
   'scripts/hr-ops-benchmark.mjs',
   'scripts/export-ats-text.mjs',
   'scripts/followup-sweep.sh',

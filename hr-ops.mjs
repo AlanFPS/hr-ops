@@ -69,7 +69,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   migrate [--apply]                    Preview schema upgrade; apply creates backup
   report                              Research/source/outcome totals
   retention                           Read-only exposure inventory
-  run --run ID --action inspect|complete|resume
+  run --run ID --action inspect|complete|resume|configure [--input scope.json]
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
@@ -224,7 +224,7 @@ export async function main(args = process.argv.slice(2)) {
       repo,
       c,
       o.run,
-      { action: o.action ?? "inspect" },
+      { action: o.action ?? "inspect", ...(o.input ? {scope: input(o.input)} : {}) },
       { dryRun },
     );
   else if (command === "init")

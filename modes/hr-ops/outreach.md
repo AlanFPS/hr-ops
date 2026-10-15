@@ -1,5 +1,7 @@
 # Draft outreach
 
+Keep recipient-role reasoning in review metadata when spelling it out would make the message mechanical. Do not write "your website lists you as..." merely to satisfy the checklist. Verify a uniquely identifiable recipient before calling a draft ready for human use; a first name and title alone can support a research draft but require identity clarification. Never invent a surname, profile URL or email. Prefer one short signal and one exploratory question for LinkedIn.
+
 Run `outreach COMPANY` or `outreach --top 3` for briefs, then actually write the requested drafts. If fewer qualify, say how many and why; never relax the rubric silently. Pick a current relevant contact from the brief.
 
 Produce email and LinkedIn variants unless the user specifies one channel. Include: actual hiring signal, why this recipient, a plausible LATAM service benefit, and one useful question. Avoid generic praise, urgency, assumed pain, invented track records or unsolicited commitments. Use only confirmed firm services. Omit unspecified fees, guarantee terms and candidate availability.
