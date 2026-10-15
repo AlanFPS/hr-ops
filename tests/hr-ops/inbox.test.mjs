@@ -104,8 +104,22 @@ test('ambiguous opt-outs hold outreach and revision conflicts remain pending',as
  const {repo,c,p}=await fixture(t);await importThread(repo,c,'test-run',thread([message('out','outgoing','Hello'),message('maybe','incoming','Your message says unsubscribe but I have a question','2026-09-25T11:00:00Z')]),now);
  assert(repo.get(p.id).hold);assert.equal(repo.get(p.id).suppressed,false);
  const update=repo.update.bind(repo);repo.update=async()=>{throw Error('Revision conflict; reload');};
- await importThread(repo,c,'test-run',thread([message('new','outgoing','More text')]),now);repo.update=update;
+ const conflict=await importThread(repo,c,'test-run',thread([message('new','outgoing','More text')]),now);repo.update=update;
+ assert.equal(conflict.incomplete,true);
  assert(inboxSummary(repo).pending_reviews.some(x=>x.reason.includes('Revision conflict')));
+});
+
+test('a failed import remains resumable and new unknown activity can reopen review',async t=>{
+ const {repo,c}=await fixture(t);const driver={verifyAccount:async()=>{},folder:async()=>{},rows:async()=>[{name:'Known',day:'Today',snippet:'a'}],more:async()=>false,read:async()=>thread([message('out','outgoing','Hello')])};
+ const update=repo.update.bind(repo);repo.update=async()=>{throw Error('Revision conflict');};
+ const stopped=await scanInbox(repo,c,'test-run',driver);repo.update=update;
+ assert.equal(stopped.status,'partial');assert.equal(stopped.visited.length,0);
+ assert.equal((await scanInbox(repo,c,'test-run',driver)).status,'complete');
+ const unknown={...thread([message('unknown-a','incoming','Personal')]),profile_url:'https://www.linkedin.com/in/unknown'};
+ await importThread(repo,c,'test-run',unknown,now);const item=inboxSummary(repo).pending_reviews.find(x=>x.reason.startsWith('Unknown'));
+ await reviewInbox(repo,c,{id:item.id,action:'discard',reason:'Synthetic unrelated conversation',authorization:auth()},now);
+ unknown.messages=[message('unknown-b','incoming','New activity')];await importThread(repo,c,'test-run',unknown,now);
+ assert.equal(inboxSummary(repo).pending_reviews.filter(x=>x.reason.startsWith('Unknown')).length,1);
 });
 
 test('resume covers both folders and stopped account/layout checks never claim completion',async t=>{
