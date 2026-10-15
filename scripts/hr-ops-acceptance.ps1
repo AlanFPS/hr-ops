@@ -8,9 +8,15 @@ $ErrorActionPreference = 'Stop'
 $Workspace = (Resolve-Path -LiteralPath $Workspace).Path
 $NodeExe = (Resolve-Path -LiteralPath $NodeExe).Path
 $PromptFile = (Resolve-Path -LiteralPath $PromptFile).Path
-if ($Workspace -eq (Split-Path $PSScriptRoot -Parent)) { throw 'Use a separate acceptance workspace, not the launcher checkout' }
 $version = & $NodeExe --version
 if ($LASTEXITCODE -ne 0 -or $version -notmatch '^v(\d+)\.' -or [int]$Matches[1] -lt 24) { throw 'A verified Node >=24 executable is required' }
+# Node's cwd may expand a Windows short path or junction. Compare canonical
+# directories so the isolation guard neither rejects aliases nor trusts one.
+$paths = & $NodeExe -e "const fs=require('fs'); console.log(JSON.stringify(process.argv.slice(1).map(p=>fs.realpathSync.native(p))))" $Workspace (Split-Path $PSScriptRoot -Parent)
+if ($LASTEXITCODE -ne 0) { throw 'Unable to canonicalize acceptance directories' }
+$canonicalPaths = ($paths -join "`n") | ConvertFrom-Json
+$Workspace = $canonicalPaths[0]
+if ($Workspace -eq $canonicalPaths[1]) { throw 'Use a separate acceptance workspace, not the launcher checkout' }
 Set-Location -LiteralPath $Workspace
 $env:HR_OPS_ROOT = $Workspace
 $env:CAREER_OPS_ROOT = $Workspace
@@ -19,7 +25,7 @@ $env:PATH = (Split-Path $NodeExe -Parent) + ';' + $env:PATH
 $doctor = & $NodeExe hr-ops.mjs doctor
 if ($LASTEXITCODE -ne 0) { throw 'Doctor failed' }
 $state = ($doctor -join "`n") | ConvertFrom-Json
-if (-not $state.ok -or $state.prospects -ne 0 -or $state.root -ne $Workspace) { throw 'Acceptance needs a healthy, empty, isolated data root' }
+if (-not $state.ok -or $state.prospects -ne 0 -or $state.root -ne $Workspace) { throw "Acceptance needs a healthy, empty, isolated data root (expected $Workspace; doctor root $($state.root))" }
 New-Item -ItemType Directory -Force -Path local/acceptance | Out-Null
 if (Test-Path -LiteralPath local/acceptance/transcript.jsonl) { throw 'Preserve existing run; use a fresh workspace' }
 New-Item -ItemType Directory -Force -Path local/acceptance/tmp | Out-Null
