@@ -10,7 +10,7 @@ Research honors explicit `reviewed:false`. Omission retains the historical revie
 
 Acceptance sessions use `node scripts/hr-ops-pilot.mjs test` to set all temporary-directory variables in the actual child test process, and `summary` to derive counts from canonical records. Helpers in `lib/hr-ops/acceptance.mjs` reject artifact path traversal and links outside the workspace. Use `writeAcceptance(root, relativePath, value)` for helper outputs. Native Write/Edit paths must independently be checked against the exact workspace. This is not an OS sandbox or a security boundary against arbitrary filesystem access. Summary target matches require observed U.S. fit, reviewed demand and no current blockers/holds/suppression; they do not imply qualification or buying intent.
 
-HR-Ops is a local client-acquisition workspace for a LATAM recruiting firm. An AI client performs public research and writes personalized drafts; a small Node CLI validates evidence, scores prospects and persists state. It never sends messages. It needs neither an MCP server nor OpenClaw.
+HR-Ops is a local client-acquisition workspace for a LATAM recruiting firm. An AI client performs public research and writes personalized drafts; the core Node CLI validates evidence, scores prospects and persists state without sending. The optional [interactive LinkedIn adapter](HR_OPS_LINKEDIN.md) is a separate, individually approved browser workflow. It needs neither an MCP server nor OpenClaw. Existing `send_enabled: false` fields describe the core CLI and draft objects, not the absence of that separate opt-in command.
 
 ## Run
 

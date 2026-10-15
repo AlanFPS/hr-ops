@@ -127,6 +127,7 @@ export const REEXEC_BUFFER_TIMEOUT_MS = parsePositiveInt(process.env.CAREER_OPS_
 // System layer paths — ONLY these files get updated
 const SYSTEM_PATHS = [
   'hr-ops.mjs',
+  'hr-ops-linkedin.mjs',
   '.hr-ops-fork.json',
   'lib/hr-ops/',
   'modes/hr-ops/',

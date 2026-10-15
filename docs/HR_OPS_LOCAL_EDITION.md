@@ -1,6 +1,6 @@
 # HR-Ops local operating edition
 
-This release retains the shared skill, mode router, public ATS readers, filesystem lock and atomic writes. It does not install MCP, OpenClaw, a CRM or a sending service. Natural-language Codex/Claude prompts and `codex exec` use the same local contracts. Legacy candidate tools remain available only by explicit request; their company lists and candidate guardrails do not determine HR targeting.
+This release retains the shared skill, mode router, public ATS readers, filesystem lock and atomic writes. It does not install MCP, OpenClaw, a CRM or a sending service. The optional [interactive Playwright adapter](HR_OPS_LINKEDIN.md) requires a human at the terminal for each LinkedIn direct message. Natural-language Codex/Claude prompts and `codex exec` use the same local research contracts; unattended sending is unsupported. Legacy candidate tools remain available only by explicit request; their company lists and candidate guardrails do not determine HR targeting.
 
 ## Admission and ranking
 
@@ -92,7 +92,7 @@ Run retention and inventory copies in current records, before/after snapshots, c
 
 ## Enforcement and limits
 
-Code enforces schemas, references, revisions, identity checks, suppression, coarse admission, message lengths and draft structures. Agents/operators must check source meaning, hiring scope, contact remit, hypotheses, commercial truth, native-tool budgets and genuine approval provenance. Local approval JSON is an audit record, not a security boundary against filesystem access. Future autonomous runtimes require independent permissions. No send or external CRM API exists.
+Code enforces schemas, references, revisions, identity checks, suppression, coarse admission, message lengths and draft structures. Agents/operators must check source meaning, hiring scope, contact remit, hypotheses, commercial truth, native-tool budgets and genuine approval provenance. Local approval JSON is an audit record, not a security boundary against filesystem access. Future autonomous runtimes require independent permissions. The core CLI has no delivery or external CRM API; the optional LinkedIn adapter remains a separate human-operated workflow.
 
 Firm email is still unconfigured. Protected disaster recovery and commercial calibration remain operating requirements, separate from software defects. No tests prove commercial success or universal prompt-injection resistance.
 

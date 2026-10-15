@@ -17,6 +17,7 @@ Read the root instructions, `modes/hr-ops/_shared.md`, the user `config/profile.
 | Qualify / explain a score | `modes/hr-ops/qualify.md` |
 | Find decision makers | `modes/hr-ops/contacts.md` |
 | Prepare outreach / top N drafts | `modes/hr-ops/outreach.md` |
+| Explicitly request assisted LinkedIn sending | `modes/hr-ops/linkedin-send.md` |
 | Who needs a follow-up / log a reply | `modes/hr-ops/followups.md` |
 | Show pipeline or company status | `modes/hr-ops/pipeline.md` |
 

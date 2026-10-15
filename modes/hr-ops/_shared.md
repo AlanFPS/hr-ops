@@ -18,7 +18,7 @@ New evidence must specify `excerpt_kind: quote|summary` and `retrieval_precision
 
 Use `node hr-ops.mjs research COMPANY --input payload.json --revision N` to persist research. `status` returns the current revision. Network research happens outside the file lock; on revision conflict reload and reconcile the patch. Never edit JSON directly to bypass validation.
 
-No messages are sent. Do not use email, LinkedIn, CRM, browser forms or unrelated connectors to bypass draft-only operation. A request to draft is not permission to log a sent event. `record` requires the actual user instruction's reference and wording, not an agent-generated permission. Existing authorization in the conversation is sufficient; do not ask repeatedly.
+Research and drafting send nothing. The only optional sending workflow is the explicitly invoked, human-operated `modes/hr-ops/linkedin-send.md`. Do not use email, CRM, arbitrary browser forms or unrelated connectors to bypass its limits. A request to draft is not permission to send or log a sent event. `record` requires actual human instructions or confirmation, not agent-generated permission. Existing authorization in the conversation remains valid, but the interactive sender still requires a human to inspect its final browser state and confirm the exact message.
 
 For contact or commercial history, preserve the user's reported time, channel, exact message and response. Do not assume a meeting, agreement or client win from research. Replies stop automatic follow-ups for their contact across channels; a genuinely user-requested date may create a manual reminder through the supported event types. Opt-out, hold and closure block both kinds. Suppression survives rediscovery.
 

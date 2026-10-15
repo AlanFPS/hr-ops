@@ -10,7 +10,7 @@ codex exec --sandbox workspace-write "Use HR-Ops to find and evaluate 10 U.S. cl
 
 Ask: “Research the five strongest prospects”, “Why did we qualify Acme?”, “Prepare outreach for the top 3”, or “Who needs a follow-up today?”. The agent must carry tasks through research and saved drafts, not stop at CLI briefs. Configure public search permissions appropriate to your Codex runtime. No MCP server is used; native Codex slash commands are not assumed.
 
-Read [the operating guide](HR_OPS.md) for setup and payloads. The CLI never sends or makes external CRM writes. Missing firm identity and unknown evidence remain visible. Candidate onboarding and Career-Ops auto-updates do not apply to HR-Ops work.
+Read [the operating guide](HR_OPS.md) for setup and payloads. The core CLI never sends or makes external CRM writes. The optional [LinkedIn adapter](HR_OPS_LINKEDIN.md) requires a human-operated terminal and individual confirmations; Codex must not answer those prompts. Missing firm identity and unknown evidence remain visible. Candidate onboarding and Career-Ops auto-updates do not apply to HR-Ops work.
 
 ## Retained legacy Codex guide
 
