@@ -64,3 +64,5 @@ Reviewed 2026-10-15 under the user-invoked Cursor audit procedure. Scope include
 - **Prevention**: Validate optional HTTP metadata before URL-constructor coercion.
 
 Final independent focused verification: **21/21 passed**, combining 12 live-pilot repair tests with 9 retained audit-repair regressions. The final redirect guard accepts only nonempty string headers; null, undefined, empty and whitespace-only headers retain the unavailable/unsafe diagnostic. All five second-review findings are closed. Full-suite and fresh-client live-pilot evidence remain with the primary reviewer; these synthetic checks do not establish commercial yield or universal containment.
+
+CI follow-up: Windows runner TEMP used an 8.3 alias while the helper returned its canonical full path. The test now resolves both paths before comparing identity. No containment behavior was weakened. Linux CI passed on the original patch; the corrected assertion and full matrix are rerun on the follow-up commit. The first two pilot processes were stopped during setup and retained as interrupted artifacts; fresh sessions will use the follow-up commit.

@@ -89,7 +89,7 @@ test('acceptance artifacts reject traversal and escaping symlinks; subprocess te
  assert.equal(fs.existsSync(missing),false);
  writeAcceptance(root,'local/acceptance/ok.json',{ok:true});
  const result=spawnSync(process.execPath,['-e','console.log(require("os").tmpdir())'],{cwd:root,encoding:'utf8',env:testEnvironment(root,{...process.env,TMPDIR:outside,TMP:outside,TEMP:outside})});
- assert.equal(result.status,0);assert.equal(result.stdout.trim(),path.join(root,'local/acceptance/test-temp'));
+ assert.equal(result.status,0);assert.equal(fs.realpathSync.native(result.stdout.trim()),fs.realpathSync.native(path.join(root,'local/acceptance/test-temp')));
 });
 test('acceptance counts require observed US fit and exclude blockers independently of demand',async t=>{
  const {repo,root}=await setup(t);
