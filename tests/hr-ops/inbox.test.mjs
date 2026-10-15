@@ -177,7 +177,7 @@ test('intercepted browser pagination includes read threads, Other and ambiguous 
  const browser=await chromium.launch({headless:true,proxy:{server:'http://127.0.0.1:9'}});t.after(()=>browser.close());const page=await browser.newPage({serviceWorkers:'block'});
  await page.route('**/*',r=>r.fulfill({contentType:'text/html',body:`<main>
  <button data-test-messaging-inbox-filters__folder-pill onclick="document.querySelector('#choices').hidden=false">Focused</button>
- <div id="choices" hidden><button data-test-messaging-inbox-filters__folder-dropdown="other" onclick="document.querySelector('[data-test-messaging-inbox-filters__folder-pill]').textContent='Other'">Other</button></div>
+ <div id="choices" hidden><button data-test-messaging-inbox-filters__folder-dropdown="other" onclick="document.querySelector('[data-test-messaging-inbox-filters__folder-pill]').textContent='Other';setTimeout(()=>document.querySelector('.msg-conversation-card__message-snippet').textContent='Other folder message',100)">Other</button></div>
  <div id="rows"><div class="msg-conversation-listitem"><div class="msg-conversation-listitem__link" onclick="history.pushState({},'', '/messaging/thread/group/');this.classList.add('msg-conversations-container__convo-item-link--active')"><h3 class="msg-conversation-listitem__participant-names">Same Name</h3><time>Today</time><p class="msg-conversation-card__message-snippet">Read message</p></div></div></div>
  <button onclick="document.querySelector('#rows').appendChild(document.querySelector('.msg-conversation-listitem').cloneNode(true));this.remove()">Load more conversations</button>
  <div class="msg-thread--pillar"><div class="msg-title-bar"><a class="msg-thread__link-to-profile" href="${target}">Same Name</a><a class="msg-thread__link-to-profile" href="https://www.linkedin.com/in/other">Same Name</a></div>
@@ -185,6 +185,8 @@ test('intercepted browser pagination includes read threads, Other and ambiguous 
  const driver=new LinkedinInboxBrowser(page);await driver.folder('focused');assert.equal((await driver.rows()).length,1);
  assert.equal(await driver.more(),true);assert.equal((await driver.rows()).length,2);assert.equal(await driver.more(),false);
  const data=await driver.read(0);assert.equal(data.participant_count,null);assert.equal(data.messages[0].at,null);
+ await page.locator('.msg-conversation-listitem__link').nth(1).evaluate(e=>e.onclick=()=>{history.pushState({},'', '/messaging/thread/second/');setTimeout(()=>document.querySelector('.msg-s-event-listitem').setAttribute('data-event-urn','second-thread-message'),150);});
+ const second=await driver.read(1);assert.equal(second.messages[0].id,'second-thread-message');
  await driver.folder('other');assert.equal(await page.locator('[data-test-messaging-inbox-filters__folder-pill]').innerText(),'Other');
  await page.setContent('<main>Unsupported inbox layout</main>');assert.deepEqual(await driver.rows(),[]);
 });
