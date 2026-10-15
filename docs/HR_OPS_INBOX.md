@@ -37,6 +37,8 @@ Identity resolution creates a reviewed alias and schedules a rescan; it never cr
 
 Clear whole-message opt-outs create suppression. Potential opt-outs create holds and review items. These limited patterns do not prove semantic intent; review ambiguous language. Meeting, opportunity, client and commitment updates remain human decisions. No automatic inbox polling or scheduling is installed.
 
+If an incoming opt-out cannot be imported because its time or identity within a known business thread is ambiguous, a new internal hold is recorded at collection time. The original message stays in review with its unknown occurrence time. Recollection never rewrites the original suppression event, and later genuine outbound context can resolve the pending reply without duplicating that event.
+
 Inbox state is included in existing backup, restore, diagnostics and exposure inventory. Browser cookies remain excluded. Corrupt inbox state blocks ordinary writes. A successful restore validates the inbox data before it can replace an operating root.
 
 ## Research attribution

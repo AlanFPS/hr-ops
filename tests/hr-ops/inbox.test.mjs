@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { chromium } from 'playwright';
 import { config,input,payload,now,auth,draft } from './fixtures.mjs';
 import { LocalRepository,initialize } from '../../lib/hr-ops/store.mjs';
-import { applyResearch,hash } from '../../lib/hr-ops/model.mjs';
+import { applyResearch,hash,rankedContacts } from '../../lib/hr-ops/model.mjs';
 import { recordInteraction,dueFollowups,qualify,saveDraft } from '../../lib/hr-ops/operations.mjs';
 import { readInbox } from '../../lib/hr-ops/inbox-state.mjs';
 import { inboxPath,changeInbox,inboxSummary } from '../../lib/hr-ops/inbox-state.mjs';
@@ -92,6 +92,51 @@ test('a clear opt-out suppresses even when the earlier sent event is unavailable
  await importThread(repo,c,'test-run',data,now);await importThread(repo,c,'test-run',data,now);
  const saved=repo.get(p.id);assert.equal(saved.suppressed,true);assert.equal(saved.interactions.length,1);
  assert.equal(saved.interactions[0].kind,'optout');assert.match(inboxSummary(repo).pending_reviews[0].reason,/earlier sent/);
+});
+
+test('recollecting an opt-out is idempotent and later outbound context can resolve its reply',async t=>{
+ const {repo,c,p}=await fixture(t);const data=thread([message('stop','incoming','Do not contact me.')]);
+ await importThread(repo,c,'test-run',data,now);
+ data.observed_at=new Date(now.getTime()+60000).toISOString();
+ await importThread(repo,c,'test-run',data,new Date(now.getTime()+60000));
+ let saved=repo.get(p.id);assert.equal(saved.interactions.length,1);
+ await repo.update(p.id,'actual-earlier-context',x=>recordInteraction(x,{id:'earlier-context',kind:'sent',at:'2026-09-24T10:00:00Z',channel:'email',contact_id:p.contacts[0].id,message:'Actual fixture history',authorization:auth()},c,now),{expectedRevision:saved.revision,now});
+ await importThread(repo,c,'test-run',data,new Date(now.getTime()+60000));saved=repo.get(p.id);
+ assert.equal(saved.interactions.filter(e=>e.kind==='optout').length,1);assert.equal(saved.interactions.filter(e=>e.kind==='reply').length,1);
+ const pending=inboxSummary(repo).pending_reviews[0];await reviewInbox(repo,c,{id:pending.id,action:'resolve',reason:'Review genuine earlier context now recorded',authorization:auth()},new Date(now.getTime()+60000));assert.equal(inboxSummary(repo).pending_reviews.length,0);
+});
+
+test('equivalent exact timestamps reconcile manual history and do not look like edited messages',async t=>{
+ const {repo,c,p}=await fixture(t);await repo.update(p.id,'manual-sent',x=>recordInteraction(x,{id:'manual-exact',kind:'sent',at:'2026-09-25T10:00:00Z',channel:'linkedin',contact_id:p.contacts[0].id,message:'Same message',authorization:auth()},c,now),{expectedRevision:p.revision,now});
+ const data=thread([message('exact-id','outgoing','Same message','2026-09-25T07:00:00-03:00')]);assert.equal((await importThread(repo,c,'test-run',data,now)).reconciled,1);
+ data.messages[0].at='2026-09-25T10:00:00.000Z';await importThread(repo,c,'test-run',data,now);assert.equal(repo.get(p.id).interactions.length,1);assert.equal(inboxSummary(repo).pending_reviews.length,0);
+});
+
+test('several observed IDs cannot be greedily matched to one manual minute-level event',async t=>{
+ const {repo,c,p}=await fixture(t);await repo.update(p.id,'manual-sent',x=>recordInteraction(x,{id:'manual-ambiguous',kind:'sent',at:'2026-09-25T10:00:30Z',channel:'linkedin',contact_id:p.contacts[0].id,message:'Same message',authorization:auth()},c,now),{expectedRevision:p.revision,now});
+ const a={...message('first','outgoing','Same message'),timestamp_precision:'minute'};
+ await importThread(repo,c,'test-run',thread([a,{...a,id:'second'}]),now);
+ assert.equal(repo.get(p.id).interactions.length,1);assert.equal(Object.keys(readInbox(repo).seen).length,0);assert.equal(inboxSummary(repo).pending_reviews.length,2);
+});
+
+test('a rendering difference beside manual history stays in review rather than creating a duplicate',async t=>{
+ const {repo,c,p}=await fixture(t);await repo.update(p.id,'manual-sent',x=>recordInteraction(x,{id:'manual-rendered',kind:'sent',at:'2026-09-25T10:00:15Z',channel:'linkedin',contact_id:p.contacts[0].id,message:'Hello\n\nthere',authorization:auth()},c,now),{expectedRevision:p.revision,now});
+ await importThread(repo,c,'test-run',thread([{...message('rendered','outgoing','Hello\nthere'),timestamp_precision:'minute'}]),now);
+ assert.equal(repo.get(p.id).interactions.length,1);assert.match(inboxSummary(repo).pending_reviews[0].reason,/rendering difference/);
+});
+
+test('an undated incoming opt-out creates a review hold without inventing message time',async t=>{
+ const {repo,c,p}=await fixture(t);const data=thread([{...message('stop-time','incoming','Do not contact me.'),at:null,timestamp_precision:null}]);
+ await importThread(repo,c,'test-run',data,now);const saved=repo.get(p.id);
+ assert(saved.hold);assert.equal(saved.interactions.length,1);assert.equal(saved.interactions[0].kind,'hold');assert.equal(saved.interactions[0].at,now.toISOString());
+ assert.equal(inboxSummary(repo).pending_reviews.length,1);
+ await importThread(repo,c,'test-run',{...data,observed_at:new Date(now.getTime()+60000).toISOString()},new Date(now.getTime()+60000));assert.equal(repo.get(p.id).interactions.length,1);
+});
+
+test('technical cofounder is relevant while supplier authority remains unverified',async t=>{
+ const {p,c}=await fixture(t);p.contacts[0].title='Technical Cofounder';const ranked=rankedContacts(p,c,now)[0];
+ assert(ranked.priority>0);assert.equal(ranked.authority_level,'unverified');
+ p.contacts[0].title='Assistant to Technical Cofounder';assert.equal(rankedContacts(p,c,now)[0].priority,0);
 });
 
 test('browser replies join genuine cross-channel history and preserve other contacts',async t=>{
