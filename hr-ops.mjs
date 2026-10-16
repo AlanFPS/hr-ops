@@ -7,6 +7,7 @@ import {
   backup,
   restore,
   migrate,
+  migrateInbox,
   operatingReport,
   exposureReport,
 } from "./lib/hr-ops/maintenance.mjs";
@@ -16,11 +17,15 @@ import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
 import { requireRuntime } from "./lib/hr-ops/client.mjs";
 import { inboxSummary } from './lib/hr-ops/inbox-state.mjs';
+import {createWorkspace,configureWorkspace,readWorkspace} from './lib/hr-ops/workspace.mjs';
+import {reportStatus,refreshReports} from './lib/hr-ops/reports.mjs';
+import {discoveryExclusions,rankedSources} from './lib/hr-ops/discovery-context.mjs';
 import { saveExport } from "./lib/hr-ops/export-file.mjs";
 import { writeFileAtomic } from "./tracker-utils.mjs";
 import {
   LocalRepository,
   dataRoot,
+  dataRootInfo,
   loadConfig,
   initialize,
   isInitialized,
@@ -62,13 +67,17 @@ import {
 const HELP = `HR-Ops - local recruiting client operations (draft-only)
 Usage: node hr-ops.mjs <command> [company-or-id] [options]
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
+  workspace create --destination ABSOLUTE_DIR --input setup.json
+  workspace inspect|configure [--input identity.json]  Explicit workspace/account identity
   doctor [--recovery]                  Check all records; recovery returns labelled partial data
   config                              Effective HR settings with origins
   build                               Runtime, schema, revision and dirty state
   backup [--dry-run]                   Local consistent data snapshot
   restore BACKUP --destination DIR [--apply]  Verify and preview; apply only into absent DIR
   migrate [--apply]                    Preview schema upgrade; apply creates backup
+  inbox-migrate [--apply]              Preview inbox upgrade; preserve reviews and back up
   report                              Research/source/outcome totals
+  reports refresh [--dry-run]          Regenerate derived dossiers without record changes
   retention                           Read-only exposure inventory
   run --run ID --action inspect|complete|resume|configure|outcome [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
@@ -105,6 +114,7 @@ function parse(args) {
     "current-drafts",
     "catalog",
     "with-inbox",
+    "new-only",
   ];
   const values = [
     "input",
@@ -169,17 +179,6 @@ function summary(result) {
     );
   return JSON.stringify(result, null, 2);
 }
-async function publish(repo, id) {
-  return repo.lock(() => {
-    const current = repo.get(id);
-    const dir = join(repo.root, "reports/hr-ops");
-    mkdirSync(dir, { recursive: true });
-    writeFileAtomic(
-      join(dir, `${id}.md`),
-      dossier(current, loadConfig(repo.root)),
-    );
-  });
-}
 export async function main(args = process.argv.slice(2)) {
   const { command, selector, options: o } = parse(args);
   assert(
@@ -192,7 +191,7 @@ export async function main(args = process.argv.slice(2)) {
   }
   const root = dataRoot(),
     repo = new LocalRepository(root);
-  const c = loadConfig(root);
+  const c = command==='workspace'&&selector==='create'?null:loadConfig(root);
   const dryRun = !!o["dry-run"];
   const now = new Date();
   let result, exportRecordCount;
@@ -203,7 +202,12 @@ export async function main(args = process.argv.slice(2)) {
     now,
     expectedRevision: integer(o.revision, "--revision"),
   });
-  if (command === "build") result = buildInfo();
+  if(command==='workspace'){
+    if(selector==='create'){assert(o.input&&o.destination,'--input and --destination required');result=await createWorkspace(o.destination,input(o.input),{dryRun});}
+    else if(selector==='configure'){assert(o.input,'--input required');result=await configureWorkspace(repo,input(o.input),{dryRun});}
+    else {assert(selector==='inspect','Use workspace create, inspect or configure');result={...dataRootInfo(),workspace:readWorkspace(repo),selected:true};}
+  }
+  else if (command === "build") result = buildInfo();
   else if (command === "config")
     result = effectiveConfig(
       c,
@@ -219,14 +223,16 @@ export async function main(args = process.argv.slice(2)) {
     result = restore(selector, o.destination, { dryRun: !o.apply || dryRun });
   } else if (command === "migrate")
     result = await migrate(repo, c, { dryRun: !o.apply || dryRun, now });
+  else if (command === "inbox-migrate") result = await migrateInbox(repo,{dryRun:!o.apply||dryRun});
   else if (command === "report") result = operatingReport(repo, c, now);
+  else if (command === "reports") {assert(selector==='refresh','Use reports refresh');result=await refreshReports(repo,c,{now,dryRun});}
   else if (command === "retention") result = exposureReport(repo);
   else if (command === "run")
     result = await updateRun(
       repo,
       c,
       o.run,
-      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:{scope: input(o.input)}) : {}) },
+      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:o.action==='complete'?{reason:input(o.input).reason}:{scope: input(o.input)}) : {}) },
       { dryRun },
     );
   else if (command === "init")
@@ -259,6 +265,9 @@ export async function main(args = process.argv.slice(2)) {
           (p) => Array.isArray(p.history) && Array.isArray(p.evidence),
         ),
       root,
+      root_selection:dataRootInfo(),
+      workspace:diagnostic.errors.some(e=>e.file==='workspace.json')?null:readWorkspace(repo),
+      workspace_warning:existsSync(join(repo.dir,'workspace.json'))?null:'Workspace identity is unconfigured; browser operations require explicit configuration',
       build: buildInfo(),
       errors,
       partial: errors.length > 0,
@@ -274,17 +283,25 @@ export async function main(args = process.argv.slice(2)) {
         (k) => !c.firm[k],
       ),
       send_enabled: false,
+      reports:records.map(p=>reportStatus(repo,p,c,now)),
     };
     if (!result.initialized || sourceErrors.length || errors.length)
       result.ok = false;
+    const account=!!result.workspace?.linkedin_profile_url;
+    result.readiness={
+      research:{state:result.ok?'ready':'invalid_state',missing_configuration:result.initialized?[]:['profile']},
+      personal_profile_inbox:{state:!result.ok?'invalid_state':!account?'missing_configuration':'unvalidated',missing_configuration:account?[]:['workspace.linkedin_profile_url'],migration_needed:errors.some(e=>e.file==='inbox/state.json')?null:inboxSummary(repo).migration_needed,unvalidated_behavior:['Real-account business import remains a supervised setup check']},
+      human_operated_sending:{state:!result.ok?'invalid_state':!account||!c.firm.sender_name?'missing_configuration':'unvalidated',missing_configuration:[...(!account?['workspace.linkedin_profile_url']:[]),...(!c.firm.sender_name?['firm.sender_name']:[])],unvalidated_behavior:['Exact-message approval and supervised account validation required for each send']},
+      page_messaging:{state:'unsupported'},
+    };
     if (!result.ok) process.exitCode = 1;
   } else if (command === "sources") {
     result = o.catalog
-      ? sourceCatalog()
-      : effectiveSources(c, {
+      ? (()=>{const catalog=sourceCatalog();return {...catalog,directories:rankedSources(repo,c,catalog.directories,now)};})()
+      : rankedSources(repo,c,effectiveSources(c, {
           starter: o.starter || c.discovery.starter_sources,
           now,
-        });
+        }),now);
   } else if (command === "budget") {
     result = o.input
       ? await reserveResearch(repo, c, o.run, input(o.input), { dryRun, now })
@@ -318,7 +335,9 @@ export async function main(args = process.argv.slice(2)) {
       payload.prospects.forEach((p) => blankProspect(p, now));
       const rows = [],
         seen = new Set();
+      const exclusions=discoveryExclusions(repo);
       for (const p of payload.prospects) {
+        if(exclusions.some(e=>e.domain===domain(p.website)&&(o['new-only']||e.reason==='catalog_control')))continue;
         if ((icp !== "both" && p.icp !== icp) || seen.has(domain(p.website)))
           continue;
         if (rows.length >= limit) break;
@@ -331,6 +350,10 @@ export async function main(args = process.argv.slice(2)) {
         prospects: rows,
         needs_agent_research: true,
         search_queries: queries,
+        exclusions,
+        newly_discovered:rows.filter(p=>p.created).length,
+        refreshed_existing:rows.filter(p=>!p.created).length,
+        completion_note:'Identity import is not completed demand research.',
       };
     } else
       result = await discoverSources(repo, c, {
@@ -340,6 +363,7 @@ export async function main(args = process.argv.slice(2)) {
         now,
         starter: o.starter || c.discovery.starter_sources,
         run: o.run,
+        newOnly:!!o['new-only'],
       });
   } else if (command === "pipeline") {
     if (o.icp) assert(["agency", "startup"].includes(o.icp), "Invalid ICP");
@@ -511,13 +535,6 @@ export async function main(args = process.argv.slice(2)) {
       action: "link",
       prospects: (result.prospects ?? []).map((p) => p.id),
     });
-  if (result?.prospect && !dryRun && !result.unchanged) {
-    try {
-      await publish(repo, result.prospect.id);
-    } catch (error) {
-      result.report_warning = `Canonical record saved; derived report failed: ${error.message}`;
-    }
-  }
   const serialized =
     typeof result === "string"
       ? result

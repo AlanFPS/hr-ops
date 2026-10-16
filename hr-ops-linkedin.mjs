@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dataRoot, LocalRepository, loadConfig } from './lib/hr-ops/store.mjs';
+import {requireWorkspaceAccount,workspaceBrowserPath} from './lib/hr-ops/workspace.mjs';
 import { requireRuntime, runHr } from './lib/hr-ops/client.mjs';
 import { assert } from './lib/hr-ops/model.mjs';
 import { linkedinPlan, LinkedinBrowser, attemptPath, attemptLinkedinSend, annotateConfirmedAttempt } from './lib/hr-ops/linkedin-browser.mjs';
@@ -26,6 +27,7 @@ export async function main(args = process.argv.slice(2)) {
   }
   if (mode === 'send') assert(process.stdin.isTTY && process.stdout.isTTY, 'Send requires an interactive human-operated terminal; headless agent input is unsupported');
   const root = dataRoot(), repo = new LocalRepository(root), c = loadConfig(root);
+  if(mode==='send'){const workspace=requireWorkspaceAccount(repo,o['--sender-profile-url']);console.error(`Workspace: ${workspace.name} (${workspace.purpose}) | ${root} | ${workspace.linkedin_profile_url}`);}
   const plan = linkedinPlan(repo.get(selector), c, { draft_id:o['--draft'], profile_url:o['--profile-url'],
     sender_profile_url:o['--sender-profile-url'], expected_revision:Number(o['--revision']) });
   assert(!existsSync(attemptPath(repo, plan)), 'An attempt already exists; inspect the receipt and conversation instead of retrying');
@@ -38,7 +40,7 @@ export async function main(args = process.argv.slice(2)) {
     const { chromium } = await import('playwright');
     assert(existsSync(chromium.executablePath()), 'Chromium is not installed. Run npx playwright install chromium explicitly, then retry.');
     // Session cookies stay in ignored local storage and outside the HR backup manifest.
-    context = await chromium.launchPersistentContext(join(root, 'local/browser-profiles/hr-ops-linkedin'), { headless: false });
+    context = await chromium.launchPersistentContext(workspaceBrowserPath(repo), { headless: false });
     const page = await context.newPage(), driver = new LinkedinBrowser(page);
     page.setDefaultTimeout(10000);
     await page.goto('https://www.linkedin.com/in/me/', { waitUntil:'domcontentloaded', timeout:30000 });

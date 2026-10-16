@@ -13,6 +13,7 @@ import { inboxPath,changeInbox,inboxSummary } from '../../lib/hr-ops/inbox-state
 import { startInbox,importThread,contactMatches,optoutMeaning } from '../../lib/hr-ops/inbox-import.mjs';
 import { displayedTime,LinkedinInboxBrowser,scanInbox } from '../../lib/hr-ops/inbox-browser.mjs';
 import { reviewInbox } from '../../lib/hr-ops/inbox-cli.mjs';
+import {configureWorkspace} from '../../lib/hr-ops/workspace.mjs';
 import { backup,restore,diagnostics } from '../../lib/hr-ops/maintenance.mjs';
 const target='https://www.linkedin.com/in/alex-doe',sender='https://www.linkedin.com/in/test-sender';
 const threadUrl='https://www.linkedin.com/messaging/thread/synthetic-thread/';
@@ -20,7 +21,7 @@ async function fixture(t,{business=true}={}){
  const root=mkdtempSync(join(tmpdir(),'hr-inbox-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
  const c=config();await initialize(root,c);const repo=new LocalRepository(root),created=await repo.discover(input(),{now});
  const result=await repo.update(created.prospect.id,'fixture',p=>{applyResearch(p,payload(),now);p.evidence.push({id:'profile',url:target,excerpt:'Alex Doe profile',source_type:'primary',observed_at:now.toISOString()});},{expectedRevision:1,now});
- const p=result.prospect;await startInbox(repo,{id:'test-run',sender_profile_url:sender,since:'2026-09-01T00:00:00Z',authorization:auth()},now);
+ const p=result.prospect;await configureWorkspace(repo,{name:'Inbox test fixture',purpose:'experimental',linkedin_profile_url:sender});await startInbox(repo,{id:'test-run',sender_profile_url:sender,since:'2026-09-01T00:00:00Z',authorization:auth()},now);
  if(business)await changeInbox(repo,s=>{s.bindings={[target]:{prospect_id:p.id,contact_id:p.contacts[0].id,business_confirmed:true,authorization:auth()}};});
  return {repo,c,p,root};
 }

@@ -2,6 +2,8 @@
 
 The inbox reader uses the existing local Playwright browser profile. A human signs in privately; the reader then checks visible conversations without sending. It is an explicitly requested extension to the original draft-only workspace. Like the existing browser sender, it is not a LinkedIn-approved API integration. UI changes can stop it.
 
+Configure the workspace's designated personal profile before browsing. See [workspace identity, inbox v2 migration, folder budgets and review exclusions](HR_OPS_WORKSPACES.md). Page messaging is unsupported. New operating workspaces start empty and do not inherit experimental browser sessions.
+
 ## Invocation
 
 Natural language: `Check LinkedIn replies and update HR-Ops.` The shared skill loads the inbox mode. CLI templates, using Node 24:
@@ -53,6 +55,6 @@ Record interpretations with `run --run ID --action outcome --input FILE`:
 {"sequence":1,"category":"demand_match","prospect_ids":["EXISTING_ID"],"note":"Evidence supports a current client engineering search; LATAM eligibility remains unknown."}
 ```
 
-Categories: `read_ok`, `access_failure`, `empty_board`, `demand_match`, `no_demand`, `unresolved`. Outcomes append to actual reservations without resetting budgets. A successful fetch is not verified demand; failed/partial boards are not empty boards. Native search results require explicit outcome recording. `report` groups attempts, failures, distinct reported demand, current evaluations and gaps by source and declared ICP. It is not a conversion estimate.
+Categories: `read_ok`, `access_failure`, `redirect_rejected`, `http_failure`, `javascript_only`, `partial_collection`, `empty_board`, `demand_match`, `no_demand`, `unresolved`. Outcomes append to actual reservations without resetting budgets. A successful fetch is not verified demand; failed/partial boards are not empty boards. Native search results require explicit outcome recording. `report` groups attempts, failures, distinct reported demand, current evaluations and gaps by source and declared ICP. It is not a conversion estimate.
 
 Services-only company references are retained in the catalog's `research_references`, outside default acquisition seeds. Verify official board links, client attribution, country scope and supplier policy before drafting. Scores and qualification thresholds are unchanged.

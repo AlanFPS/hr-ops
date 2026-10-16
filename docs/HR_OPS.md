@@ -1,5 +1,7 @@
 # HR-Ops operating guide
 
+Current setup and handoff: [workspace identity, inbox v2, current dossiers and readiness](HR_OPS_WORKSPACES.md). New CUP Latam operating roots start empty. Use `workspace create`, `workspace inspect` and `workspace configure`; browser commands require the designated personal profile. Company Pages are branding references only.
+
 ## Bounded pilot controls
 
 Optional run scope: `node hr-ops.mjs run --run pilot --action configure --input scope.json` where the file contains `{"candidates":20,"pages":80,"directory_pages":8}`. Configure once before requests. It does not change legacy `max_candidates` per-operation semantics. Scoped queries include `candidate_names:["Company A","Company B"]` for every named target, or `[]` for broad discovery. Prospect pages/captures include exactly one stable company name; directory pages include `candidate_names:[]` and `directory:true`. Query/page reservations remain mandatory before native tools. Scope is pinned across resume, counts failures and combines page use across domains for the same declared company. `run --action inspect` includes `scope_usage`. The agent must not rename a company, omit targeted names or mislabel a company page as a directory to avoid limits. Native tools and semantic identity cannot be independently enforced by this local ledger.
