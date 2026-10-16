@@ -235,3 +235,44 @@ test('intercepted browser pagination includes read threads, Other and ambiguous 
  await driver.folder('other');assert.equal(await page.locator('[data-test-messaging-inbox-filters__folder-pill]').innerText(),'Other');
  await page.setContent('<main>Unsupported inbox layout</main>');assert.deepEqual(await driver.rows(),[]);
 });
+
+test('virtualized placeholders retain row identity and delayed visible history is read together', {skip:!existsSync(chromium.executablePath())&&'Chromium not installed'},async t=>{
+ const browser=await chromium.launch({headless:true,proxy:{server:'http://127.0.0.1:9'}});t.after(()=>browser.close());const page=await browser.newPage({serviceWorkers:'block'});
+ await page.route('**/*',r=>r.fulfill({contentType:'text/html',body:`<main>
+ <div id="list" style="height:160px;overflow:auto"><div class="msg-conversation-listitem" data-index="0" style="height:220px"></div><div class="msg-conversation-listitem" data-index="1" style="height:220px"></div></div>
+ <div class="msg-thread--pillar"><div class="msg-title-bar"><a class="msg-thread__link-to-profile" href="${target}">Second</a></div><div id="events"></div></div>
+ <script>
+ const items=[...document.querySelectorAll('.msg-conversation-listitem')];
+ function event(id){return '<li class="msg-s-message-list__event"><div class="msg-s-event-listitem msg-s-event-listitem--other" data-event-urn="'+id+'"><p class="msg-s-event-listitem__body">'+id+'</p></div></li>';}
+ const observer=new IntersectionObserver(entries=>{for(const entry of entries){const item=entry.target,i=Number(item.dataset.index);if(!entry.isIntersecting){item.innerHTML='';continue;}item.innerHTML='<div class="msg-conversation-listitem__link"><h3 class="msg-conversation-listitem__participant-names">'+(i?'Second':'First')+'</h3><time>Today</time><p class="msg-conversation-card__message-snippet">Recent</p></div>';item.firstChild.onclick=()=>{history.pushState({},'', '/messaging/thread/row-'+i+'/');item.firstChild.classList.add('msg-conversations-container__convo-item-link--active');document.querySelector('.msg-thread__link-to-profile').textContent=i?'Second':'First';document.querySelector('#events').innerHTML=event('newest');setTimeout(()=>document.querySelector('#events').insertAdjacentHTML('afterbegin',event('earlier')),350);};}},{root:document.querySelector('#list')});items.forEach(e=>observer.observe(e));
+ </script></main>`}));
+ await page.goto('https://www.linkedin.com/messaging/');const driver=new LinkedinInboxBrowser(page);
+ assert.deepEqual((await driver.rows()).map(r=>r.name),['First','Second']);
+ const data=await driver.read(1);assert.equal(data.name,'Second');assert.match(data.thread_url,/row-1/);
+ assert.deepEqual(data.messages.map(m=>m.id),['earlier','newest']);
+ await assert.rejects(driver.read(0,1000,{name:'Second',day:'Today',snippet:'Recent'}),/list changed before read/);
+});
+
+test('snapshot waits for changing metadata even when message text is unchanged and respects its bound', {skip:!existsSync(chromium.executablePath())&&'Chromium not installed'},async t=>{
+ const browser=await chromium.launch({headless:true,proxy:{server:'http://127.0.0.1:9'}});t.after(()=>browser.close());const page=await browser.newPage({serviceWorkers:'block'});
+ await page.route('**/*',r=>r.fulfill({contentType:'text/html',body:`<main><div class="msg-thread--pillar"><div class="msg-title-bar"><a class="msg-thread__link-to-profile" href="${target}">Alex Doe</a></div><li class="msg-s-message-list__event"><div class="msg-s-event-listitem" data-event-urn="loading"><time class="msg-s-message-group__timestamp" datetime="2026-09-25T10:00:00Z">10:00 AM</time><p class="msg-s-event-listitem__body">Unchanged text</p></div></li></div></main>`}));
+ await page.goto(threadUrl);const driver=new LinkedinInboxBrowser(page);
+ await page.evaluate(()=>{let i=0;const e=document.querySelector('.msg-s-event-listitem');const timer=setInterval(()=>e.setAttribute('data-event-urn','loading-'+(++i)),100);setTimeout(()=>{clearInterval(timer);e.setAttribute('data-event-urn','settled');e.classList.add('msg-s-event-listitem--other');e.querySelector('time').setAttribute('datetime','2026-09-25T11:00:00Z');},1800);});
+ const data=await driver.snapshot(1);assert.equal(data.messages[0].id,'settled');assert.equal(data.messages[0].direction,'incoming');assert.equal(data.messages[0].at,'2026-09-25T11:00:00Z');
+ await page.evaluate(()=>{const e=document.querySelector('.msg-s-message-list__event').cloneNode(true);Object.defineProperty(e,'textContent',{get(){throw Error('Read beyond message allowance');}});Object.defineProperty(e.querySelector('.msg-s-event-listitem__body'),'innerText',{get(){throw Error('Read beyond message allowance');}});document.querySelector('.msg-thread--pillar').append(e);});
+ const bounded=await driver.snapshot(1);assert.equal(bounded.truncated,true);assert.equal(bounded.messages.length,1);
+ await assert.rejects(driver.snapshot(0),/Message limit/);
+});
+
+test('continuously changing visible history leaves the scan partial without checkpointing or importing', {skip:!existsSync(chromium.executablePath())&&'Chromium not installed'},async t=>{
+ const {repo,c,p}=await fixture(t);const browser=await chromium.launch({headless:true,proxy:{server:'http://127.0.0.1:9'}});t.after(()=>browser.close());const page=await browser.newPage({serviceWorkers:'block'});
+ await page.route('**/*',r=>r.fulfill({contentType:'text/html',body:`<main><div class="msg-conversation-listitem"><div class="msg-conversation-listitem__link" onclick="history.pushState({},'', '/messaging/thread/unstable/');this.classList.add('msg-conversations-container__convo-item-link--active');let i=0;setInterval(()=>document.querySelector('.msg-s-event-listitem').setAttribute('data-event-urn','changing-'+(++i)),100)"><h3 class="msg-conversation-listitem__participant-names">Alex Doe</h3><time>Today</time><p class="msg-conversation-card__message-snippet">Recent</p></div></div><div class="msg-thread--pillar"><div class="msg-title-bar"><a class="msg-thread__link-to-profile" href="${target}">Alex Doe</a></div><li class="msg-s-message-list__event"><div class="msg-s-event-listitem" data-event-urn="initial"><p class="msg-s-event-listitem__body">Same text</p></div></li></div></main>`}));
+ const driver=new LinkedinInboxBrowser(page);driver.verifyAccount=async()=>{};driver.folder=async()=>page.goto('https://www.linkedin.com/messaging/');
+ const result=await scanInbox(repo,c,'test-run',driver);assert.equal(result.status,'partial');assert.match(result.coverage_note,/still loading/);assert.deepEqual(result.visited,[]);assert.deepEqual(result.folders,[]);assert.equal(repo.get(p.id).interactions.length,0);
+});
+
+test('indistinguishable list rows never silently share a checkpoint',async t=>{
+ const {repo,c}=await fixture(t);const row={name:'Same Name',day:'Today',snippet:'Same message'};
+ const driver={verifyAccount:async()=>{},folder:async()=>{},rows:async()=>[row,{...row}],read:async()=>{throw Error('Must not read ambiguous rows');}};
+ const result=await scanInbox(repo,c,'test-run',driver);assert.equal(result.status,'partial');assert.match(result.coverage_note,/Ambiguous duplicate/);assert.deepEqual(result.visited,[]);
+});

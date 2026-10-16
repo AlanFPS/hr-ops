@@ -27,6 +27,8 @@ Visible full dates or unambiguous day headings plus clock time establish occurre
 
 For known business conversations, the reader can scroll the observed history container up to five times to establish the window boundary. A stalled or unsupported history view stays explicitly incomplete. Very large conversations can exceed one invocation's message bound and require operator review; this release does not silently truncate them into complete coverage. Unknown contacts retain identity-only questions, not their personal message history.
 
+Conversation-list placeholders are scrolled into view before their row metadata is read. A changed row or indistinguishable duplicate rows stop the scan with partial coverage instead of sharing a checkpoint. Visible history must settle, including message identity, timestamps and direction; continuously changing content stays uncheckpointed. This bounded quiet-period check is a rendering safeguard, not proof that all older messages have loaded. Observation totals can include rereads across resumed attempts and are not unique-message counts.
+
 `inbox-review --id REVIEW_ID` displays the retained detail for one review, including relevant message text when available. `inbox-review --input FILE` accepts:
 
 ```json
