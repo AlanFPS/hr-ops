@@ -1,5 +1,7 @@
 # Research
 
+Read `docs/HR_OPS_RESEARCH_REVIEW.md` for continuation review, source diagnostics and distinct-hire limits. Preserve the difference between observed posting records and confirmed distinct requisitions. An evergreen posting may overlap specific roles; neither a shared city nor similar role text identifies a confidential agency client.
+
 Run `research COMPANY` for its missing fields and current revision. Read public company pages, careers listings, team pages and relevant announcements. Fill the supported dossier fields; leave size, partners, funding and contractor policy unknown when unsupported.
 
 Read `docs/HR_OPS_RESEARCH_VALIDATION.md` for `opening.verification`. Record role-body readability, official ownership, client/self attribution and current primary availability separately. Title-only pages, content-matched ATS boards and conflicting secondary listings cannot earn demand credit or enable drafts. Unknown stays unknown. A current board that omits a secondary listing requires conflict review, not silent confirmation. Preserve both sources. Record optional role-level market evidence separately from the company's U.S. presence.

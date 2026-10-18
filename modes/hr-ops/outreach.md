@@ -1,5 +1,7 @@
 # Draft outreach
 
+Read `docs/HR_OPS_RESEARCH_REVIEW.md`. Include `quality.opening_ids` for every opening used in the message. Multiple confidential agency searches do not imply one shared client: prefer "either search" or future partnerships, not "that client". Different posting IDs or titles are not proof of distinct hires. Review implicit employer relationships and quantities as carefully as explicit claims. Do not write boilerplate review attestations to get past validation.
+
 Keep recipient-role reasoning in review metadata when spelling it out would make the message mechanical. Do not write "your website lists you as..." merely to satisfy the checklist. Verify a uniquely identifiable recipient before calling a draft ready for human use; a first name and title alone can support a research draft but require identity clarification. Never invent a surname, profile URL or email. Prefer one short signal and one exploratory question for LinkedIn.
 
 Run `outreach COMPANY` or `outreach --top 3` for briefs, then actually write the requested drafts. If fewer qualify, say how many and why; never relax the rubric silently. Pick a current relevant contact from the brief.

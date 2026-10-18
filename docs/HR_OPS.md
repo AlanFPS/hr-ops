@@ -179,6 +179,7 @@ Agency commercial/partnerships/business-development leaders rank as secondary po
     {"text":"Would a LATAM sourcing partner be useful?","kind":"hypothesis","evidence":["job-1"]}
   ],
   "quality":{
+    "opening_ids":["REPLACE_WITH_SAVED_OPENING_ID"],
     "signal_claim":"your backend search",
     "hypothesis_claim":"Would a LATAM sourcing partner be useful?",
     "recipient_rationale":"Alex leads recruiting according to the current team page.",
@@ -188,7 +189,7 @@ Agency commercial/partnerships/business-development leaders rank as secondary po
 }
 ```
 
-Use `intent: qualified` only for QUALIFIED; PROVISIONAL requires `exploratory`. Signal/hypothesis metadata must match claim text exactly and the next step must occur in the body. Review the entire message against its sources before setting `agent_reviewed`. Structural completeness, recorded agent review and human review are separate. None proves truth or means sent.
+Use `intent: qualified` only for QUALIFIED; PROVISIONAL requires `exploratory`. Signal/hypothesis metadata must match claim text exactly and the next step must occur in the body. Select saved current opening IDs for every opening used in the signal. Review the entire message against its sources before setting `agent_reviewed`. Structural completeness, recorded agent review and human review are separate. None proves truth or means sent. See [research completion and draft review](HR_OPS_RESEARCH_REVIEW.md) for shared-client wording, exact-hire counts and the required scoped completion-review payload.
 
 Email additionally requires `subject`. `purpose` is `initial` or `followup`; follow-up requires a recorded sent event. Each factual claim must be represented in `claims`, with its exact text occurring in the draft. Firm claims use `kind:"firm"` and `firm_field` (`services`, `name`, `sender_name`, `fees`, `guarantees`, `candidate_availability`). The field must be configured; the agent must also check the wording matches it. Numeric and selected commercial-claim checks catch common mistakes but cannot prove all natural-language claims true. HTTP(S) URL digits are excluded from numeric prose checks, including in supporting excerpts; Markdown link labels and numerical assertions outside URLs still need evidence.
 

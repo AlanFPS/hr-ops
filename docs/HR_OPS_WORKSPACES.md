@@ -49,7 +49,7 @@ Doctor retains its health exit semantics. Capability readiness separately descri
 
 Collection diagnostics distinguish rejected redirects, HTTP failures, recognized JavaScript-only shells, partial collections and verified empty boards. The JavaScript-shell detector is conservative; other extraction failures require review. These labels never establish interpreted demand. Role-specific country restrictions and agency/client attribution remain necessary. Qualification weights and gates are unchanged.
 
-The run ledger preserves per-operation candidate limits and per-run request limits. At the scoped candidate cap, use remaining requests on already admitted companies. `run --action inspect` exposes `scope_usage.next_action`; complete a run with `run --run ID --action complete --input stop.json`, where `stop.json` contains `{"reason":"Specific coverage limitation or completed target"}`. Never count persisted identities as completed discovery.
+The run ledger preserves per-operation candidate limits and per-run request limits. At the scoped candidate cap, use remaining requests on already admitted companies. `run --action inspect` exposes `scope_usage.next_action`; `run --action review` exposes per-candidate allowance and gaps. Complete a scoped run with `run --run ID --action complete --input stop.json`, including `reason` and the required `review` payload from [research completion review](HR_OPS_RESEARCH_REVIEW.md). Never count persisted identities as completed discovery or claim the candidate cap consumed remaining requests.
 
 ## Current handoff
 

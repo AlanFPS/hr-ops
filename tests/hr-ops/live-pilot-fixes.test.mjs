@@ -39,7 +39,8 @@ test('scoped reservations count named query targets, aliases, failures and resum
  await assert.rejects(reserveResearch(repo,c,'pilot',{kind:'page',target:'https://third.example',company:'https://third.example',candidate_names:['Alpha']}),/candidate page scope exhausted/);
  await reserveResearch(repo,c,'pilot',{kind:'page',target:'https://directory.example',company:'https://directory.example',candidate_names:[],directory:true});
  await assert.rejects(reserveResearch(repo,c,'pilot',{kind:'page',target:'https://directory.example/2',company:'https://directory.example',candidate_names:[],directory:true}),/directory scope exhausted/);
- await updateRun(repo,c,'pilot',{action:'complete'});await updateRun(repo,c,'pilot',{action:'resume'});
+ const check=(await updateRun(repo,c,'pilot',{action:'review'})).continuation_review;
+ await updateRun(repo,c,'pilot',{action:'complete',reason:'Fixture pauses with remaining work',review:{token:check.token,candidates:check.candidates.map(x=>({name:x.name,decision:'deferred',reason:'Fixture defers further requests',attempt_sequences:x.attempt_sequences}))}});await updateRun(repo,c,'pilot',{action:'resume'});
  const resumed=await updateRun(repo,c,'pilot');assert.equal(resumed.scope_usage.candidate_count,2);assert.equal(resumed.scope_usage.pages,3);
  await assert.rejects(updateRun(repo,c,'pilot',{action:'configure',scope:{candidates:20,pages:80,directory_pages:8}}),/pinned once/);
 });
@@ -111,7 +112,8 @@ test('CLI configures scope and resumes the same pinned limits',async t=>{
  assert.equal(c.scope_usage.remaining_candidates,1);
  runHr(['budget','--run','cli-scope','--input','-'],{env,input:{kind:'query',target:'Named test',candidate_names:['Named Test']}});
  assert.throws(()=>runHr(['budget','--run','cli-scope','--input','-'],{env,input:{kind:'query',target:'Other',candidate_names:['Other']}}),/candidate scope exhausted/);
- runHr(['run','--run','cli-scope','--action','complete'],{env});
+ const review=runHr(['run','--run','cli-scope','--action','review'],{env}).continuation_review;
+ runHr(['run','--run','cli-scope','--action','complete','--input','-'],{env,input:{reason:'Fixture defers remaining research',review:{token:review.token,candidates:[{name:'Named Test',decision:'deferred',reason:'Fixture stops before further reads',attempt_sequences:[1]}]}}});
  const resumed=runHr(['run','--run','cli-scope','--action','resume'],{env});
  assert.equal(resumed.scope_usage.candidate_count,1);
 });

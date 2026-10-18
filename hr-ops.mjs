@@ -79,7 +79,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   report                              Research/source/outcome totals
   reports refresh [--dry-run]          Regenerate derived dossiers without record changes
   retention                           Read-only exposure inventory
-  run --run ID --action inspect|complete|resume|configure|outcome [--input payload.json]
+  run --run ID --action inspect|review|complete|resume|configure|outcome [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
@@ -160,6 +160,10 @@ function integer(value, label) {
   assert(Number.isSafeInteger(n), `Invalid ${label}`);
   return n;
 }
+function completionInput(value) {
+  keys(value,['reason','review'],'run completion');
+  return value;
+}
 function input(path) {
   let decoded;
   try { decoded = new TextDecoder('utf-8', {fatal:true,ignoreBOM:true}).decode(readFileSync(path === '-' ? 0 : path)); }
@@ -232,7 +236,7 @@ export async function main(args = process.argv.slice(2)) {
       repo,
       c,
       o.run,
-      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:o.action==='complete'?{reason:input(o.input).reason}:{scope: input(o.input)}) : {}) },
+      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:o.action==='complete'?completionInput(input(o.input)):{scope: input(o.input)}) : {}) },
       { dryRun },
     );
   else if (command === "init")

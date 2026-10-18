@@ -58,7 +58,8 @@ Prefix these with `node hr-ops.mjs`:
 | `pipeline --tier PROVISIONAL --icp agency` | Filter current evaluation tier separately from status |
 | `pipeline --gaps` / `--stale` / `--current-drafts` | Work queues; current-drafts means complete current drafts |
 | `run --run ID` | Inspect attempts and unique prospects |
-| `run --run ID --action complete` / `resume` | Finish/resume without resetting budgets |
+| `run --run ID --action review` | Inspect per-candidate continuation allowance and gaps |
+| `run --run ID --action complete --input stop.json` / `resume` | Finish/resume without resetting budgets; scoped completion requires the review in `docs/HR_OPS_RESEARCH_REVIEW.md` |
 | `report` | Source yield, research gaps/effort, noncurrent openings, recorded outcomes |
 | `retention` | Exposure inventory, including historical copies |
 | `doctor` | Enumerate record failures; fail when unhealthy |

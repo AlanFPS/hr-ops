@@ -1,5 +1,7 @@
 # HR-Ops common workflow
 
+For native research tools, reserve in a standalone command and wait for the execution to finish with exit code zero. If it yields a running session ID, poll to completion before dispatch even when receipt text is already visible. Navigate from retained source links or searched official identity evidence, never guessed domains derived from email addresses. See `docs/HR_OPS_RESEARCH_REVIEW.md` for bounded completion and draft review.
+
 Run `node hr-ops.mjs doctor`; initialize missing HR-Ops config without overwriting an existing profile. Do not require a CV. Read `docs/HR_OPS.md` for data payloads. Every saved company needs identity evidence. Store firm facts only from the user-owned profile or this conversation; never borrow the original author's accomplishments.
 
 The two configurable ICPs are agency delivery partnerships and direct startup clients. Default discovery is balanced unless the request names one ICP. One vacancy is not sufficient qualification. Preserve company/agency/employer distinctions and U.S.-only versus worldwide hiring restrictions. Missing LATAM-provider evidence does not mean no provider exists.
