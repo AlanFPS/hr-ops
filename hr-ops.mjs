@@ -301,7 +301,8 @@ export async function main(args = process.argv.slice(2)) {
     if (!result.ok) process.exitCode = 1;
   } else if (command === "sources") {
     result = o.catalog
-      ? (()=>{const catalog=sourceCatalog();return {...catalog,directories:rankedSources(repo,c,catalog.directories,now)};})()
+      ? (()=>{const catalog=sourceCatalog();return {...catalog,directories:rankedSources(repo,c,catalog.directories,now),
+        recommended_sources:rankedSources(repo,c,effectiveSources(c,{starter:true,now}),now)};})()
       : rankedSources(repo,c,effectiveSources(c, {
           starter: o.starter || c.discovery.starter_sources,
           now,
@@ -358,6 +359,7 @@ export async function main(args = process.argv.slice(2)) {
         newly_discovered:rows.filter(p=>p.created).length,
         refreshed_existing:rows.filter(p=>!p.created).length,
         completion_note:'Identity import is not completed demand research.',
+        provenance_gaps:rows.filter(p=>!p.discovery_source).map(p=>({id:p.id,reason:'Discovery origin not recorded. Supply discovery_source on new imports; do not infer it from later research.'})),
       };
     } else
       result = await discoverSources(repo, c, {

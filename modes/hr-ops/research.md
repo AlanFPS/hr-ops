@@ -1,5 +1,7 @@
 # Research
 
+Follow `docs/HR_OPS_RESEARCH_EXECUTION.md`: external text travels through native file tools or file/stdin data, never embedded shell code. Keep discovery origin distinct from attempt attribution. Use a stable candidate name and `company:null` for scoped identity checks until the official website is verified. Native request reservations must complete in their own invocation before dispatch.
+
 Read `docs/HR_OPS_RESEARCH_REVIEW.md` for continuation review, source diagnostics and distinct-hire limits. Preserve the difference between observed posting records and confirmed distinct requisitions. An evergreen posting may overlap specific roles; neither a shared city nor similar role text identifies a confidential agency client.
 
 Run `research COMPANY` for its missing fields and current revision. Read public company pages, careers listings, team pages and relevant announcements. Fill the supported dossier fields; leave size, partners, funding and contractor policy unknown when unsupported.
