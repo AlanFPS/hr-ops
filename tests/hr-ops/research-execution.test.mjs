@@ -100,6 +100,17 @@ test('source ranking combines explicit aliases, deduplicates readable demand and
   const ranked=rankedSources(repo,c,sources,now);assert.equal(ranked[0].id,'yield');assert.equal(ranked[0].source_performance.attempts,2);assert.equal(ranked[0].source_performance.distinct_readable_demand_matches,1);
   assert.equal(ranked[0].priority_basis.readable_demand_per_attempt,0.5);
   const agency=rankedSources(repo,c,[{...sources[0],icp:'agency'}],now)[0];assert.equal(agency.source_performance.distinct_readable_demand_matches,0);
+  assert.equal(agency.source_performance.distinct_validated_demand_matches,0);
+  assert.equal(agency.source_performance.evaluations[0].outside_icp,true);
+  assert.equal(agency.source_performance.evaluations[0].missing,undefined);
+});
+test('source reports distinguish known other-ICP prospects, missing records and legacy unattributed demand',()=>{
+  const p={id:'a'.repeat(16),icp:'startup'},missing='b'.repeat(16),evaluate=()=>({opening_count:1,tier:'RESEARCHING',gaps:[]});
+  const make=attribution=>({attempts:[{sequence:1,...(attribution?{attribution}: {})}],outcomes:['read_ok','demand_match'].map(category=>({sequence:1,category,prospect_ids:[p.id,missing]}))});
+  const agency=researchYield([make({source_id:'agency-source',icp:'agency'})],[p],evaluate)[0];
+  assert.equal(agency.distinct_reported_demand_matches,2);assert.equal(agency.distinct_validated_demand_matches,0);assert.equal(agency.distinct_readable_demand_matches,0);
+  assert.deepEqual(agency.evaluations.map(e=>({id:e.id,missing:e.missing??false,outside:e.outside_icp??false})),[{id:p.id,missing:false,outside:true},{id:missing,missing:true,outside:false}]);
+  const legacy=researchYield([make()],[p],evaluate)[0];assert.equal(legacy.source,'unattributed');assert.equal(legacy.distinct_validated_demand_matches,1);assert.equal(legacy.distinct_readable_demand_matches,1);
 });
 test('agency priority favors current client vacancy sources and exposes incomplete yield without empty inference',async t=>{
   const {repo,c}=await setup(t);

@@ -30,6 +30,8 @@ Reserve native web requests in a standalone invocation. Wait for a successful, p
 
 Within that priority, rank by distinct currently validated demand found on readable attempts divided by all attributed attempts. Aggregate explicit source ID, website, directory URL, careers URL and API aliases without double counting prospects. `both` attribution can contribute separately to each ICP, but another ICP's prospects cannot inflate its demand yield. The output exposes the ranking basis and observed counts. It is not a probability of a sale or a qualification score. Existing qualification weights and thresholds are unchanged.
 
+Raw reported counts retain the original linked IDs, including other ICPs and missing records. Validated and readable demand counts apply the selected ICP. Evaluation details mark a known prospect from another ICP as `outside_icp:true`; `missing:true` means the record is actually absent. Unattributed legacy observations remain explicitly unattributed and can still report supported demand.
+
 Partial collections, JavaScript-only pages, failed access and attempts without outcomes remain unresolved, even beside a `no_demand` or `empty_board` annotation. They do not earn readable-yield credit. A current reviewed opening found elsewhere can remain valid; an incomplete board never proves the absence of demand. Historical observations are retained, so later rescans can resolve a current research question without pretending the earlier collection was complete.
 
 ## Finding-to-test matrix
