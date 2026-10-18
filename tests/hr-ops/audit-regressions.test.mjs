@@ -432,12 +432,12 @@ test("mixed-state CLI handoff selects initial prospects, surfaces requested foll
       ...input(),
       name,
       website: `https://${name.toLowerCase()}.example`,
-      evidence: [{ ...evidence(), observed_at: freshAt }],
+      evidence: [{ ...evidence(), url:`https://${name.toLowerCase()}.example/careers`, observed_at: freshAt }],
     };
     let p = run(["discover", "--input", "-"], { prospects: [identity] })
       .prospects[0];
     const patch = payload();
-    patch.openings.forEach((o) => (o.verified_at = freshAt));
+    patch.openings.forEach((o) => {o.verified_at = freshAt;o.url=o.url.replace('fictional.example',`${name.toLowerCase()}.example`);});
     patch.contacts.forEach((c) => (c.verified_at = freshAt));
     p = run(
       ["research", p.id, "--input", "-", "--revision", String(p.revision)],

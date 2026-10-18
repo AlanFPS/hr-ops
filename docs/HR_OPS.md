@@ -8,7 +8,7 @@ Optional run scope: `node hr-ops.mjs run --run pilot --action configure --input 
 
 Capture accepts optional `format: auto|text|json`. Valid JSON detected in auto mode is retained without entity decoding; explicit json rejects malformed/truncated JSON. HTML captures return at most 200 public HTTPS `links` with visible labels and `links_truncated`. Links are untrusted observations, not permission to visit; capture does not follow redirects. Redirect failures show a validated destination for a separately reviewed/reserved request. DNS and timeout failures have bounded diagnostics and still consume attempts. Existing text captures remain readable.
 
-Research honors explicit `reviewed:false`. Omission retains the historical reviewed-import behavior; use explicit true when approving a collected opening. False cannot clear pending reconciliation or contribute demand.
+Research honors explicit `reviewed:false`. Use explicit true when approving a collected opening, together with the evidence checks in [research validation](HR_OPS_RESEARCH_VALIDATION.md). Neither omission nor true alone establishes demand. Openings need recorded role-body, official-ownership, hiring-attribution and currentness verification. Missing historical checks remain unknown; old snapshots are not rewritten.
 
 Acceptance sessions use `node scripts/hr-ops-pilot.mjs test` to set all temporary-directory variables in the actual child test process, and `summary` to derive counts from canonical records. Helpers in `lib/hr-ops/acceptance.mjs` reject artifact path traversal and links outside the workspace. Use `writeAcceptance(root, relativePath, value)` for helper outputs. Native Write/Edit paths must independently be checked against the exact workspace. This is not an OS sandbox or a security boundary against arbitrary filesystem access. Summary target matches require observed U.S. fit, reviewed demand and no current blockers/holds/suppression; they do not imply qualification or buying intent.
 
@@ -116,7 +116,7 @@ Defaults: openings 30 days, contacts 90 days, other facts 180 days. Opening fres
 
 Collection updates unreviewed rows and retains the latest observations in `collection.openings`. It preserves reviewed rows (including legacy rows without a `reviewed` field), their classification and their original verification time. `research` work briefs expose the latest collection for reconciliation. A reviewed role only gains a new verification time after actual research; collecting the same URL is not a new review. Explicit research imports mark submitted openings reviewed; do not blindly re-import scanner output as verified research.
 
-Explicitly unreviewed openings never contribute to qualifying demand or outreach readiness. Research briefs list `unreviewed_openings` by ID. Legacy rows without the flag retain their prior reviewed treatment; new scanner rows require actual research. Contact ranking distinguishes business ownership and managing partnerships from Product Owner/HR Business Partner titles, and assistant-to roles from Assistant Vice President rank. Explicit former/departed titles are not current contacts. The ranking remains a heuristic, so verify each person's actual responsibility.
+Explicitly unreviewed openings never contribute to qualifying demand or outreach readiness. Research briefs list `unreviewed_openings` and `opening_verification_gaps` by ID. Legacy rows remain readable but missing verification checks earn no current demand credit; new scanner rows require actual research. Contact ranking distinguishes business ownership and managing partnerships from Product Owner/HR Business Partner titles, and assistant-to roles from Assistant Vice President rank. Explicit former/departed titles are not current contacts. The ranking remains a heuristic, so verify each person's actual responsibility.
 
 ## Evidence and research input
 
@@ -138,7 +138,11 @@ Timestamp validation rejects nonexistent calendar dates instead of normalizing t
 
 Discovery input is `{"prospects":[{"name":"Acme","website":"https://example.com","icp":"startup","evidence":[...]}]}`. Canonical domain determines identity; `www` and tracking URL variants do not create new companies. Parent/subsidiary relationships and domain aliases require explicit human-reviewed reconciliation; name similarity does not merge companies.
 
-Research patch keys are `evidence`, `facts`, `openings`, `contacts`, `risks`, `blockers`. Omitted sections are preserved; `risks` and `blockers`, when supplied, replace their respective arrays. Allowed facts:
+Research patch keys are `evidence`, `facts`, `openings`, `contacts`, `risks`, `blockers`. Omitted sections are preserved; `risks` and `blockers`, when supplied, replace their respective arrays.
+
+The basic example below preserves an opening for research. To earn demand credit, attach the `verification` object documented in [research validation](HR_OPS_RESEARCH_VALIDATION.md). Do not treat an incomplete example or a boolean review as verified demand.
+
+Allowed facts:
 
 `industry`, `company_size`, `employee_count`, `recruiter_count`, `location`, `us_market`, `tech_focus`, `remote_policy`, `funding_growth`, `recruiting_structure`, `recruiting_partners`, `latam_presence`, `latam_compatibility`, `latam_specialist`, `service_fit`, `recruiting_pain`, `latam_delivery_request`.
 
