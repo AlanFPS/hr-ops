@@ -125,3 +125,12 @@ test('historical drafts remain readable but need a new opening-scoped review to 
   validateProspect(p,now);assert.equal(draftCurrent(p.drafts[0],p,c,now),false);
   assert(outreachBrief(p,c,now).review_guidance.some(s=>s.includes('shared client')));
 });
+test('explicit current LATAM agency delivery requests can support drafts without fictional openings',()=>{
+  const p=prospect(),c=config();p.icp='agency';p.openings=[];p.facts.tech_focus=fact(true);p.facts.recruiter_count=fact(10);p.facts.latam_delivery_request=fact(true);p.contacts[0].title='Founder';
+  p.evidence[0].excerpt='Fictional Labs seeks LATAM engineering delivery partners. Alex Doe Founder.';
+  const d=draft(p);d.intent=scoreProspect(p,c,now).tier==='PROVISIONAL'?'exploratory':'qualified';
+  const signal='your LATAM engineering delivery request';d.body=d.body.replace('your backend openings',signal);d.claims[0].text=signal;d.quality.signal_claim=signal;
+  saveDraft(p,d,c,now);validateProspect(p,now);assert.equal(draftCurrent(p.drafts[0],p,c,now),true);assert.equal(p.openings.length,0);
+  p.facts.latam_delivery_request.confidence='inferred';assert.match(draftReviewIssues(d,p,c,now).join(' '),/explicit LATAM/);
+  p.facts.latam_delivery_request.confidence='observed';p.evidence[0].observed_at=new Date(+now-31*86400000).toISOString();assert.match(draftReviewIssues(d,p,c,now).join(' '),/explicit LATAM/);
+});

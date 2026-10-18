@@ -54,7 +54,7 @@ The capture classifier now recognizes explicit job-list JavaScript gates even wh
 
 ## Review the actual openings in a draft
 
-Every new draft includes `quality.opening_ids`, containing the saved IDs of all openings used in its signal. IDs must be unique and have current validated demand. The existing claims, recipient rationale and next-step checklist still apply.
+Every new draft includes `quality.opening_ids`, containing the saved IDs of all openings used in its signal. IDs must be unique and have current validated demand. An agency draft may use an empty array when its observed signal cites all evidence for a current explicit `latam_delivery_request`; do not manufacture openings for that path. The existing claims, recipient rationale and next-step checklist still apply.
 
 For multiple agency searches, avoid singular shared-client wording such as "that client", "your client" or "the same client". Two confidential searches in one city do not establish one employer. Ask about "either search", use neutral plural wording, or select one opening and discuss only that opening. The code catches common English shared-client phrases; this is a narrow editorial safeguard, not a general language-understanding engine.
 
