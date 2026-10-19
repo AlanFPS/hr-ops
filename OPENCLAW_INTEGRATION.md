@@ -2,6 +2,8 @@
 
 OpenClaw is not installed or integrated. HR-Ops already exposes a local shared skill and JSON CLI suitable for a future single operator. No MCP server is required.
 
+Use `setup` and `menu` for HR entrypoints; the retained installer and graphical dashboards are candidate tools. `discover --plan --icp both` separates source routes from company inventory. Opt-in public feeds require scoped runs and return unverified employer observations; they do not satisfy agency client-demand requirements. Cached collection reuses captures and current exclusions; explicit refresh spends the existing request budget. See [setup and discovery contracts](docs/HR_OPS_SETUP_AND_DISCOVERY.md).
+
 Use the current [workspace contract](docs/HR_OPS_WORKSPACES.md): explicit clean creation and selection, one designated personal account, no cookie transfer, inbox v2 migration and capability readiness. Company Pages are branding references only. Check saved report freshness or run `reports refresh` before handing off derived dossiers. Real-account business-import validation remains a supervised setup check.
 
 1. Read `AGENTS.md`, `.agents/skills/hr-ops/SKILL.md`, the selected `modes/hr-ops/` file and `docs/HR_OPS.md`. Run `node hr-ops.mjs doctor`.

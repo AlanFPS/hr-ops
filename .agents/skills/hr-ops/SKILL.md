@@ -12,6 +12,7 @@ Read the root instructions, `modes/hr-ops/_shared.md`, the user `config/profile.
 
 | Request | Mode |
 |---|---|
+| Set up an HR workspace / show available operations | `modes/hr-ops/setup.md` |
 | Find/evaluate N clients, startups or agencies | `modes/hr-ops/discover.md`, then `pipeline.md` |
 | Research named prospects / strongest prospects | `modes/hr-ops/research.md` |
 | Qualify / explain a score | `modes/hr-ops/qualify.md` |
@@ -29,3 +30,5 @@ The Node CLI performs deterministic collection, validation and persistence. Rese
 No delegation is required. Use public information and the current client's search tools. If search is unavailable, use configured public sources and report the coverage limitation; do not pretend a seed list is broad discovery. Unknown facts remain unknown. Never invent approval references, contact details, inventory or commercial terms.
 
 For repeatable discovery, inspect `sources --starter`; catalog companies still need independent qualification. Follow the shared research-run budget procedure and preserve quote/summary, retrieval precision and publication dates. A score and weighted signal coverage do not establish buying intent. Check no-agency policies and existing LATAM coverage before drafting.
+
+Use `discover --plan --icp both` to distinguish reusable sources, seeds, controls and pipeline exclusions. Selected retained public feed readers are available through `discover --feed remotive|hackernews --run ID` after configuring a scoped run. They produce cached unverified employer leads, not prospects or qualifying evidence. Use the separate agency source/query plan for attributable client vacancies. Finish independent research before reporting a discovery target as achieved.

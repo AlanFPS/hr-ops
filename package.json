@@ -7,6 +7,9 @@
     "node": ">=24"
   },
   "scripts": {
+    "start": "node hr-ops.mjs menu",
+    "setup": "node hr-ops.mjs setup",
+    "menu": "node hr-ops.mjs menu",
     "doctor": "node hr-ops.mjs doctor",
     "or": "node openrouter-runner.mjs",
     "or:scan": "node openrouter-runner.mjs scan",

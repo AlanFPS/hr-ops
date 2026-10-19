@@ -15,6 +15,10 @@ npm run test:hr
 
 Use Node 24. Start your AI client in this checkout and say **“Use HR-Ops to find and evaluate 10 potential U.S. clients hiring backend/full-stack engineers.”** Then **“Prepare outreach for the top 3.”** Headless: `codex exec --sandbox workspace-write "Use HR-Ops to research the strongest prospects"`.
 
+For a fresh independent data root, start with `npm run setup` for the guide, then `node hr-ops.mjs setup --destination ABSOLUTE_EMPTY_DIRECTORY --input setup.json`. Copy the structure from `templates/hr-ops-setup.example.json` and supply confirmed firm facts. Setup never copies the active workspace or selects the new one automatically. Keep the AI client in this code checkout and select its data explicitly with `HR_OPS_ROOT`. No CV, candidate onboarding, MCP server or browser installation is needed for research. `npm start` and `node hr-ops.mjs menu` show the HR operations. See [HR setup and source discovery](docs/HR_OPS_SETUP_AND_DISCOVERY.md).
+
+`discover --plan --icp both` separates reusable sources, company seeds, controls and existing-prospect exclusions. `discover --feed remotive --run RUN_ID` and `discover --feed hackernews --run RUN_ID` collect bounded unverified employer leads using retained public readers. Configure a scoped run first. Cached invocations reuse captures and current exclusions; `--refresh` explicitly requests another budgeted collection. These feeds cover employer discovery, while agency discovery uses the separate client-vacancy source, directory and query plan. Collection is not qualification.
+
 Commands: `discover`, `sources`, `budget`, `capture`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
 
 Inspect the verified research starter catalog with `node hr-ops.mjs sources --starter`. It includes API and manual research sources, not prequalified clients. See [source configuration and research controls](docs/HR_OPS_RESEARCH.md).

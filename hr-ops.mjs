@@ -55,6 +55,10 @@ import {
   draftCurrent,
 } from "./lib/hr-ops/operations.mjs";
 import { discoverSources, discoveryQueries } from "./lib/hr-ops/discovery.mjs";
+import {setupGuide,commandMenu} from './lib/hr-ops/entrypoints.mjs';
+import {discoveryPlan} from './lib/hr-ops/discovery-plan.mjs';
+import {discoveryFeeds,collectDiscoveryFeed} from './lib/hr-ops/discovery-feeds.mjs';
+import {PROJECT_ROOT} from './lib/hr-ops/store.mjs';
 import {
   effectiveSources,
   inspectSources,
@@ -68,6 +72,8 @@ import {
 
 const HELP = `HR-Ops - local recruiting client operations (draft-only)
 Usage: node hr-ops.mjs <command> [company-or-id] [options]
+  menu                                HR command groups and natural-language entrypoints
+  setup [--destination ABSOLUTE_DIR --input setup.json]  Guide or clean HR workspace creation
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
   workspace create --destination ABSOLUTE_DIR --input setup.json
   workspace inspect|configure [--input identity.json]  Explicit workspace/account identity
@@ -84,6 +90,8 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   run --run ID --action inspect|review|complete|resume|configure|outcome|admit [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
+  discover --plan [--icp both|agency|startup]  Reusable sources, seeds, controls and exclusions
+  discover --feed remotive|hackernews --run ID [--refresh]  Budgeted unverified employer leads
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
   capture --run ID --input source.json   Budgeted public GET with retrieval timestamp
   research <company> [--input research.json --revision N]
@@ -117,6 +125,8 @@ function parse(args) {
     "catalog",
     "with-inbox",
     "new-only",
+    "plan",
+    "refresh",
   ];
   const values = [
     "input",
@@ -131,6 +141,7 @@ function parse(args) {
     "action",
     "tier",
     "destination",
+    "feed",
   ];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -187,6 +198,12 @@ function summary(result) {
 }
 export async function main(args = process.argv.slice(2)) {
   const { command, selector, options: o } = parse(args);
+  assert(!o.plan||command==='discover','--plan requires discover');
+  assert(!o.feed||command==='discover','--feed requires discover');
+  assert(!o.refresh||(command==='discover'&&o.feed),'--refresh requires discover --feed');
+  assert(!(o.plan&&(o.feed||o.input)),'--plan cannot be combined with --feed or --input');
+  assert(!(o.feed&&(o.starter||o.input)),'--feed cannot be combined with --starter or --input');
+  assert(!(selector&&(o.plan||o.feed)),'Discovery plans and feeds do not accept a company selector');
   assert(
     !o.output || (command === "export" && !o.summary && !o["dry-run"]),
     "--output requires export without --summary or --dry-run",
@@ -197,7 +214,7 @@ export async function main(args = process.argv.slice(2)) {
   }
   const root = dataRoot(),
     repo = new LocalRepository(root);
-  const c = command==='workspace'&&selector==='create'?null:loadConfig(root);
+  const c = ['setup','menu'].includes(command)||(command==='workspace'&&selector==='create')?null:loadConfig(root);
   const dryRun = !!o["dry-run"];
   const now = new Date();
   let result, exportRecordCount;
@@ -208,7 +225,13 @@ export async function main(args = process.argv.slice(2)) {
     now,
     expectedRevision: integer(o.revision, "--revision"),
   });
-  if(command==='workspace'){
+  if(command==='menu'){assert(!selector,'menu has no selector');result=commandMenu(PROJECT_ROOT);}
+  else if(command==='setup'){
+    assert(!selector,'setup uses --destination and --input, not a selector');
+    if(o.input||o.destination){assert(o.input&&o.destination,'--input and --destination required');result={...await createWorkspace(o.destination,input(o.input),{dryRun}),code_root:PROJECT_ROOT,selection_instruction:'Set HR_OPS_ROOT to root explicitly; run the AI client in code_root. Creation does not select the workspace.',next_command:['node','hr-ops.mjs','doctor']};}
+    else result=setupGuide(PROJECT_ROOT);
+  }
+  else if(command==='workspace'){
     if(selector==='create'){assert(o.input&&o.destination,'--input and --destination required');result=await createWorkspace(o.destination,input(o.input),{dryRun});}
     else if(selector==='configure'){assert(o.input,'--input required');result=await configureWorkspace(repo,input(o.input),{dryRun});}
     else {assert(selector==='inspect','Use workspace create, inspect or configure');result={...dataRootInfo(),workspace:readWorkspace(repo),selected:true};}
@@ -303,7 +326,7 @@ export async function main(args = process.argv.slice(2)) {
     if (!result.ok) process.exitCode = 1;
   } else if (command === "sources") {
     result = o.catalog
-      ? (()=>{const catalog=sourceCatalog();return {...catalog,directories:rankedSources(repo,c,catalog.directories,now),
+      ? (()=>{const catalog=sourceCatalog();return {...catalog,feeds:rankedSources(repo,c,discoveryFeeds(c),now),directories:rankedSources(repo,c,catalog.directories,now),
         recommended_sources:rankedSources(repo,c,effectiveSources(c,{starter:true,now}),now)};})()
       : rankedSources(repo,c,effectiveSources(c, {
           starter: o.starter || c.discovery.starter_sources,
@@ -316,6 +339,10 @@ export async function main(args = process.argv.slice(2)) {
   } else if (command === "capture") {
     assert(o.input, "--input required");
     result = await captureSource(repo, c, o.run, input(o.input), { dryRun });
+  } else if (command === "discover" && o.plan) {
+    result=discoveryPlan(repo,c,{icp:o.icp??'both',now});
+  } else if (command === "discover" && o.feed) {
+    result=await collectDiscoveryFeed(repo,c,{id:o.feed,run:o.run,limit:o.limit?integer(o.limit,'--limit'):c.discovery.limit,icp:o.icp??'both',dryRun,refresh:!!o.refresh,now});
   } else if (command === "discover") {
     if (o.run)
       assert(
@@ -548,7 +575,7 @@ export async function main(args = process.argv.slice(2)) {
     throw new Error(
       `Unsupported command ${command}. No external action is available. Use --help.`,
     );
-  if (command === "discover" && o.run && !dryRun)
+  if (command === "discover" && o.run && !dryRun && !o.plan && !o.feed)
     await updateRun(repo, c, o.run, {
       action: "link",
       prospects: (result.prospects ?? []).map((p) => p.id),

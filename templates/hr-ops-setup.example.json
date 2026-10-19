@@ -1,0 +1,9 @@
+{
+  "name": "New HR workspace",
+  "purpose": "experimental",
+  "config": {
+    "firm": {"name": null, "sender_name": null, "email": null},
+    "discovery": {"feeds": [{"id": "remotive", "enabled": true}, {"id": "hackernews", "enabled": true}]}
+  },
+  "preferences": "Keep LinkedIn drafts concise. No em dashes in newly authored prose."
+}

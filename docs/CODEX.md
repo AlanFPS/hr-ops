@@ -12,6 +12,8 @@ Ask: “Research the five strongest prospects”, “Why did we qualify Acme?”
 
 Read [the operating guide](HR_OPS.md) for setup and payloads. The core CLI never sends or makes external CRM writes. The optional [LinkedIn adapter](HR_OPS_LINKEDIN.md) requires a human-operated terminal and individual confirmations; Codex must not answer those prompts. Missing firm identity and unknown evidence remain visible. Candidate onboarding and Career-Ops auto-updates do not apply to HR-Ops work.
 
+For a new data root, use `node hr-ops.mjs setup` for the guide and `node hr-ops.mjs menu` for HR command groups. Keep Codex in the code checkout and explicitly select the created root with `HR_OPS_ROOT`. `discover --plan --icp both` separates reusable feeds, agency query/directory routes, company seeds and exclusions. Budgeted feed collection returns unverified research tasks, never automatic prospect qualification. See [HR setup and source discovery](HR_OPS_SETUP_AND_DISCOVERY.md) for scope configuration, cached resume and limits.
+
 ## Retained legacy Codex guide
 
 The following applies only when explicitly requesting Career-Ops candidate tools.

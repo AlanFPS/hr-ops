@@ -1,5 +1,7 @@
 # HR-Ops operating guide
 
+HR-first navigation and repeatable source reuse: [setup, command menu, discovery plans and bounded public feeds](HR_OPS_SETUP_AND_DISCOVERY.md). The retained Career-Ops installer and dashboards remain explicitly labeled candidate tools.
+
 Research execution: [safe artifact transport, discovery origins, candidate identity and source priority](HR_OPS_RESEARCH_EXECUTION.md). Use `scripts/hr-ops-artifact.mjs` for file/stdin data transport; never embed external text in shell code.
 
 Current setup and handoff: [workspace identity, inbox v2, current dossiers and readiness](HR_OPS_WORKSPACES.md). New CUP Latam operating roots start empty. Use `workspace create`, `workspace inspect` and `workspace configure`; browser commands require the designated personal profile. Company Pages are branding references only.
