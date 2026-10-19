@@ -56,9 +56,13 @@ The capture classifier now recognizes explicit job-list JavaScript gates even wh
 
 Every new draft includes `quality.opening_ids`, containing the saved IDs of all openings used in its signal. IDs must be unique and have current validated demand. An agency draft may use an empty array when its observed signal cites all evidence for a current explicit `latam_delivery_request`; do not manufacture openings for that path. The existing claims, recipient rationale and next-step checklist still apply.
 
+The observed `signal_claim` must cite evidence belonging to a selected opening, and every selected opening needs an observed citation. Opening evidence, role-verification evidence and currency-verification evidence can establish this structural link. Selecting an unrelated current opening cannot rescue a claim supported only by a closed or unselected role. Citation overlap still does not establish semantic truth: read the actual message against the source.
+
 For multiple agency searches, avoid singular shared-client wording such as "that client", "your client" or "the same client". Two confidential searches in one city do not establish one employer. Ask about "either search", use neutral plural wording, or select one opening and discuss only that opening. The code catches common English shared-client phrases; this is a narrow editorial safeguard, not a general language-understanding engine.
 
 Separate posting IDs, titles and cities do not prove distinct hires. Exact numeric vacancy claims require distinct supported requisition IDs within their board/provider scopes, or an observed claim citing an explicit primary count quotation. Exact hire headcount requires the primary quotation, since one requisition need not equal one hire. An authored summary that counts postings is insufficient. Otherwise describe observed listings without an exact hire count. A repeated or broad evergreen posting may overlap more specific roles. Keep that uncertainty visible even when all role bodies are current.
+
+The quotation exception requires `source_type: primary` and `excerpt_kind: quote`. A historical excerpt with unspecified provenance remains readable but does not prove an exact count. Do not relabel it to pass validation without recovering the actual source text through the normal evidence workflow.
 
 Before recording agent review, verify the whole message, including pronouns, employer identity, role geography, sender credentials and implicit quantities. Do not attest review merely because save succeeds. Keep LinkedIn to one signal and one short question where possible, within the configured ceiling. No em dashes in authored prose.
 

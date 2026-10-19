@@ -240,3 +240,18 @@ test('comparable agency boards prefer readable history over unresolved-only resu
   assert.deepEqual(ranked.map(s=>s.priority_basis.collection_quality),['readable','unobserved','unresolved_only','unresolved_only']);
   assert(ranked.every(s=>s.priority_basis.readable_demand_per_attempt===0));assert.equal(repo.list().length,0);
 });
+
+test('source reference URLs cannot absorb another source key or share ambiguous attribution',async t=>{
+  const {repo,c}=await setup(t);
+  const sources=[{id:'recipe',name:'Query recipe',url:'https://agency.example',icp:'agency'},
+    {id:'https://agency.example',name:'Agency board',website:'https://agency.example',icp:'agency',hiring_for:'client'}];
+  for(const [source,kind] of [['recipe','query'],['https://agency.example','page']]){
+    const {reservation}=await reserveResearch(repo,c,'aliases',{kind,company:kind==='page'?source:undefined,target:kind==='page'?source+'/jobs':'agency backend client jobs',attribution:{source_id:source,icp:'agency'}},{now});
+    await updateRun(repo,c,'aliases',{action:'outcome',outcome:{sequence:reservation.sequence,category:'read_ok',prospect_ids:[],note:'Fixture readable collection'}});
+  }
+  const ranked=rankedSources(repo,c,sources,now),query=ranked.find(s=>s.id==='recipe');
+  assert.equal(query.source_performance.comparison_group,'query');assert.equal(query.source_performance.attempts,1);
+  assert.deepEqual(query.priority_basis.ignored_attribution_aliases,['https://agency.example']);
+  const shared=[{id:'one',url:'https://agency.example',icp:'agency'},{id:'two',url:'https://agency.example',icp:'agency'}];
+  assert(rankedSources(repo,c,shared,now).every(s=>s.source_performance===null&&s.priority_basis.ignored_attribution_aliases.includes('https://agency.example')));
+});

@@ -56,6 +56,8 @@ test('ATS UUIDs and query digits are references; numerical prose and link labels
   p.evidence[0].excerpt += ' Link: ' + link;
   assert.throws(() => saveDraft(p, bad, c, now), /Numeric draft/); // URL is not proof of quantity
   p.evidence[0].excerpt += ' There are 9973 vacancies.';
+  assert.throws(() => saveDraft(p, bad, c, now), /explicit primary count quote/); // unknown provenance is not a quotation
+  p.evidence[0].excerpt_kind = 'quote';
   assert.doesNotThrow(() => saveDraft(p, bad, c, now));
   assert.deepEqual(proseNumbers('https://[9973 invalid 42'), ['9973', '42']);
 });

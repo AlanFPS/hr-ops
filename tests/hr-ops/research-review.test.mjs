@@ -46,6 +46,67 @@ test('continuation caps contact planning at global remaining pages without spend
   assert.equal(review.candidates[0].prospects[0].next_action.suggested_contact_pages,1);assert.deepEqual(state,before);
 });
 
+test('batch-query and shared-origin outcomes bind each dossier only to its own candidate allowance',()=>{
+  const c=config(),a=prospect(),b=prospect();a.name='Alpha';a.id='a'.repeat(16);a.domains=['alpha.example'];a.contacts=[];
+  b.name='Beta';b.id='b'.repeat(16);b.domains=['beta.example'];b.contacts=[];
+  const state={limits:{queries:20,pages_per_company:2},scope:{candidates:2,pages:4,directory_pages:1},candidate_origins:[{name:'Alpha',source_sequence:1},{name:'Beta',source_sequence:1}],
+    attempts:[{sequence:1,kind:'query',candidate_names:['Alpha','Beta']},...[2,3].map(sequence=>({sequence,kind:'page',candidate_names:['Alpha'],company:'alpha.example'}))],
+    outcomes:[{sequence:1,category:'demand_match',prospect_ids:[a.id,b.id]}]};
+  let review=continuationReview(state,[a,b],c,now);
+  assert.deepEqual(review.candidates.map(row=>row.prospects.map(p=>[p.id,p.next_action.suggested_contact_pages])),[[[a.id,0]],[[b.id,2]]]);
+  state.attempts[0].candidate_names=[];
+  review=continuationReview(state,[a,b],c,now);
+  assert.deepEqual(review.candidates.map(row=>row.prospects.map(p=>p.id)),[[a.id],[b.id]],'Origin-only Beta must retain its own dossier');
+  a.name='Renamed Alpha';
+  assert.equal(continuationReview(state,[a,b],c,now).candidates[0].prospects[0].id,a.id,'Verified domain retains a renamed candidate binding');
+  a.domains=['unresolved.example'];
+  review=continuationReview(state,[a,b],c,now);
+  assert.equal(review.candidates[0].prospects.length,0);assert(review.candidates[0].unmatched_prospect_ids.includes(a.id));
+});
+
+test('initial research progress distinguishes active conversations and ignores follow-up draft counts',()=>{
+  const p=prospect(),c=config();p.status='CONTACTED';
+  p.interactions=[{id:'fixture-sent',kind:'sent',at:now.toISOString(),contact_id:p.contacts[0].id,channel:'linkedin',message:'Synthetic fixture only'}];
+  saveDraft(p,{...draft(p),purpose:'followup'},c,now);assert(draftCurrent(p.drafts[0],p,c,now));
+  const progress=researchNextStep(p,c,now);
+  assert.equal(progress.purpose,'initial');assert.equal(progress.next_step,'review_conversation');
+  assert.equal(progress.current_drafts,0,'Follow-ups do not masquerade as initial drafts');
+  p.hold=true;assert.equal(researchNextStep(p,c,now).next_step,'review_restrictions');
+});
+
+test('selected openings must support observed draft signals and cannot hide an unselected closed role',()=>{
+  const p=prospect(),c=config();p.evidence.push({...p.evidence[0],id:'other-role',excerpt:'A different platform API role'});
+  p.openings[1].evidence=['other-role'];p.openings[1].status='closed';
+  const d=draft(p);d.quality.opening_ids=[p.openings[0].id];d.claims[0].evidence=['other-role'];
+  assert.throws(()=>saveDraft(p,d,c,now),/signal.*selected|selected.*signal/i);
+  d.claims[0].evidence=['site'];saveDraft(p,d,c,now);assert(draftCurrent(p.drafts[0],p,c,now));
+});
+
+test('incomplete recipient identities remain research drafts until an explicit supported identity review',()=>{
+  const p=prospect(),c=config();p.contacts[0].name='Alex';const d=draft(p);
+  p.evidence.push({...p.evidence[0],id:'alex-bio',url:'https://fictional.example/people/alex',excerpt:'Alex uses one name and is the current CTO of Fictional Labs. This is the individual biography for Alex.'});
+  p.contacts[0].evidence=['alex-bio'];p.contacts[0].url='https://fictional.example/people/alex';
+  saveDraft(p,d,c,now);assert.equal(p.drafts[0].ready,false);assert(p.drafts[0].missing.includes('recipient identity review'));
+  assert.equal(draftCurrent(p.drafts[0],p,c,now),false);assert.equal(researchNextStep(p,c,now).next_step,'verify_contact_identity');
+  p.drafts[0].ready=true;validateProspect(p,now);assert.equal(draftCurrent(p.drafts[0],p,c,now),false,'Previously ready historical draft cannot bypass identity review');p.drafts[0].ready=false;
+  const corrected={...d,quality:{...d.quality,recipient_identity:'verified',recipient_rationale:'The cited individual biography identifies the mononymous Alex as this company CTO.'},replaces_draft_id:p.drafts[0].id};
+  saveDraft(p,corrected,c,now);validateProspect(p,now);const current=p.drafts.find(d=>!d.superseded_by);
+  assert.equal(current.ready,true);assert.equal(draftCurrent(current,p,c,now),true);assert.equal(researchNextStep(p,c,now).next_step,'review_existing_drafts');
+  assert.equal(p.drafts[0].superseded_by,current.id);
+  current.quality.recipient_identity='needs_review';assert.equal(draftCurrent(current,p,c,now),false);
+  current.quality.recipient_identity='invented';assert.throws(()=>validateProspect(p,now),/recipient identity review/);
+});
+
+test('ambiguous full names stay in the identity review queue and duplicate candidate bindings borrow no budget',()=>{
+  const p=prospect(),c=config(),d=draft(p);d.quality.recipient_identity='needs_review';saveDraft(p,d,c,now);
+  assert.equal(p.drafts[0].ready,false);assert.equal(researchNextStep(p,c,now).next_step,'verify_contact_identity');
+  const state={limits:{queries:20,pages_per_company:6},scope:{candidates:2,pages:4,directory_pages:1},
+    attempts:[{sequence:1,kind:'query',candidate_names:[p.name,'Alias']},{sequence:2,kind:'page',candidate_names:['Alias'],company:p.domains[0]}],
+    outcomes:[{sequence:1,category:'demand_match',prospect_ids:[p.id]}]};
+  const review=continuationReview(state,[p],c,now);
+  assert(review.candidates.every(row=>row.prospects.length===0&&row.unmatched_prospect_ids.includes(p.id)));
+});
+
 test('candidate cap retains per-candidate queries/pages and query-only candidates',async t=>{
   const {repo,c}=await scoped(t),before=researchBudget(repo,c,'review');
   const result=await updateRun(repo,c,'review',{action:'review'}),check=result.continuation_review;
@@ -146,6 +207,7 @@ test('an explicit primary count quote can support a quantity but an authored sum
   p.evidence.push({id:'count',url:p.website,source_type:'primary',excerpt_kind:'quote',excerpt:'We have three vacancies.',observed_at:now.toISOString()});
   assert.deepEqual(draftReviewIssues(d,p,c,now),[]);
   p.evidence.at(-1).excerpt_kind='summary';assert.match(draftReviewIssues(d,p,c,now).join(' '),/explicit primary count quote/);
+  delete p.evidence.at(-1).excerpt_kind;assert.match(draftReviewIssues(d,p,c,now).join(' '),/explicit primary count quote/,'Unknown historical excerpt provenance is not a quote');
 });
 test('historical drafts remain readable but need a new opening-scoped review to be current',()=>{
   const p=prospect(),c=config();saveDraft(p,draft(p),c,now);delete p.drafts[0].quality.opening_ids;
