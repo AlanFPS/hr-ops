@@ -12,6 +12,22 @@ import {researchYield} from '../../lib/hr-ops/research-outcomes.mjs';
 import {now,input,payload,prospect,config,draft,evidence,verification,fact} from './fixtures.mjs';
 
 function single(){const p=prospect();p.openings=p.openings.slice(0,1);return p;}
+test('multi-practice agency with verified technology recruiting remains provisionally admissible',()=>{
+ const p=single();p.icp='agency';p.facts.tech_focus=fact(true);
+ p.evidence[0].excerpt='We recruit across finance, operations and technology. Our IT practice is seeking a backend engineer for a client. This role is US on-site only.';
+ p.openings[0].hiring_for='client';p.openings[0].eligibility={status:'restricted',evidence:['site'],geography:'US on-site',rationale:'The client requires office attendance.'};
+ p.facts.latam_compatibility=fact('unknown');
+ const s=scoreProspect(p,config(),now);assert.equal(s.tier,'PROVISIONAL');assert.equal(s.eligible_opening_count,0);
+ p.facts.tech_focus=fact(false);assert.equal(scoreProspect(p,config(),now).tier,'RESEARCHING');
+});
+test('generic US benefits cannot supply a reviewed US opening scope and do not negate explicit Brazil eligibility',()=>{
+ const p=prospect();p.evidence[0].excerpt='Our US benefits include health insurance. Backend Engineer 1: Remote Brazil. Backend Engineer 2: Remote Canada or Remote, country unspecified.';
+ p.openings[0].eligibility={status:'eligible',evidence:['site'],geography:'Brazil',rationale:'The role explicitly lists Brazil.'};
+ p.openings[0].verification.market={status:'non_us',evidence:['site'],rationale:'Role location is Brazil.'};
+ p.openings[1].verification.market={status:'unknown',evidence:['site'],rationale:'Generic US benefits do not establish role hiring scope.'};
+ p.openings[1].eligibility={status:'unknown',evidence:['site'],geography:'Unknown',rationale:'Unspecified Remote does not establish LATAM eligibility.'};
+ const s=scoreProspect(p,config(),now);assert.equal(s.us_opening_count,0);assert.equal(s.eligible_opening_count,1);assert.equal(s.tier,'QUALIFIED');
+});
 test('legacy review boolean remains readable but cannot supply demand or draft eligibility',()=>{
  const p=prospect();for(const o of p.openings)delete o.verification;
  validateProspect(p,now);const s=scoreProspect(p,config(),now);

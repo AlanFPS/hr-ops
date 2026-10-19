@@ -122,7 +122,7 @@ test('discovery exclusions include aliases and controls; readable demand ranks r
 test('capture categories separate redirect, HTTP, JavaScript shells and demand; admitted checks continue',async t=>{
  const {repo,c}=await inboxFixture(t);await updateRun(repo,c,'bounded',{action:'configure',scope:{candidates:1,pages:4,directory_pages:1}});
  const base={company:'https://source.example',url:'https://source.example/jobs',candidate_names:['Source'],attribution:{source_id:'source',icp:'agency'}};
- for(const status of [302,403])await assert.rejects(captureSource(repo,c,'bounded',base,{fetchText:async()=>{throw Object.assign(new Error('synthetic HTTP'),{status});}}));
+ for(const status of [302,500])await assert.rejects(captureSource(repo,c,'bounded',base,{fetchText:async()=>{throw Object.assign(new Error('synthetic HTTP'),{status});}}));
  const shell=await captureSource(repo,c,'bounded',base,{fetchText:async()=>'<html><body>You need to enable JavaScript to run this app.</body></html>'});assert.equal(shell.collection_diagnostic,'javascript_only');
  assert.equal(scopeSummary(researchBudget(repo,c,'bounded')).next_action,'continue_admitted_candidate_checks');
  await captureSource(repo,c,'bounded',base,{fetchText:async()=>'<html><body>Official vacancy information for review.</body></html>'});

@@ -1,5 +1,9 @@
 # Research
 
+Agency `tech_focus` means verified technology recruiting, not exclusive specialization. A multi-practice firm with an IT practice and attributable client engineering vacancies can satisfy it. Other practices alone do not support `false`. Keep supplier appetite unknown unless directly evidenced. Restricted client jobs remain restricted even when a separate delivery-partner hypothesis supports provisional admission.
+
+Opening-market and eligibility reviews require role-specific hiring geography or an explicitly applicable hiring policy. Generic US benefits, company headquarters, office addresses and salary currency do not establish a US opening or LATAM eligibility. Unspecified Remote remains unknown. Supported Brazil eligibility is country-specific, not proof of unrestricted LATAM hiring. Navigation text and board titles do not replace a readable role description.
+
 Follow `docs/HR_OPS_RESEARCH_EXECUTION.md`: external text travels through native file tools or file/stdin data, never embedded shell code. Keep discovery origin distinct from attempt attribution. Use a stable candidate name and `company:null` for scoped identity checks until the official website is verified. Native request reservations must complete in their own invocation before dispatch.
 
 Read `docs/HR_OPS_RESEARCH_REVIEW.md` for continuation review, source diagnostics and distinct-hire limits. Preserve the difference between observed posting records and confirmed distinct requisitions. An evergreen posting may overlap specific roles; neither a shared city nor similar role text identifies a confidential agency client.

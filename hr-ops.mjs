@@ -20,6 +20,8 @@ import { inboxSummary } from './lib/hr-ops/inbox-state.mjs';
 import {createWorkspace,configureWorkspace,readWorkspace} from './lib/hr-ops/workspace.mjs';
 import {reportStatus,refreshReports} from './lib/hr-ops/reports.mjs';
 import {discoveryExclusions,rankedSources} from './lib/hr-ops/discovery-context.mjs';
+import {bindCandidateOrigin} from './lib/hr-ops/candidate-origins.mjs';
+import {candidateKey} from './lib/hr-ops/run-scope.mjs';
 import { saveExport } from "./lib/hr-ops/export-file.mjs";
 import { writeFileAtomic } from "./tracker-utils.mjs";
 import {
@@ -79,7 +81,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   report                              Research/source/outcome totals
   reports refresh [--dry-run]          Regenerate derived dossiers without record changes
   retention                           Read-only exposure inventory
-  run --run ID --action inspect|review|complete|resume|configure|outcome [--input payload.json]
+  run --run ID --action inspect|review|complete|resume|configure|outcome|admit [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
@@ -236,7 +238,7 @@ export async function main(args = process.argv.slice(2)) {
       repo,
       c,
       o.run,
-      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:o.action==='complete'?completionInput(input(o.input)):{scope: input(o.input)}) : {}) },
+      { action: o.action ?? "inspect", ...(o.input ? (o.action==='outcome'?{outcome:input(o.input)}:o.action==='admit'?{candidate:input(o.input)}:o.action==='complete'?completionInput(input(o.input)):{scope: input(o.input)}) : {}) },
       { dryRun },
     );
   else if (command === "init")
@@ -337,6 +339,9 @@ export async function main(args = process.argv.slice(2)) {
           payload.prospects.length <= c.discovery.max_candidates,
         "Invalid candidate list or budget exceeded",
       );
+      const originLedger=o.run?researchBudget(repo,c,o.run):null;
+      const existing=repo.list();
+      payload.prospects=payload.prospects.map(p=>existing.some(old=>old.domains.includes(domain(p.website)))?p:bindCandidateOrigin(p,originLedger));
       payload.prospects.forEach((p) => blankProspect(p, now));
       const rows = [],
         seen = new Set();
@@ -360,6 +365,11 @@ export async function main(args = process.argv.slice(2)) {
         refreshed_existing:rows.filter(p=>!p.created).length,
         completion_note:'Identity import is not completed demand research.',
         provenance_gaps:rows.filter(p=>!p.discovery_source).map(p=>({id:p.id,reason:'Discovery origin not recorded. Supply discovery_source on new imports; do not infer it from later research.'})),
+        candidate_origins:originLedger?.candidate_origins??[],
+        admission_gaps:originLedger?rows.filter(p=>p.created).flatMap(p=>{
+          const origin=originLedger.candidate_origins?.find(o=>candidateKey(o.name)===candidateKey(p.name));
+          return !origin?[{id:p.id,reason:'No candidate origin recorded at admission'}]:origin.late?[{id:p.id,reason:'Origin recorded after candidate research began'}]:[];
+        }):[],
       };
     } else
       result = await discoverSources(repo, c, {
