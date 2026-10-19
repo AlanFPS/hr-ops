@@ -77,7 +77,7 @@
     "hr:pipeline": "node hr-ops.mjs pipeline",
     "hr:discover": "node hr-ops.mjs discover",
     "hr:followups": "node hr-ops.mjs followups",
-    "test:hr": "node --test tests/hr-ops/*.test.mjs"
+    "test:hr": "node --test --test-concurrency=1 tests/hr-ops/*.test.mjs"
   },
   "keywords": [
     "hr-ops",

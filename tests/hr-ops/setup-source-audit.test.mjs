@@ -13,6 +13,7 @@ import {discoveryPlan} from '../../lib/hr-ops/discovery-plan.mjs';
 import {discoverSources} from '../../lib/hr-ops/discovery.mjs';
 import {hash} from '../../lib/hr-ops/model.mjs';
 import {backup,restore,diagnostics} from '../../lib/hr-ops/maintenance.mjs';
+import {runAcceptanceTests} from '../../lib/hr-ops/acceptance.mjs';
 const CODE=fileURLToPath(new URL('../../',import.meta.url));
 async function setup(t,candidates=5){
   const parent=fs.mkdtempSync(join(tmpdir(),'hr-setup-audit-')),root=join(parent,'data');
@@ -149,4 +150,16 @@ test('setup and menu reject ignored flags rather than silently creating a worksp
   const s=await setup(t),destination=join(s.parent,'fresh'),payload={name:'Synthetic workspace',purpose:'experimental'};
   assert.throws(()=>runHr(['setup','--destination',destination,'--input','-','--apply'],{...s.options,input:payload}),/unsupported|not supported|not valid/i);assert(!fs.existsSync(destination));
   assert.throws(()=>runHr(['menu','--input','ignored.json'],s.options),/unsupported|not supported|not valid/i);
+});
+
+test('acceptance runner serializes fixture files while preserving output and exit receipts',async t=>{
+  const s=await setup(t),dir=join(s.root,'tests/hr-ops');fs.mkdirSync(dir,{recursive:true});
+  const source=`import test from 'node:test';import fs from 'node:fs';import {fileURLToPath} from 'node:url';
+test('exclusive fixture resource',async t=>{const file=fileURLToPath(new URL('../../exclusive.lock',import.meta.url));const fd=fs.openSync(file,'wx');t.after(()=>{fs.closeSync(fd);fs.unlinkSync(file);});await new Promise(r=>setTimeout(r,750));});`;
+  for(const name of ['a','b'])fs.writeFileSync(join(dir,name+'.test.mjs'),source);
+  const result=runAcceptanceTests(s.root);assert.equal(result.exit_code,0);assert.equal(result.files,2);
+  assert.equal(JSON.parse(fs.readFileSync(join(s.root,'local/acceptance/tests-exit.json'))).exit_code,0);
+  assert.match(fs.readFileSync(join(s.root,'local/acceptance/tests.txt'),'utf8'),/exclusive fixture resource/);assert(!fs.existsSync(join(s.root,'exclusive.lock')));
+  const empty=await setup(t);fs.mkdirSync(join(empty.root,'tests/hr-ops'),{recursive:true});
+  assert.throws(()=>runAcceptanceTests(empty.root),/No HR test files/);assert(!fs.existsSync(join(empty.root,'local/acceptance/tests-exit.json')));
 });
