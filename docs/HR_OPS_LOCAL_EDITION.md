@@ -60,7 +60,7 @@ Prefix these with `node hr-ops.mjs`:
 | `run --run ID` | Inspect attempts and unique prospects |
 | `run --run ID --action review` | Inspect per-candidate continuation allowance and gaps |
 | `run --run ID --action complete --input stop.json` / `resume` | Finish/resume without resetting budgets; scoped completion requires the review in `docs/HR_OPS_RESEARCH_REVIEW.md` |
-| `report` | Source yield, research gaps/effort, noncurrent openings, recorded outcomes |
+| `report` | Source yield, research gaps/effort, noncurrent openings, openings outside targeting, recorded outcomes |
 | `retention` | Exposure inventory, including historical copies |
 | `doctor` | Enumerate record failures; fail when unhealthy |
 | `export --recovery` | Explicitly partial healthy-record JSON export |
@@ -68,6 +68,8 @@ Prefix these with `node hr-ops.mjs`:
 | `restore BACKUP --destination NEW_DIR` | Verify and preview an isolated restore |
 | `restore BACKUP --destination NEW_DIR --apply` | Restore into an absent directory and validate |
 | `migrate` / `migrate --apply` | Preview/apply backed-up schema migration |
+
+The report's `records_with_noncurrent_openings` counts records with closed, stale, unreviewed, unreconciled or insufficiently verified openings. It does not assert that every such role is closed. `records_with_openings_outside_target` separately counts reviewed role-family or known client/self mismatches. Unreviewed classifications and unknown hiring attribution do not establish a targeting mismatch. A current non-target role belongs only in the latter; a stale non-target role may appear in both. These are reporting counts, not changes to demand scoring.
 
 File/stdin JSON strips one leading UTF-8 BOM; invalid JSON and unsupported encodings fail. HR configuration keys are validated recursively, including source variants. Legitimate non-HR profile keys remain untouched; disabled sources can be minimal website/enabled overrides. A typo is an error, not a silently ignored setting.
 

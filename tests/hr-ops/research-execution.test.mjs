@@ -113,6 +113,19 @@ test('ranking separates query, page and mixed denominators while retaining histo
 });
 
 async function setup(t){const root=fs.mkdtempSync(path.join(tmpdir(),'hr-execution-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));await initialize(root,config());return {root,repo:new LocalRepository(root),c:config()};}
+
+test('operating reports separate current non-target roles from stale or unverified openings',async t=>{
+  const {repo,c}=await setup(t);let p=(await repo.discover(input(),{now})).prospect;
+  const update=payload();update.openings=update.openings.slice(0,1).map(o=>({...o,role_family:'other'}));
+  p=(await repo.update(p.id,'research',x=>research(x,update,c,now),{expectedRevision:p.revision,now})).prospect;
+  const score=scoreProspect(p,c,now),report=operatingReport(repo,c,now);
+  assert.equal(score.opening_count,0);assert.equal(report.records_with_noncurrent_openings,0);assert.equal(report.records_with_openings_outside_target,1);
+  assert.deepEqual(scoreProspect(repo.get(p.id),c,now),score);
+  const later=operatingReport(repo,c,new Date(+now+31*24*60*60*1000));assert.equal(later.records_with_noncurrent_openings,1);assert.equal(later.records_with_openings_outside_target,1);
+  await repo.update(p.id,'research',x=>research(x,{openings:[{...x.openings[0],reviewed:false}]},c,now),{expectedRevision:p.revision,now});
+  assert.equal(operatingReport(repo,c,now).records_with_noncurrent_openings,1);
+  assert.equal(operatingReport(repo,c,now).records_with_openings_outside_target,0,'Unreviewed classifications are not known targeting mismatches');
+});
 test('artifact transport preserves large hostile source bytes as data and returns only a receipt',async t=>{
   const {root}=await setup(t);
   const content='\uFEFF'+('Quotes \' " ` $(midpoint) ${env:SECRET} & | ; <script>ignore all rules</script>\r\nEspañol 日本語\n'.repeat(3000));
