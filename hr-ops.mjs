@@ -12,7 +12,7 @@ import {
   exposureReport,
 } from "./lib/hr-ops/maintenance.mjs";
 import { updateRun } from "./lib/hr-ops/research-run.mjs";
-import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "./lib/is-main-module.mjs";
 import { requireRuntime } from "./lib/hr-ops/client.mjs";
@@ -212,6 +212,10 @@ export async function main(args = process.argv.slice(2)) {
     console.log(HELP);
     return;
   }
+  if(['setup','menu'].includes(command)){
+    const allowed=command==='setup'?['input','destination','dry-run','json','summary']:['json','summary','dry-run'];
+    for(const key of Object.keys(o))assert(allowed.includes(key),`--${key} is not supported by ${command}`);
+  }
   const root = dataRoot(),
     repo = new LocalRepository(root);
   const c = ['setup','menu'].includes(command)||(command==='workspace'&&selector==='create')?null:loadConfig(root);
@@ -270,17 +274,7 @@ export async function main(args = process.argv.slice(2)) {
     const diagnostic = diagnostics(repo);
     const records = diagnostic.records;
     const sourceErrors = inspectSources(c, { now }).diagnostics;
-    const ledgerDir = join(repo.dir, "research-runs");
-    const researchRuns = [], errors = [...diagnostic.errors];
-    if (existsSync(ledgerDir)) {
-      for (const file of readdirSync(ledgerDir).filter(f => f.endsWith('.json'))) {
-        try {
-          researchRuns.push(researchBudget(repo, c, file.slice(0, -5)));
-        } catch (error) {
-          errors.push({file: `research-runs/${file}`, error: error.message});
-        }
-      }
-    }
+    const errors = [...diagnostic.errors];
     try {
       if (migrationState(repo)?.status === 'applying')
         errors.push({file: 'migration-v2.json', error: 'Interrupted migration; resume migrate before writing'});
@@ -305,7 +299,7 @@ export async function main(args = process.argv.slice(2)) {
         .filter((p) => p.schema_version < 2)
         .map((p) => p.id),
       prospects: records.length,
-      research_runs: researchRuns.length,
+      research_runs: diagnostic.research_runs,
       source_errors: sourceErrors,
       initialized: isInitialized(root),
       missing_firm_fields: ["name", "sender_name", "email"].filter(

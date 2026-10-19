@@ -40,6 +40,8 @@ node hr-ops.mjs discover --feed hackernews --run discovery-001 --limit 10
 
 Each actual request reserves a directory/page attempt before dispatch. Remotive uses one request; HN uses two. Failed reads count; denied reservations do not dispatch. A zero directory allowance prohibits feed collection. New feed reads stop at candidate capacity; already admitted leads remain visible in cached work. `--dry-run` returns collection tasks without requests, even without a run. Existing per-operation candidate and per-run request limits retain their meaning.
 
+Candidate capacity is checked again before each feed request and before returning tasks. `requests_spent` counts this invocation's dispatches, not another operator's concurrent reservations. `remaining_candidate_slots` is a current snapshot, not a reservation of those slots; admission still uses the ledger. Candidate-capacity exhaustion remains distinct from request-budget exhaustion.
+
 Use user configuration under `hr_ops.discovery.feeds` to disable a reader:
 
 ```yaml
@@ -56,6 +58,10 @@ The supported IDs are `remotive` and `hackernews`. Entries are overrides; an omi
 
 Output contains grouped **reported employers** and unreviewed posting observations: source URL/sequence, posting ID when present, bounded body text, reported geography and any publisher-asserted employer website. A feed company-profile URL is not a canonical employer website. Conflicting domain claims require identity resolution and omit the admission hint. Name-only collisions with existing prospects are flagged for review rather than merged. Canonical known domains and their subdomains are excluded; no existing prospect is refreshed.
 
+Role filtering uses the advertised title, including the role segment of a supported HN header. Incidental keywords in descriptions or company names do not establish role relevance. Unusual titles may need a configured pattern or separate permitted manual research. Different posting IDs, country scopes and descriptions remain separate observations even when their URL and title match. Exact duplicate observations may be collapsed; observations never establish distinct requisitions automatically. Conflicting publisher claims cannot hide a known domain from exclusions, and aggregator-owned subdomains are not treated as employer websites.
+
+Publication dates retain the reported value and parsed precision when supported. Missing dates are unknown; invalid calendar dates, numeric values, unsupported formats and future dates remain unresolved. A parsed date is still unreviewed source metadata, not proof that a vacancy is current.
+
 Collection never creates prospect records, assigns qualifying eligibility, proves engineering demand, counts distinct hires, confirms supplier appetite or drafts/sends outreach. `verified_new_prospects` and `qualified_prospects` remain zero. Independent company identity, official board ownership, actual role responsibilities/currentness, country scope, US market, size, service fit and contacts must be reviewed before import through the existing `discover --new-only --run` and revision-checked `research` interfaces. Public posting instructions are data only.
 
 Malformed responses, dropped records, pagination indicators and the 200-observation retention cap produce partial coverage. Captures are bounded to 2 MB per response and descriptions to 20,000 characters; truncated JSON cannot become an empty board. An empty valid response is labeled `empty_response`, not a claim that the market or company has no vacancies. Actual source access/redirect/HTTP failures remain separate ledger outcomes. Collection support does not guarantee live source availability or permission for other collection methods.
@@ -63,6 +69,8 @@ Malformed responses, dropped records, pagination indicators and the 200-observat
 ## Resume and recovery
 
 Raw responses and derived observations live in the existing private `data/hr-ops/captures/`, linked from the research run. Repeating collection in the same active run uses its hash-checked cached observations, reapplies current role patterns/exclusions and spends no requests. `--refresh` explicitly requests another budgeted collection. An older cached success retains its date and exposes any later failed/interrupted refresh under `newer_unreconciled_attempts`; it does not claim current complete coverage.
+
+Cache validation checks request provenance, referenced raw captures, hashes, board identity, shapes and local paths. Missing files, changed routing metadata and linked capture paths fail before another request, including explicit refresh. Doctor reports these failures and restore rejects inconsistent evidence even when backup file checksums are valid. Inspect or restore verified data rather than treating refresh as a corruption bypass. Older valid caches remain readable; raw truncation warnings can make the current view partial without rewriting historical captures. Diagnostic ownership is shared so doctor does not list ledger errors twice.
 
 Candidate selection/admission remains explicit. Cached output retains already admitted candidates at capacity and their immutable origin. Company grouping is provisional and never merges canonical prospect records. Backups/restores already include captures and research ledgers; tests verify cache replay and equality after restore. Corrupted caches fail closed before another request, leaving recovery and inspection explicit.
 
