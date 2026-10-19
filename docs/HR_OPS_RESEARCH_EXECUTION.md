@@ -30,6 +30,8 @@ Reserve native web requests in a standalone invocation. Wait for a successful, p
 
 ## Reusable source priority
 
+Continuation reviews keep a shared discovery request in `attempt_sequences` for traceability. `diagnostics` describes the candidate's own named requests; `origin_diagnostics` separately describes its source query or directory. A readable directory never implies that the candidate's website was readable.
+
 `sources --catalog` now includes `recommended_sources` from the effective starter configuration, honoring disabled overrides. Agency client-vacancy sources with current identity evidence lead other sources; directories remain discovery aids and services-only references remain outside vacancy seeds. No new company seed is added without ownership and client-vacancy verification.
 
 Within that priority, keep page, query, mixed, unknown and unobserved request groups separate, in that order. Compare yield rates only within the same group and attribution convention. Yield is distinct currently validated demand found on readable attempts divided by all attributed attempts. Aggregate explicit source ID, website, directory URL, careers URL and API aliases without double counting prospects. `both` attribution can contribute separately to each ICP, but another ICP's prospects cannot inflate its demand yield. The output exposes request-kind counts, the comparison group and ranking basis. Mixed historical attribution remains inspectable, not directly comparable to page-only or query-only performance. It is not a probability of a sale or a qualification score. Existing qualification weights and thresholds are unchanged.

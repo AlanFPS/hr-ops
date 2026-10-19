@@ -76,6 +76,20 @@ test('restricted HTTP hosts cannot be retried through another path and denial sp
   await captureSource(repo,c,'blocked',{...request,url:'https://agency.example/careers'},{fetchText:async()=>'<h1>Company careers</h1>'});
 });
 
+test('shared readable discovery origin does not mark failed candidate pages readable',async t=>{
+  const {repo,c}=await setup(t);
+  await updateRun(repo,c,'diagnostics',{action:'configure',scope:{candidates:2,pages:4,directory_pages:1}});
+  await reserveResearch(repo,c,'diagnostics',{kind:'page',company:'https://directory.example',target:'https://directory.example/members',candidate_names:[],directory:true});
+  await updateRun(repo,c,'diagnostics',{action:'outcome',outcome:{sequence:1,category:'read_ok',prospect_ids:[],note:'Directory readable; individual companies not yet read'}});
+  for(const name of ['Failed','Unresearched'])await updateRun(repo,c,'diagnostics',{action:'admit',candidate:{name,source_url:'https://directory.example/members',source_sequence:1}});
+  await reserveResearch(repo,c,'diagnostics',{kind:'page',company:null,target:'https://failed.example',candidate_names:['Failed']});
+  await updateRun(repo,c,'diagnostics',{action:'outcome',outcome:{sequence:2,category:'access_failure',prospect_ids:[],note:'Company page failed TLS validation'}});
+  const rows=(await updateRun(repo,c,'diagnostics',{action:'review'})).continuation_review.candidates;
+  assert.deepEqual(rows[0].diagnostics,['access_failure']);assert.deepEqual(rows[1].diagnostics,[]);
+  assert(rows.every(row=>JSON.stringify(row.origin_diagnostics)==='["read_ok"]'));
+  assert(rows.every(row=>row.attempt_sequences.includes(1)&&row.prospects.length===0));
+});
+
 test('empty extracted content is partial and navigation-only success still requires semantic review',async t=>{
   const {repo,c}=await setup(t);
   const empty=await captureSource(repo,c,'text',{company:'https://site.example',url:'https://site.example/empty'},{fetchText:async()=>'<html><script>window.data={jobs:[]}</script></html>'});
