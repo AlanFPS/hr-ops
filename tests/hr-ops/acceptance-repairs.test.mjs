@@ -144,11 +144,12 @@ test("starter catalog is explicit, configurable, unique and expires without sile
 test("starter API collection saves unreviewed demand and returns separate manual tasks", async t => {
   const r = repo(t), c = config(), checked = new Date();
   // Fixture identity verification follows this test's clock, not the shipped catalog's age.
-  c.discovery.sources = starterSources().map(s => ({ ...s, identity_evidence: { ...s.identity_evidence, observed_at: checked.toISOString() } }));
+  c.discovery.sources = starterSources().map(s => ({ ...s, enabled: s.provider === 'manual' || s.name === 'River', identity_evidence: { ...s.identity_evidence, observed_at: checked.toISOString() } }));
+  const manualCount = c.discovery.sources.filter(s=>s.provider==='manual').length;
   const ctx = { fetchJson: async () => ({ jobs: [{ title: "Backend Engineer", jobUrl: "https://jobs.ashbyhq.com/river/example", location: "Remote" }] }) };
-  const result = await discoverSources(r, c, { starter: true, limit: 6, now: checked, ctx, run: "seed" });
+  const result = await discoverSources(r, c, { starter: true, limit: manualCount+1, now: checked, ctx, run: "seed" });
   assert.equal(result.created, 1);
-  assert.equal(result.research_tasks.length, 5);
+  assert.equal(result.research_tasks.length, manualCount);
   const p = r.list()[0];
   assert.equal(p.openings[0].reviewed, false);
   assert.equal(p.status, "RESEARCHING");

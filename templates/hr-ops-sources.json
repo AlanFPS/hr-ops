@@ -3,6 +3,42 @@
   "description": "Verified research starting points, not qualified leads. Verify current ownership, vacancies, geography, size and willingness to use a recruiting partner. User overrides live in hr_ops.discovery.sources.",
   "sources": [
     {
+      "name": "BY Recruiting",
+      "website": "https://www.byrecruiting.com",
+      "icp": "agency",
+      "provider": "manual",
+      "careers_url": "https://www.byrecruiting.com/careers",
+      "hiring_for": "client",
+      "notes": "First-party board and linked /jobs/348 role body verified. One reviewed full-stack client listing explicitly included US, Canada and LatAm. Reverify current demand and country scope; raw board counts are not distinct hires. Recruiter count, supplier appetite and incremental value beyond existing LATAM coverage remain unknown. Current official leadership is on /about.",
+      "identity_evidence": {
+        "id": "starter-by-recruiting-20261019",
+        "url": "https://www.byrecruiting.com/careers",
+        "excerpt": "Open Positions Browse current opportunities from our partner companies.",
+        "observed_at": "2026-10-19T01:52:13.230Z",
+        "source_type": "primary",
+        "excerpt_kind": "quote",
+        "retrieval_precision": "exact"
+      }
+    },
+    {
+      "name": "Right Fit Advisors",
+      "website": "https://rightfitadvisors.com",
+      "icp": "agency",
+      "provider": "manual",
+      "careers_url": "https://rightfitadvisors.com/jobs/",
+      "hiring_for": "client",
+      "notes": "Official board links /job/full-stack-ai-engineer/ with explicit client attribution and US/LATAM scope. Similar postings may overlap; do not infer distinct requisitions or clients. Corp publisher labels do not establish internal employment. Broader advisory/development services and existing international reach may reduce service fit. Reverify role currentness, size and supplier appetite. Current team reference: /about-us/.",
+      "identity_evidence": {
+        "id": "starter-right-fit-20261019",
+        "url": "https://rightfitadvisors.com/job/full-stack-ai-engineer/",
+        "excerpt": "Right Fit Advisors is partnering with an innovative technology company to hire a Full-Stack AI Engineer",
+        "observed_at": "2026-10-19T01:53:31.078Z",
+        "source_type": "primary",
+        "excerpt_kind": "quote",
+        "retrieval_precision": "exact"
+      }
+    },
+    {
       "name": "River",
       "website": "https://river.com",
       "icp": "startup",

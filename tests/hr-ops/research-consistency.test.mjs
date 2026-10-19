@@ -5,6 +5,7 @@ import { reserveResearch,researchBudget,updateRun,captureSource } from '../../li
 import { researchYield } from '../../lib/hr-ops/research-outcomes.mjs';
 import { sourceCatalog,inspectSources } from '../../lib/hr-ops/sources.mjs';
 import { researchTasks } from '../../lib/hr-ops/operations.mjs';
+import { discoverSources } from '../../lib/hr-ops/discovery.mjs';
 import { config,input,prospect,now } from './fixtures.mjs';
 function setup(t){const root=mkdtempSync(join(tmpdir(),'hr-yield-'));t.after(()=>rmSync(root,{recursive:true,force:true}));return {repo:new LocalRepository(root),c:config()};}
 test('attributed outcomes preserve budgets, unique demand counts and historical unknown attribution',async t=>{
@@ -29,4 +30,18 @@ test('services-only pages are research references; disabled overrides still win'
  const cat=sourceCatalog();assert(!cat.sources.some(s=>s.name==='Cadre'));assert(cat.research_references.some(s=>s.name==='Cadre'));
  const c=config();c.discovery.sources=[{website:cat.sources[0].website,enabled:false}];assert(!inspectSources(c,{starter:true}).sources.some(s=>s.website===cat.sources[0].website));
  const tasks=researchTasks(prospect(),c,now).tasks.join(' ');assert.match(tasks,/board/);assert.match(tasks,/appetite unknown/);assert.match(tasks,/captures/);
+});
+
+test('verified agency additions remain manual research tasks, respect overrides and expire',async t=>{
+ const {repo,c}=setup(t),names=['BY Recruiting','Right Fit Advisors'];
+ c.discovery.sources=sourceCatalog().sources.filter(s=>names.includes(s.name));
+ assert.equal(c.discovery.sources.length,2);assert(c.discovery.sources.every(s=>s.hiring_for==='client'&&s.provider==='manual'));
+ const checked=new Date('2026-10-19T03:00:00Z');let calls=0;
+ const result=await discoverSources(repo,c,{now:checked,ctx:{fetchJson:async()=>{calls++;throw Error('Manual seed must not fetch');}}});
+ assert.equal(result.research_tasks.length,2);assert.equal(repo.list().length,0);assert.equal(calls,0);
+ const expired=await discoverSources(repo,c,{now:new Date('2027-10-19T03:00:00Z')});
+ assert(expired.research_tasks.every(t=>t.requires_identity_refresh));assert.equal(repo.list().length,0);
+ c.discovery.sources[0]={website:c.discovery.sources[0].website,enabled:false};
+ const selected=inspectSources(c,{starter:true,now:checked}).sources;
+ assert(!selected.some(s=>s.name===names[0]));assert(selected.some(s=>s.name===names[1]));
 });
