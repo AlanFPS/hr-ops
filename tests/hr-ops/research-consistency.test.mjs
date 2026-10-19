@@ -5,7 +5,7 @@ import { reserveResearch,researchBudget,updateRun,captureSource } from '../../li
 import { researchYield } from '../../lib/hr-ops/research-outcomes.mjs';
 import { sourceCatalog,inspectSources } from '../../lib/hr-ops/sources.mjs';
 import { researchTasks } from '../../lib/hr-ops/operations.mjs';
-import { discoverSources } from '../../lib/hr-ops/discovery.mjs';
+import { discoverSources,discoveryQueries } from '../../lib/hr-ops/discovery.mjs';
 import { config,input,prospect,now } from './fixtures.mjs';
 function setup(t){const root=mkdtempSync(join(tmpdir(),'hr-yield-'));t.after(()=>rmSync(root,{recursive:true,force:true}));return {repo:new LocalRepository(root),c:config()};}
 test('attributed outcomes preserve budgets, unique demand counts and historical unknown attribution',async t=>{
@@ -44,4 +44,36 @@ test('verified agency additions remain manual research tasks, respect overrides 
  c.discovery.sources[0]={website:c.discovery.sources[0].website,enabled:false};
  const selected=inspectSources(c,{starter:true,now:checked}).sources;
  assert(!selected.some(s=>s.name===names[0]));assert(selected.some(s=>s.name===names[1]));
+});
+
+test('reused employer seed stays opt-in, manual, overridable and subject to identity freshness',async t=>{
+ const {repo,c}=setup(t),seed=sourceCatalog().sources.find(s=>s.name==='Resend');
+ assert(seed);assert.equal(seed.provider,'manual');assert.equal(seed.icp,'startup');
+ const checked=new Date('2026-10-19T06:00:00Z');let calls=0;
+ const ctx={fetchJson:async()=>{calls++;throw Error('Manual research must not dispatch');}};
+ c.discovery.starter_sources=false;c.discovery.sources=[];
+ const without=await discoverSources(repo,c,{icp:'startup',now:checked,ctx});
+ assert.equal(without.research_tasks.length,0);
+ c.discovery.sources=[seed];
+ const fresh=await discoverSources(repo,c,{icp:'startup',now:checked,ctx});
+ assert.equal(fresh.research_tasks.length,1);assert.equal(fresh.research_tasks[0].requires_identity_refresh,false);
+ const stale=await discoverSources(repo,c,{icp:'startup',now:new Date('2027-10-19T06:00:00Z'),ctx});
+ assert.equal(stale.research_tasks[0].requires_identity_refresh,true);
+ c.discovery.sources=[{website:'https://www.resend.com',enabled:false}];
+ assert(!inspectSources(c,{starter:true,now:checked}).sources.some(s=>s.name==='Resend'));
+ assert.equal(calls,0);assert.deepEqual(repo.list(),[]);
+});
+
+test('broader employer recipes remain ICP-specific tasks and preserve user query overrides',()=>{
+ const c=config(),catalog=sourceCatalog();
+ const startup=discoveryQueries('startup',c),agency=discoveryQueries('agency',c);
+ assert.deepEqual(startup,catalog.queries.startup);assert.deepEqual(agency,catalog.queries.agency);
+ assert(startup.some(q=>q.includes('site:wellfound.com/jobs')));
+ assert(startup.some(q=>q.includes('site:jobs.insightpartners.com/jobs')));
+ assert.equal(new Set(startup).size,startup.length);
+ assert(startup.every(q=>!/\b(?:visa|devrel|Europe)\b/i.test(q)), 'Do not inherit legacy candidate targeting');
+ c.discovery.queries.startup=['Custom backend discovery for US employers'];
+ assert.deepEqual(discoveryQueries('startup',c),c.discovery.queries.startup);
+ assert.deepEqual(discoveryQueries('agency',c),agency);
+ assert.deepEqual(discoveryQueries('both',c),[...agency,...c.discovery.queries.startup]);
 });

@@ -159,6 +159,23 @@
         "retrieval_precision": "exact"
       },
       "api": "https://api.ashbyhq.com/posting-api/job-board/socket"
+    },
+    {
+      "name": "Resend",
+      "website": "https://resend.com",
+      "icp": "startup",
+      "provider": "manual",
+      "careers_url": "https://resend.com/careers",
+      "notes": "Retained Career-Ops company reverified against its current first-party careers list and backend role body. Americas time-zone scope supports exploration; exact hiring countries remain unconfirmed. Existing Brazil leadership, international hiring and internal Recruiting mean incremental supplier value and appetite require research. Similar regional listings are not proof of separate hires.",
+      "identity_evidence": {
+        "id": "starter-resend-20261019",
+        "url": "https://resend.com/careers",
+        "excerpt": "Backend Engineer Americas / Remote / Full-time",
+        "observed_at": "2026-10-19T05:31:52.536Z",
+        "source_type": "primary",
+        "excerpt_kind": "quote",
+        "retrieval_precision": "exact"
+      }
     }
   ],
   "controls": [
@@ -223,7 +240,15 @@
       "US startup backend engineer remote Latin America careers",
       "US startup full stack engineer remote worldwide careers",
       "US small software company backend contractor Americas careers",
-      "site:ycombinator.com/companies backend engineer remote hiring"
+      "site:ycombinator.com/companies backend engineer remote hiring",
+      "site:wellfound.com/jobs \"full stack\" \"Latin America\"",
+      "site:wellfound.com/jobs \"backend\" \"11-50\"",
+      "site:weworkremotely.com/remote-jobs \"full-stack\" \"Americas\"",
+      "site:remotive.com/remote/jobs/software-development \"backend\" \"Latin America\"",
+      "site:himalayas.app/companies \"backend\" \"United States\"",
+      "site:remoteok.com \"backend\" \"Americas\"",
+      "site:workingnomads.com \"full stack\" \"United States\"",
+      "site:jobs.insightpartners.com/jobs \"backend\" \"United States\""
     ]
   },
   "research_references": [
