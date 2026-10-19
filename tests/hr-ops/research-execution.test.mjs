@@ -214,3 +214,16 @@ test('agency priority favors current client vacancy sources and exposes incomple
   assert.equal(ranked[0].priority_basis.readable_demand_per_attempt,0);
   assert.equal(rankedSources(repo,c,[{...source,identity_stale:true}],now)[0].priority_basis.client_vacancy_source,false);
 });
+
+test('comparable agency boards prefer readable history over unresolved-only results without creating demand',async t=>{
+  const {repo,c}=await setup(t);
+  const sources=['A blocked','B partial','C unread','Z readable'].map((name,i)=>({id:String(i),name,website:`https://agency${i}.example`,icp:'agency',hiring_for:'client'}));
+  for(const [index,category] of [[0,'access_restricted'],[1,'partial_collection'],[3,'read_ok']]){
+    const source=sources[index];const {reservation}=await reserveResearch(repo,c,'quality',{kind:'page',company:source.website,target:source.website+'/jobs',attribution:{source_id:source.id,icp:'agency'}},{now});
+    await updateRun(repo,c,'quality',{action:'outcome',outcome:{sequence:reservation.sequence,category,prospect_ids:[],note:'Fixture collection outcome only'}});
+  }
+  const ranked=rankedSources(repo,c,sources,now);
+  assert.deepEqual(ranked.map(s=>s.name),['Z readable','C unread','A blocked','B partial']);
+  assert.deepEqual(ranked.map(s=>s.priority_basis.collection_quality),['readable','unobserved','unresolved_only','unresolved_only']);
+  assert(ranked.every(s=>s.priority_basis.readable_demand_per_attempt===0));assert.equal(repo.list().length,0);
+});

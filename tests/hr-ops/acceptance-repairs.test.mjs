@@ -153,6 +153,9 @@ test("starter API collection saves unreviewed demand and returns separate manual
   assert.equal(p.openings[0].reviewed, false);
   assert.equal(p.status, "RESEARCHING");
   assert.equal(researchBudget(r, c, "seed").attempts.length, 1);
+  // Explicitly revisit this board: partial collection can move it below the
+  // first six next time. Deduplication should not depend on stable ranking.
+  c.discovery.sources = c.discovery.sources.map(s=>({...s,enabled:s.website===p.website.replace(/\/$/,'') || s.website===p.website}));
   const repeat = await discoverSources(r, c, { starter: true, limit: 6, now: checked, ctx });
   assert.equal(repeat.existing, 1);
   assert.equal(r.list().length, 1);

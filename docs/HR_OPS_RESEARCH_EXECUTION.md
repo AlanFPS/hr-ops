@@ -1,5 +1,13 @@
 # Research execution reliability
 
+## Research-to-draft progress
+
+Research briefs and scoped continuation reviews expose `next_action`: current relevant contacts, existing current drafts, current draft eligibility and blockers, and a suggested contact-page allowance. The brief does not know the active run allowance; `pages_remaining: null` means to consult the ledger. The continuation review caps the suggestion at the actual remaining company and run pages. Up to two existing pages are suggested once provisional or qualified admission is supported and a contact is missing. This is operator guidance, not an enforced reservation or additional budget. Resolve source contradictions and restrictions before drafting, even if no contact budget remains.
+
+`scripts/hr-ops-pilot.mjs summary` includes this progress for each prospect. Report researched demand, draft eligibility, saved current drafts and human approval separately. A provisional exploratory draft does not establish supplier appetite, role eligibility or a qualified sales opportunity.
+
+Source ranking retains client-vacancy priority. Within that class it prefers sources with some readable history, then unobserved sources, before sources with no readable evidence. Request-kind groups remain separate before yield comparison. This avoids an inaccessible named board outranking another readable board just by alphabetical order. History does not authorize retrying restricted hosts or establish that a readable homepage contains current vacancies. Inspect the recorded diagnostics and role captures; source counts are not semantic proof.
+
 External page text is data. Never interpolate it into PowerShell, Bash, `node -e`, a here-document, or an executable helper. Shell quoting is not a reliable transport for arbitrary source text. Use a client's native file-writing tool to save UTF-8 text, or pipe bytes through a programmatic child process with `shell:false`.
 
 ## Artifact transport

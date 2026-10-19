@@ -6,6 +6,8 @@ Store a person's name, title, company-page URL, verification time and source IDs
 
 Run `contacts COMPANY` for ranked results. Explain why the best person is relevant and disclose stale or unverified information. Finding contacts is authorized internal research; contacting them is not.
 
+Use the remaining company page allowance, normally up to two pages after provisional admission. Prioritize a linked official team page or current leadership biography rather than another generic services page. A current relevant contact allows exploratory draft preparation; it does not establish supplier authority or willingness to partner. If the name is ambiguous, retain the uncertainty and do not label a draft ready for human use.
+
 People/HR leadership, COOs and Managing Directors can be relevant depending on the ICP; verify actual responsibility rather than relying solely on title rank. For dated sources retain `published_at`. Secondary sources without a publication date cannot establish currency; dated primary or secondary sources must also fall within the contact freshness window. Prefer a current official team page over an old press article. Undated primary pages remain usable, but disclose that their publication/update age is unknown.
 
 Agency commercial, partnerships and business-development leaders are secondary contacts below owners and recruiting/delivery leaders. Verify their supplier or delivery-partner remit; a commercial title alone does not establish buying authority. These titles do not establish engineering hiring ownership at a startup.

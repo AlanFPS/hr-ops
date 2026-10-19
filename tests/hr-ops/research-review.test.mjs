@@ -8,7 +8,7 @@ import {reserveResearch,researchBudget,updateRun,captureSource} from '../../lib/
 import {continuationReview} from '../../lib/hr-ops/run-review.mjs';
 import {draftReviewIssues} from '../../lib/hr-ops/draft-review.mjs';
 import {scoreProspect} from '../../lib/hr-ops/model.mjs';
-import {saveDraft,draftCurrent,outreachBrief} from '../../lib/hr-ops/operations.mjs';
+import {saveDraft,draftCurrent,outreachBrief,researchNextStep} from '../../lib/hr-ops/operations.mjs';
 import {validateProspect} from '../../lib/hr-ops/validation.mjs';
 import {runHr,withReservation} from '../../lib/hr-ops/client.mjs';
 import {config,now,prospect,draft,fact} from './fixtures.mjs';
@@ -18,6 +18,33 @@ async function scoped(t){const s=await setup(t);await updateRun(s.repo,s.c,'revi
   await reserveResearch(s.repo,s.c,'review',{kind:'query',target:'Alpha Beta official sites',candidate_names:['Alpha','Beta']});
   await reserveResearch(s.repo,s.c,'review',{kind:'page',target:'https://alpha.example/jobs',company:'https://alpha.example',candidate_names:['Alpha']});return s;}
 const reviewed=check=>({token:check.token,candidates:check.candidates.map(x=>({name:x.name,decision:'deferred',reason:'Further official identity or role research remains; operator is pausing',attempt_sequences:x.attempt_sequences}))});
+
+test('contact allocation uses existing allowance and does not change qualification or records',()=>{
+  const p=prospect(),c=config();p.contacts=[];const before=structuredClone(p),score=scoreProspect(p,c,now);
+  assert.equal(researchNextStep(p,c,now).next_step,'verify_contact');
+  assert.equal(researchNextStep(p,c,now).pages_remaining,null);
+  for(const [remaining,expected] of [[6,2],[1,1],[0,0]])assert.equal(researchNextStep(p,c,now,remaining).suggested_contact_pages,expected);
+  assert.deepEqual(p,before);assert.deepEqual(scoreProspect(p,c,now),score);
+  p.suppressed=true;assert.equal(researchNextStep(p,c,now,6).next_step,'review_restrictions');assert.equal(researchNextStep(p,c,now,6).suggested_contact_pages,0);
+});
+
+test('progress distinguishes current contacts, drafts, stale evidence and held prospects',()=>{
+  const p=prospect(),c=config();assert.equal(researchNextStep(p,c,now).next_step,'prepare_draft');
+  saveDraft(p,draft(p),c,now);assert.equal(researchNextStep(p,c,now).next_step,'review_existing_drafts');
+  assert.equal(researchNextStep(p,c,now).current_drafts,1);
+  p.contacts[0].verified_at='2025-01-01T00:00:00Z';
+  assert.equal(researchNextStep(p,c,now).draft_eligible,false);assert.equal(researchNextStep(p,c,now).current_drafts,0);
+  p.hold=true;assert.equal(researchNextStep(p,c,now).suggested_contact_pages,0);
+  p.hold=false;p.openings=[];assert.equal(researchNextStep(p,c,now).next_step,'resolve_research_gaps');
+});
+
+test('continuation caps contact planning at global remaining pages without spending requests',()=>{
+  const p=prospect(),c=config();p.contacts=[];
+  const state={limits:{queries:20,pages_per_company:6},scope:{candidates:2,pages:1,directory_pages:1},attempts:[
+    {sequence:1,kind:'query',candidate_names:[p.name]}],outcomes:[{sequence:1,category:'demand_match',prospect_ids:[p.id]}]};
+  const before=structuredClone(state),review=continuationReview(state,[p],c,now);
+  assert.equal(review.candidates[0].prospects[0].next_action.suggested_contact_pages,1);assert.deepEqual(state,before);
+});
 
 test('candidate cap retains per-candidate queries/pages and query-only candidates',async t=>{
   const {repo,c}=await scoped(t),before=researchBudget(repo,c,'review');
