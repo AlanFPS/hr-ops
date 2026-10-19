@@ -122,6 +122,8 @@ Explicitly unreviewed openings never contribute to qualifying demand or outreach
 
 ## Evidence and research input
 
+Research and outreach briefs expose advisory `research_caveats` for secondary-only size evidence, executive/secondary fallback contacts, unverified supplier authority and posting/requisition IDs missing board scope. Dossiers show the same limitations and format inclusive count ranges as ranges, for example 51–200. These warnings do not change scores, thresholds, saved facts or historical decisions. Approximate size reported by an undated directory is not company-confirmed headcount; matching directories need not be independent. Qualification and contact-title relevance never establish supplier appetite.
+
 Positive `recruiting_pain` (`mixed` or `strong`) requires `basis` and a nonempty `rationale` in addition to confidence and evidence. Allowed bases are `employer_reported_difficulty` (an explicit statement that hiring is difficult), `documented_capacity_gap` (an explicit mismatch between recruiting capacity and demand), and `explicit_partner_request` (a request for external recruiting delivery). Sources must support the chosen basis; labels do not prove semantics. An inferred assessment is capped at half need points. A specialist vacancy, multiple openings, funding, small team, or an old/reposted vacancy alone is insufficient. Without corroborating difficulty/capacity evidence, retain these as demand/risk context and leave pain unknown. `none` requires evidence too; silence is unknown.
 
 Example fictional pain fact: `{"value":"mixed","confidence":"inferred","evidence":["capacity-statement"],"basis":"documented_capacity_gap","rationale":"The employer says its recruiting team has no capacity for the additional searches; partner support may help."}`. Historical pain facts lacking a basis remain readable but earn zero need points and no need coverage. Requalification updates saved scores; current recommendations already use this rule. Previous exports remain historical snapshots. Do not relabel old sources merely to preserve a score.
@@ -170,6 +172,8 @@ Optional opening fields: `posted_at`, `employer`. Optional contact `email` must 
 Agency commercial/partnerships/business-development leaders rank as secondary potential contacts. Their supplier remit remains a research question. They rank below agency owners and recruiting/delivery leaders; the same titles do not imply startup engineering hiring ownership.
 
 ## Draft input and human boundaries
+
+`outreach COMPANY` includes exact `existing_drafts` wording, review state, missing fields and derived `prepared_for_review` status, including historical/replaced versions marked noncurrent. This lets the agent inspect existing text before adding alternatives. `prepared_for_review` requires both saved readiness and current eligibility. Human review and sending permission remain separate, and `send_enabled` is always false in the core CLI.
 
 ```json
 {

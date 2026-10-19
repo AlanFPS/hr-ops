@@ -364,7 +364,9 @@ export async function main(args = process.argv.slice(2)) {
         newly_discovered:rows.filter(p=>p.created).length,
         refreshed_existing:rows.filter(p=>!p.created).length,
         completion_note:'Identity import is not completed demand research.',
-        provenance_gaps:rows.filter(p=>!p.discovery_source).map(p=>({id:p.id,reason:'Discovery origin not recorded. Supply discovery_source on new imports; do not infer it from later research.'})),
+        provenance_gaps:rows.filter(p=>!p.discovery_source).map(p=>({id:p.id,reason:originLedger?.candidate_origins?.some(o=>candidateKey(o.name)===candidateKey(p.name))
+          ? 'Origin recorded with no public discovery URL; inspect candidate_origins for the offline or unknown source explanation.'
+          : 'Discovery origin not recorded. Supply discovery_source on new imports; do not infer it from later research.'})),
         candidate_origins:originLedger?.candidate_origins??[],
         admission_gaps:originLedger?rows.filter(p=>p.created).flatMap(p=>{
           const origin=originLedger.candidate_origins?.find(o=>candidateKey(o.name)===candidateKey(p.name));

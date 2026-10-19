@@ -35,12 +35,14 @@ Then supply a concrete reason and the token with one decision per candidate:
 
 Use `run --run ID --action complete --input stop.json`. Supported decisions:
 
+The JSON result of `run --action review` contains `continuation_review`; read the token and candidate rows from that object, not the top level. The ledger's other fields remain alongside it. A targeted run may configure `directory_pages: 0` to prohibit directory requests; candidate and total-page caps must remain positive. Invalid or out-of-scope reservations are rejected before dispatch without consuming an attempt. Failed network requests still consume their successful reservation. Existing positive directory budgets retain their meaning.
+
 - `target_satisfied`: the candidate's contribution and remaining gaps are explained; this does not certify the whole discovery target.
 - `no_useful_path`: explain the source-specific reason, not just the candidate cap.
 - `budget_exhausted`: accepted only when that candidate has no page or query allowance.
 - `deferred`: useful or unresolved work remains, and the run is stopping explicitly. Report the shortfall; do not call it exhaustive discovery.
 
-Every decision references real attempts for that candidate. A token becomes stale after a new request, interpretation, linked prospect revision, configuration change or UTC day change. Run review again before completion. Resume clears the current completion assessment and retains all budgets/attempts. Legacy completed ledgers without a review remain readable; new scoped completions require it. Unscoped legacy runs retain their interface.
+For researched candidates, every decision references real attempts for that candidate. An explicitly recorded offline/unknown origin with null URL and sequence may be deferred before any attempt with `attempt_sequences: []`; it cannot claim completed research, no useful research path or budget exhaustion. A token becomes stale after a new request, interpretation, linked prospect revision, configuration change or UTC day change. Run review again before completion. Resume clears the current completion assessment and retains all budgets/attempts. Legacy completed ledgers without a review remain readable; new scoped completions require it. Unscoped legacy runs retain their interface.
 
 Code validates completeness, token freshness, allowance and references. It does not prove that `no_useful_path` is a truthful judgment. Do not generate 20 boilerplate reasons to satisfy validation.
 
