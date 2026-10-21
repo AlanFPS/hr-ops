@@ -13,7 +13,7 @@ Read the root instructions, `modes/hr-ops/_shared.md`, the user `config/profile.
 | Request | Mode |
 |---|---|
 | Set up an HR workspace / show available operations | `modes/hr-ops/setup.md` |
-| Inspect company inventory / import a list / queue company research | `modes/hr-ops/inventory.md` |
+| Inspect company inventory / import a list / queue new or refresh research | `modes/hr-ops/inventory.md` |
 | Find/evaluate N clients, startups or agencies | `modes/hr-ops/discover.md`, then `pipeline.md` |
 | Research named prospects / strongest prospects | `modes/hr-ops/research.md` |
 | Qualify / explain a score | `modes/hr-ops/qualify.md` |

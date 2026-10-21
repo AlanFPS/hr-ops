@@ -91,6 +91,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   run --run ID --action inspect|review|complete|resume|configure|outcome|admit [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
   inventory [list|queue] [--icp startup|agency|unknown] [--limit 100]
+  inventory queue --scope new|refresh|all  New leads or existing prospect refresh briefs
   inventory import|review --input FILE --revision N [--dry-run]  Unqualified lead intake/review
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   discover --plan [--icp both|agency|startup]  Reusable sources, seeds, controls and exclusions
@@ -145,6 +146,7 @@ function parse(args) {
     "tier",
     "destination",
     "feed",
+    "scope",
   ];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -188,7 +190,7 @@ function input(path) {
 }
 function summary(result) {
   if (Array.isArray(result.companies)) return result.companies.map(c =>
-    `${c.id} | ${c.name} | ${c.icp} | ${c.identity_status} | ${c.state} | ${c.queue_blocker ?? c.queue_task}`
+    `${c.id} | ${c.name} | ${c.icp} | ${c.identity_status} | ${c.state} | ${c.queue_blocker ?? c.queue_task}${c.refresh ? ' | '+c.refresh.reasons.join(', ') : ''}`
   ).join('\n') || 'No matching inventory tasks.';
   const rows = Array.isArray(result) ? result : (result.prospects ?? null);
   if (rows)
@@ -205,6 +207,7 @@ function summary(result) {
 export async function main(args = process.argv.slice(2)) {
   const { command, selector, options: o } = parse(args);
   assert(!o.plan||command==='discover','--plan requires discover');
+  assert(!o.scope||(command==='inventory'&&selector==='queue'),'--scope requires inventory queue');
   assert(!o.feed||command==='discover','--feed requires discover');
   assert(!o.refresh||(command==='discover'&&o.feed),'--refresh requires discover --feed');
   assert(!(o.plan&&(o.feed||o.input)),'--plan cannot be combined with --feed or --input');
@@ -223,7 +226,7 @@ export async function main(args = process.argv.slice(2)) {
     for(const key of Object.keys(o))assert(allowed.includes(key),`--${key} is not supported by ${command}`);
   }
   if(command==='inventory'){
-    for(const key of Object.keys(o))assert(['json','summary','dry-run','icp','limit','input','revision'].includes(key),`--${key} is not supported by inventory`);
+    for(const key of Object.keys(o))assert(['json','summary','dry-run','icp','limit','input','revision','scope'].includes(key),`--${key} is not supported by inventory`);
     assert(['list','queue','import','review'].includes(selector??'list'),'Use inventory list, queue, import or review');
     const mutation=['import','review'].includes(selector);
     assert(mutation?!!o.input&&!o.icp&&!o.limit:!o.input&&!o.revision,'Inventory import/review require --input; list/queue use filters only');
@@ -254,7 +257,7 @@ export async function main(args = process.argv.slice(2)) {
   }
   else if(command==='inventory'){
     if(selector==='import'||selector==='review')result=await (selector==='import'?importInventory:reviewInventory)(repo,c,input(o.input),mutationOpts());
-    else result=inventoryView(repo,c,{now,queue:selector==='queue',icp:o.icp??'both',limit:o.limit?integer(o.limit,'--limit'):1000});
+    else result=inventoryView(repo,c,{now,queue:selector==='queue',scope:o.scope??'new',icp:o.icp??'both',limit:o.limit?integer(o.limit,'--limit'):1000});
   }
   else if (command === "build") result = buildInfo();
   else if (command === "config")

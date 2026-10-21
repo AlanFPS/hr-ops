@@ -29,6 +29,8 @@ The projection updates when prospect records, source configuration or feed captu
 ```text
 node hr-ops.mjs inventory
 node hr-ops.mjs inventory queue --icp unknown --limit 20
+node hr-ops.mjs inventory queue --scope refresh --icp agency --limit 10
+node hr-ops.mjs inventory queue --scope all --limit 20
 node hr-ops.mjs inventory import --input leads.json --revision 0 --dry-run
 node hr-ops.mjs inventory import --input leads.json --revision 0
 node hr-ops.mjs inventory review --input review.json --revision 1
@@ -72,6 +74,14 @@ Queue/exclusion review JSON:
 Identity review adds an `identity` object with `website`, `aliases` (HTTPS websites, default is not implicit) and nonempty `evidence` using the existing evidence schema. Evidence must be primary with `excerpt_kind` and `retrieval_precision`; it must actually support the employer and every alias. Shared ATS/feed/social hosts cannot be canonical company domains. The validator checks structure and domain conflicts, not semantic truth. `identity: null` revokes the inventory identity without deleting the observation or prior review. All mutations require the current global inventory revision; reload/reconcile on conflict. Preview returns the proposed revision and writes nothing.
 
 ## Research handoff and boundaries
+
+`inventory queue --scope new|refresh|all` extends this same queue. Default `new` preserves new-company behavior. Refresh tasks use saved prospects and existing research briefs to show stale facts/openings/contacts, reconciliation flags, verification and country-scope gaps, draft/contact next steps and supplier/service-fit checks. They expose the current prospect revision for the normal research API. No queue database, background requests or extra budget is introduced. Queue summaries describe the full projection; `matched` describes the selected scope and ICP.
+
+Refresh tasks skip suppression, holds, closed commercial states, inventory exclusions, controls, disabled domains, supported blockers and confirmed out-of-range size. Unknown size stays unknown. A current explicit agency delivery request can establish the demand basis without fictional vacancies; inferred or stale requests cannot. Existing identities cannot become new companies through `--scope all`. Operator priority applies first; within a priority, reconciliation and stale/liveness review precede other gaps.
+
+`refresh.recorded_changes` compares before/after openings, fact values/confidence and contact identity/remit in the latest recorded research or collection write, even after a later non-research action. It reports stored additions, meaningful changes and removals by record ID and fact key. These are not verified market changes or distinct requisitions. A rechecked timestamp alone does not count as a changed role. Historical snapshots are never rewritten or replayed.
+
+For a validated structured board capture, HR-Ops reuses Career-Ops' `classifyLiveness` on only the matching role description. Whole pages/boards, unrelated jobs and feed omissions are not inputs. Manual-page captures still require the existing research review; they do not produce this classifier signal. Signals retain capture time/staleness and remain advisory. A captured expiry phrase requests review and never closes an opening. Partial collections and absent feed rows never establish closure. Refresh through existing budget/capture/research commands, preserving restrictions and history. Queue reads make no writes and spend no requests.
 
 Ask an agent: "Import this company list into HR-Ops inventory, check possible duplicates, then show the highest-priority research tasks." Natural-language requests and `codex exec` use the same `modes/hr-ops/inventory.md`; optional slash wrappers need no separate implementation.
 
