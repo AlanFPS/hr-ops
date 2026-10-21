@@ -156,13 +156,32 @@ test('unknown company pages retain candidate identity across hosts and later ver
   const {repo,c}=await setup(t);c.discovery.pages_per_company=2;
   await updateRun(repo,c,'identity',{action:'configure',scope:{candidates:2,pages:8,directory_pages:1}});
   const page=(name,company,target)=>reserveResearch(repo,c,'identity',{kind:'page',company,target,candidate_names:[name]});
-  await page('Alpha',null,'https://directory.example/alpha');await page('Beta',null,'https://directory.example/beta');
-  await page('Alpha','https://alpha.example','https://jobs.example/alpha');
+  assert.equal((await page('Alpha',null,'https://directory.example/alpha')).remaining,1);
+  assert.equal((await page('Beta',null,'https://directory.example/beta')).remaining,1);
+  assert.equal((await page('Alpha','https://alpha.example','https://jobs.example/alpha')).remaining,0);
   await assert.rejects(page('Alpha',null,'https://different.example/alpha'),/candidate page scope exhausted/);
   const state=researchBudget(new LocalRepository(repo.root),c,'identity');
   assert.deepEqual(scopeSummary(state).pages_by_candidate,{alpha:2,beta:1});assert.equal(state.attempts[0].company,null);
   await assert.rejects(reserveResearch(repo,c,'unscoped',{kind:'page',company:null,target:'https://directory.example'}),/Unknown company/);
   await assert.rejects(reserveResearch(repo,c,'identity',{kind:'page',company:null,target:'https://directory.example',candidate_names:[],directory:true}),/Unknown company/);
+});
+test('reservation receipts retain combined candidate allowance across dry runs and restart',async t=>{
+  const {root,repo,c}=await setup(t);c.discovery.pages_per_company=6;
+  await updateRun(repo,c,'receipt',{action:'configure',scope:{candidates:2,pages:20,directory_pages:1}});
+  const attempt=(name,company)=>({kind:'page',company,target:'https://jobs.example/role',candidate_names:[name]});
+  assert.equal((await reserveResearch(repo,c,'receipt',attempt('Alpha',null))).remaining,5);
+  assert.equal((await reserveResearch(repo,c,'receipt',attempt('Beta',null))).remaining,5);
+  const known=attempt('Alpha','https://alpha.example');
+  const preview=await reserveResearch(repo,c,'receipt',known,{dryRun:true});
+  assert.equal(preview.remaining,4);assert.equal(preview.dispatch_allowed,false);
+  assert.equal(researchBudget(repo,c,'receipt').attempts.length,2);
+  for(let remaining=4;remaining>=0;remaining--)
+    assert.equal((await reserveResearch(new LocalRepository(root),c,'receipt',known)).remaining,remaining);
+  const before=researchBudget(repo,c,'receipt');let dispatched=0;
+  await assert.rejects(withReservation('receipt',known,()=>dispatched++,{cwd:root,env:{...process.env,HR_OPS_ROOT:root}}),/candidate page scope exhausted/);
+  assert.equal(dispatched,0);assert.deepEqual(researchBudget(repo,c,'receipt'),before);
+  assert.equal((await reserveResearch(repo,c,'receipt',{kind:'query',target:'query',candidate_names:[]})).remaining,c.discovery.max_queries-1);
+  assert.equal((await reserveResearch(repo,c,'legacy',{kind:'page',company:'https://alpha.example',target:'https://jobs.example/role'})).remaining,5);
 });
 test('missing company is an error and denied reservation cannot dispatch or update outcomes',async t=>{
   const {root,repo,c}=await setup(t);await updateRun(repo,c,'limit',{action:'configure',scope:{candidates:1,pages:1,directory_pages:1}});

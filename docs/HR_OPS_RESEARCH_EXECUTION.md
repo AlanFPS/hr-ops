@@ -38,6 +38,8 @@ For a local catalog, an offline operator shortlist or an unknown origin before a
 
 For scoped page requests, `candidate_names` contains one stable company name across official pages, directories and ATS hosts. `company` is the verified company website, not the fetched page host. If that website is not yet known, explicitly use `company:null`; this is accepted only for a scoped prospect page with one candidate name. After verifying the website, use it on future requests while keeping the same candidate name. Earlier unknowns remain truthful. Both phases count toward the same candidate page cap. Directory pages still use their own host, `directory:true` and no candidate names. Unscoped page requests still require a company URL.
 
+For a scoped prospect page, the reservation receipt's `remaining` counts the combined candidate allowance, including earlier unknown-company requests. It does not replace the run-wide limits: also inspect `scope.remaining_pages` and, for directories, `scope.remaining_directory_pages`. Query and unscoped receipt semantics are unchanged. Dry runs show the proposed remaining allowance without authorizing dispatch or consuming it.
+
 Reserve native web requests in a standalone invocation. Wait for a successful, persisted `dispatch_allowed:true` receipt before calling the native tool. Do not bundle a reservation with captures, outcomes or other commands. In scripted code, `withReservation` guarantees that its callback runs only after a successful reservation. Compliance by native agent tools remains procedural, not an independently enforced network boundary.
 
 ## Reusable source priority

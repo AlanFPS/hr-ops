@@ -49,3 +49,30 @@ The source investigation used a new experimental data root, four search queries 
 The readable HIRECLOUT role establishes client attribution and a U.S. work-authorization restriction, not present LATAM eligibility. Its listing age remains a currentness gap. The root host returned 403 and was not retried; the separately readable jobs subdomain is first-party. NextDeavor remained unverified after thin home content and a JavaScript-only board. Artisanal Talent's search results were services/leadership-oriented, not verified client engineering vacancies. No seed-count target justified adding weak sources.
 
 This was source validation and local deterministic acceptance. It was not a ten-prospect discovery pilot, fresh Codex/Claude client certification, live business-inbox validation or production certification. Existing business-email and protected-backup setup gaps are unaffected.
+
+## Release acceptance observations, 2026-10-21
+
+The complete inventory/refresh implementation at `7496ab91b2eabd22e25ec0630a822188dacccdbe` passed [Windows and Linux CI](https://github.com/AlanFPS/hr-ops/actions/runs/39676907368). Separate fresh Codex and Claude checkouts used that exact build, the same task prompt and dependency lockfile, Node v24.21.0, and empty pipelines. The first Claude launch failed authentication before testing; it was retained, and a new checkout/session was used after private human login.
+
+| Live refresh run | HR fixtures | Companies | Pages / queries | Scope |
+|---|---|---|---|---|
+| Codex | 355 passed, zero skipped | Two startups, two agencies | 20 / 0 | Four catalog targets, two passes |
+| Claude | 355 passed, zero skipped | Two startups, two agencies | 20 / 1 | Same targets and budgets; additional reviewed listings |
+
+Each run had a 24-page, eight-query cap and six pages per candidate, including failed attempts and the unknown-to-verified identity phase. These were refresh tests, not broad discovery or verified outreach campaigns. Unchanged lists and additional research knowledge were distinguished from market changes. Different researched listings and contacts explain differing scores; equal scores were not a success criterion.
+
+The final evidence review found and resolved these issues:
+
+| Finding | Resolution and verification |
+|---|---|
+| A scoped receipt overstated company pages remaining after an earlier `company:null` request | The receipt now uses the combined candidate count. The existing unknown-company regression checks receipts, and the added six-page case checks dry runs, restart, independent candidates, rejected dispatch and unchanged query/unscoped semantics. Budget enforcement already rejected the excess page; the fix changes the receipt, not the cap or ledger schema. |
+| River's U.S. offices and Americas/Europe role scope were treated as confirmed U.S. role eligibility | Corrected to unknown using revision-checked research, preserving the opening ID and source history. The original interpretation and correction remain inspectable. |
+| Resend team locations were described as direct employment | Replaced with the observed team locations; engagement model and supplier appetite remain unknown. The original native output was retained. |
+| Dynamic status timestamps made response equality look like a state change | Repeated controls compare canonical exports, revisions and record bytes. No-op qualification and rejected stale revisions do not mutate records. |
+| A restore could verify an old snapshot without proving it contains the final ledger | The host audit compares every backup manifest hash with both the restored files and final operating files, including the completed research ledger. |
+
+The corrected live workspaces each pass twelve independent structural/integrity checks. Each final backup restores all 30 manifest files, including 19 captures and its ledger, without browser sessions. After the host research corrections, qualification no-ops and stale-revision rejection were rechecked. The operating checkout's original 34 prospect files remain byte-identical. No messages, drafts, approvals or interaction events were created in either real-company test pipeline.
+
+The receipt regression file passed all 22 checks, and the updated full HR suite passed all 356 with zero failures or skips. Subsequent committed-build acceptance must identify its own revision: the earlier live requests above did not exercise the follow-up receipt correction. Fresh affected-path sessions use the same new committed revision, run the full fixture suite and independently check the six-page receipt sequence and denied seventh dispatch, without additional public requests. Private receipts and prompts are under `local/release-*`; each isolated workspace retains `local/acceptance/`, including original native reports, reviewed artifacts and transcripts. These local paths are inspection conveniences, not portable evidence by themselves; reproduce the tracked tests and inspect each run's build metadata.
+
+Source interpretation still requires review. A passing schema or fixture suite does not validate buying intent, exact employment arrangements, every contact-title variant or unattended research accuracy. Some manager/sales titles remain visible without recognized leadership relevance; supplier authority is unverified. Missing business email, operating-account configuration, real business-inbox validation and protected off-device backups remain separate operating requirements.
