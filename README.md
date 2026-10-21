@@ -19,7 +19,11 @@ For a fresh independent data root, start with `npm run setup` for the guide, the
 
 `discover --plan --icp both` separates reusable sources, company seeds, controls and existing-prospect exclusions. `discover --feed remotive --run RUN_ID` and `discover --feed hackernews --run RUN_ID` collect bounded unverified employer leads using retained public readers. Configure a scoped run first. Cached invocations reuse captures and current exclusions; `--refresh` explicitly requests another budgeted collection. These feeds cover employer discovery, while agency discovery uses the separate client-vacancy source, directory and query plan. Collection is not qualification.
 
-Commands: `discover`, `sources`, `budget`, `capture`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
+Additional retained readers are `discover --feed remoteok --run RUN_ID` and `discover --feed himalayas --run RUN_ID`. Each performs one budgeted public request and links its unverified results directly to inventory. Inspect existing-inventory matches before new research. RemoteOK is a latest-postings window and Himalayas is one public page; neither provides complete market coverage or verifies client fit.
+
+`inventory` combines retained companies, enabled HR sources, saved prospects, cached feed leads and supplied lists. `inventory queue` separates identity review from new-company research. Names and website claims remain unverified until reviewed; intake never creates prospects. See [inventory commands and payloads](docs/HR_OPS_INVENTORY.md).
+
+Commands: `inventory`, `discover`, `sources`, `budget`, `capture`, `pipeline`, `qualify`, `research`, `contacts`, `outreach`, `followups`, `status`, `record`, `export`, `init`, `doctor`, all through `node hr-ops.mjs`. Search/research and message composition are performed by the operating agent; the CLI provides validated persistence, scoring, ATS collection and work briefs.
 
 Inspect the verified research starter catalog with `node hr-ops.mjs sources --starter`. It includes API and manual research sources, not prequalified clients. See [source configuration and research controls](docs/HR_OPS_RESEARCH.md).
 

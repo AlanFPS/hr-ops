@@ -6,6 +6,8 @@ HR system files are `hr-ops.mjs`, `lib/hr-ops/`, `modes/hr-ops/`, the shared HR 
 
 The system-owned starter catalog is `templates/hr-ops-sources.json`; overrides belong in `config/profile.yml` under `hr_ops.discovery`. Research attempt ledgers are user data at `data/hr-ops/research-runs/<run-id>.json`. Preserve them on backup; reserve attempts through the CLI/API, not direct file edits. Evidence may retain excerpt type, retrieval precision and publication time; old evidence remains immutable.
 
+Company-list intake and appended inventory review decisions are private user data at `data/hr-ops/inventory.json`. Use revision-checked `inventory import|review` commands. The combined inventory view also projects existing code-owned sources, cached feed observations and canonical prospects without copying or qualifying them. Backups and diagnostics include the inventory state; see `docs/HR_OPS_INVENTORY.md`.
+
 # Data Contract
 
 This document defines which files belong to the **system** (auto-updatable) and which belong to the **user** (never touched by updates).

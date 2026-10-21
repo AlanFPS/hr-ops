@@ -27,6 +27,8 @@ HR-Ops can use these sources to identify employers. A job listing is a research 
 
 ## Catalog additions and verification limits
 
+HR now exposes the retained RemoteOK and Himalayas public readers in addition to Remotive/HN through `discover --feed ID --run ID`. Their bounded, unverified employer observations connect directly to inventory with capture/request provenance and possible-duplicate review links. See [reader contracts and limitations](HR_OPS_SETUP_AND_DISCOVERY.md#selected-retained-feed-readers). Company ATS readers help research a known tenant; they do not themselves discover an unknown employer population. Broader portfolio readers with paging, POST requests or internal retries need explicit request-budget adaptation before use, so this release does not silently enable them.
+
 [Resend's official careers page](https://resend.com/careers) was checked on 2026-10-19 and added as a manual seed with dated identity evidence. Its backend listing described Americas time zones, which does not establish a permitted-country list or supplier demand. Reverify the listing before use. Catalog admission makes a reusable research task, not a qualified prospect or approved recipient.
 
 The table above is a structural assessment of the retained configuration. It is not live certification of every source. A fresh search-index result can point to a removed vacancy, and an HTTP success can contain only navigation or unrelated roles. Retain the exact attempted URL, transport diagnostic and actual role evidence separately. A readable company page cannot support a claim about a different URL's HTTP failure.

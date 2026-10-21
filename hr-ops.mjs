@@ -58,6 +58,7 @@ import { discoverSources, discoveryQueries } from "./lib/hr-ops/discovery.mjs";
 import {setupGuide,commandMenu} from './lib/hr-ops/entrypoints.mjs';
 import {discoveryPlan} from './lib/hr-ops/discovery-plan.mjs';
 import {discoveryFeeds,collectDiscoveryFeed} from './lib/hr-ops/discovery-feeds.mjs';
+import {inventoryView,importInventory,reviewInventory} from './lib/hr-ops/inventory.mjs';
 import {PROJECT_ROOT} from './lib/hr-ops/store.mjs';
 import {
   effectiveSources,
@@ -89,9 +90,11 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   retention                           Read-only exposure inventory
   run --run ID --action inspect|review|complete|resume|configure|outcome|admit [--input payload.json]
   sources [--starter]                  Inspect configured/starter research sources
+  inventory [list|queue] [--icp startup|agency|unknown] [--limit 100]
+  inventory import|review --input FILE --revision N [--dry-run]  Unqualified lead intake/review
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   discover --plan [--icp both|agency|startup]  Reusable sources, seeds, controls and exclusions
-  discover --feed remotive|hackernews --run ID [--refresh]  Budgeted unverified employer leads
+  discover --feed remotive|hackernews|remoteok|himalayas --run ID [--refresh]  Budgeted inventory leads
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
   capture --run ID --input source.json   Budgeted public GET with retrieval timestamp
   research <company> [--input research.json --revision N]
@@ -184,6 +187,9 @@ function input(path) {
   return JSON.parse(decoded.replace(/^\uFEFF/, ''));
 }
 function summary(result) {
+  if (Array.isArray(result.companies)) return result.companies.map(c =>
+    `${c.id} | ${c.name} | ${c.icp} | ${c.identity_status} | ${c.state} | ${c.queue_blocker ?? c.queue_task}`
+  ).join('\n') || 'No matching inventory tasks.';
   const rows = Array.isArray(result) ? result : (result.prospects ?? null);
   if (rows)
     return (
@@ -216,6 +222,12 @@ export async function main(args = process.argv.slice(2)) {
     const allowed=command==='setup'?['input','destination','dry-run','json','summary']:['json','summary','dry-run'];
     for(const key of Object.keys(o))assert(allowed.includes(key),`--${key} is not supported by ${command}`);
   }
+  if(command==='inventory'){
+    for(const key of Object.keys(o))assert(['json','summary','dry-run','icp','limit','input','revision'].includes(key),`--${key} is not supported by inventory`);
+    assert(['list','queue','import','review'].includes(selector??'list'),'Use inventory list, queue, import or review');
+    const mutation=['import','review'].includes(selector);
+    assert(mutation?!!o.input&&!o.icp&&!o.limit:!o.input&&!o.revision,'Inventory import/review require --input; list/queue use filters only');
+  }
   const root = dataRoot(),
     repo = new LocalRepository(root);
   const c = ['setup','menu'].includes(command)||(command==='workspace'&&selector==='create')?null:loadConfig(root);
@@ -239,6 +251,10 @@ export async function main(args = process.argv.slice(2)) {
     if(selector==='create'){assert(o.input&&o.destination,'--input and --destination required');result=await createWorkspace(o.destination,input(o.input),{dryRun});}
     else if(selector==='configure'){assert(o.input,'--input required');result=await configureWorkspace(repo,input(o.input),{dryRun});}
     else {assert(selector==='inspect','Use workspace create, inspect or configure');result={...dataRootInfo(),workspace:readWorkspace(repo),selected:true};}
+  }
+  else if(command==='inventory'){
+    if(selector==='import'||selector==='review')result=await (selector==='import'?importInventory:reviewInventory)(repo,c,input(o.input),mutationOpts());
+    else result=inventoryView(repo,c,{now,queue:selector==='queue',icp:o.icp??'both',limit:o.limit?integer(o.limit,'--limit'):1000});
   }
   else if (command === "build") result = buildInfo();
   else if (command === "config")

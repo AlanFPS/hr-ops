@@ -14,6 +14,8 @@ The legacy scaffolder still clones Career-Ops and the original dashboards still 
 
 ## Source plan versus company inventory
 
+`node hr-ops.mjs inventory` and `inventory queue` provide a unified company/research index across the retained list, enabled HR sources, saved prospects, cached feed leads and supplied lists. Unverified observations are separate from supported company groups; possible duplicates require identity review. Intake never creates prospects or qualifies companies. See [inventory payloads, queue and recovery](HR_OPS_INVENTORY.md).
+
 `node hr-ops.mjs discover --plan --icp both` returns a network-free plan:
 
 - Reusable discovery sources: selected public feeds, manual directories and separate query recipes for each ICP.
@@ -29,6 +31,12 @@ The agency plan uses existing verified client-vacancy company readers and public
 ## Selected retained feed readers
 
 `discover --feed remotive --run ID` reuses the existing Remotive public reader; `discover --feed hackernews --run ID` reuses the existing two-request HN hiring-thread reader. These are opt-in employer-discovery routes, not default qualification rules or live-access certification. `--icp agency` rejects these feeds and directs the agent to the agency plan. When requesting both ICPs, feed output explicitly reports employer-only coverage.
+
+`discover --feed remoteok --run ID` and `discover --feed himalayas --run ID` reuse the retained RemoteOK and Himalayas readers, each through one budgeted public GET. RemoteOK's initial legal/update metadata is excluded from posting counts; unnamed employers are not replaced with the provider's fallback name. Himalayas reuses its trusted listing parser and keeps advertised location restrictions. These sources can reveal employers without knowing each company's ATS tenant. They are additional employer leads, not agency-client demand.
+
+RemoteOK exposes a latest-postings window, not the entire market. Himalayas reads one page only; a server may return fewer entries than the requested `limit=50`. Cursors, totals exceeding the page, unknown totals, nonzero offsets and retention limits remain partial. No automatic pagination, retries, redirect following, company-profile scraping or arbitrary endpoints are added. Listing descriptions, posting identifiers and source dates are retained in bounded captures. Explicit numeric publication fields use epoch seconds; invalid, ambiguous numeric strings and future dates remain unresolved. Empty responses never establish no hiring at a company or in a market.
+
+Successful collection is automatically visible in `inventory` and `inventory queue` through the existing captures. `collection_capture_id` and `inventory_observation_ids` preserve the link without copying feed rows into user-list or prospect records. `inventory_matches` identify prior supplied lists, seeds and reviewed identities; they require reconciliation rather than automatic name/domain merging. Cached exclusions are reapplied. `inventory_links_partial` exposes a projection exceeding the linker's 10,000-group display ceiling. The actual research run's candidate/request limits are unchanged.
 
 Configure one scoped run before collection. For example, save `{"candidates":20,"pages":80,"directory_pages":8}` as `run-scope.json`, then run:
 
@@ -52,7 +60,7 @@ hr_ops:
         enabled: false
 ```
 
-The supported IDs are `remotive` and `hackernews`. Entries are overrides; an omitted ID remains available for explicit selection. Unknown IDs/keys, duplicate entries and nonboolean flags are rejected. Credentials, executable scripts and arbitrary feed endpoints are unsupported. Disabling a feed also disables explicit collection/preview of that feed.
+The supported IDs are `remotive`, `hackernews`, `remoteok` and `himalayas`. Entries are overrides; an omitted ID remains available for explicit selection. Unknown IDs/keys, duplicate entries and nonboolean flags are rejected. Credentials, executable scripts and arbitrary feed endpoints are unsupported. Disabling a feed also disables explicit collection/preview of that feed.
 
 ## What collection establishes
 
@@ -67,6 +75,21 @@ Collection never creates prospect records, assigns qualifying eligibility, prove
 Malformed responses, dropped records, pagination indicators and the 200-observation retention cap produce partial coverage. Captures are bounded to 2 MB per response and descriptions to 20,000 characters; truncated JSON cannot become an empty board. An empty valid response is labeled `empty_response`, not a claim that the market or company has no vacancies. Actual source access/redirect/HTTP failures remain separate ledger outcomes. Collection support does not guarantee live source availability or permission for other collection methods.
 
 ## Resume and recovery
+
+Reader regression coverage lives in `tests/hr-ops/expanded-readers.test.mjs`, alongside the existing feed and inventory suites. Tests use intercepted transports only:
+
+| Risk | Regression |
+|---|---|
+| Provider fallback labels become employer identities | Missing raw employer names are rejected; metadata is not a vacancy |
+| Reader requests bypass scope or disabled sources | Preview, zero allowance, agency-only and disabled-source cases dispatch nothing |
+| A page or malformed response is called complete discovery | Explicit first-page/latest-window scope, totals/cursors, malformed rows and empty payload cases |
+| Remote geography becomes LATAM eligibility | Advertised country text is retained with unverified identity and zero qualification |
+| An old list or exclusion is bypassed | Inventory match links, mixed exclusions requiring review, and excluded cache replay |
+| Restart causes duplicate requests or corrupt evidence is refreshed | Zero-request replay, backup/restore equality and tamper rejection before dispatch |
+| External content or dates become trusted instructions/facts | Hostile text remains inert; invalid/future/ambiguous dates remain unresolved |
+| A damaged inventory is ignored until after a request | Inventory validation fails before request reservation or dispatch |
+
+The retained provider regressions in `tests/providers/remoteok.test.mjs` and `tests/providers/himalayas.test.mjs` continue to test their original contracts. No provider implementation or candidate scanner behavior is changed.
 
 Raw responses and derived observations live in the existing private `data/hr-ops/captures/`, linked from the research run. Repeating collection in the same active run uses its hash-checked cached observations, reapplies current role patterns/exclusions and spends no requests. `--refresh` explicitly requests another budgeted collection. An older cached success retains its date and exposes any later failed/interrupted refresh under `newer_unreconciled_attempts`; it does not claim current complete coverage.
 
