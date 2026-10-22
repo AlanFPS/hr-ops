@@ -62,6 +62,8 @@ The default packet hides reference answers. Have a client or human record an ind
 
 The packet is not an automated semantic truth grader or a general policy engine. Deterministic tests exercise the software after conservative interpretation: U.S. opening counts remain separate from company market fit, provisional admission cannot become qualified, unknown partner fields stay unknown, and exact hire/shared-client claims trigger existing draft checks. Merely citing these fixtures does not prove that a future agent will interpret every source correctly. Natural-language truthfulness remains an operator review responsibility.
 
+An official careers page may link directly to one ATS posting instead of the board index. Record that exact outbound URL in ownership evidence and retain the matching parent board and posting ID. That link supports the individual opening only; it does not establish ownership of sibling postings. The validator accepts this combination without requiring deletion of board metadata, while rejecting unrelated board domains, tenant paths and sibling posting links.
+
 Research and outreach briefs now repeat these specific distinctions, using the existing task/checklist fields. No second claim schema or historical data rewrite is introduced. Original snapshots, quotations and experimental prospect data remain intact.
 
 ## Finding-to-test matrix

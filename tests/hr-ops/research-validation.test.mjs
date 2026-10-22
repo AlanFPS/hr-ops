@@ -65,6 +65,23 @@ test('official ATS ownership requires an official outbound link for the actual b
   x=>x.openings[0].verification.ownership.method='content_match'
  ]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>applyResearch(blankProspect(input(),now),bad,now),/ownership|Ownership|Official|Official-link/);}
 });
+test('an official link to the exact opening preserves its matching parent board and posting identity',()=>{
+ const data=payload(),o=data.openings[0];data.openings=[o];
+ o.url='https://jobs.example/fictional/backend';o.board='https://jobs.example/fictional';o.posting_id='backend-posting';
+ o.verification.ownership={status:'verified',method:'official_link',url:o.url+'?source=careers',evidence:['link'],rationale:'The official careers page links to this exact posting.'};
+ data.evidence=[evidence('link',`Backend opening: ${o.verification.ownership.url}`)];
+ const p=applyResearch(blankProspect(input(),now),data,now);
+ assert.equal(p.openings[0].board,o.board);assert.equal(p.openings[0].posting_id,'backend-posting');
+ assert.equal(scoreProspect(p,config(),now).opening_count,1);
+ for(const mutate of [
+  x=>x.openings[0].board='https://jobs.example/other-tenant',
+  x=>x.openings[0].board='https://jobs.example/fiction',
+  x=>x.openings[0].board='https://different.example/fictional',
+  x=>{x.openings[0].verification.ownership.url='https://jobs.example/fictional/another-role';x.evidence[0].excerpt=`Another opening: ${x.openings[0].verification.ownership.url}`;},
+  x=>{x.openings[0].verification.ownership.url='https://jobs.example/other-tenant/backend';x.evidence[0].excerpt=`Other tenant: ${x.openings[0].verification.ownership.url}`;}
+ ]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>applyResearch(blankProspect(input(),now),bad,now),/Official link/);}
+});
+
 test('secondary-only currency and invalid references cannot certify an opening',()=>{
  const data=payload();data.evidence=[{...evidence('secondary'),source_type:'secondary'}];
  data.openings[0].verification.currency.evidence=['secondary'];
