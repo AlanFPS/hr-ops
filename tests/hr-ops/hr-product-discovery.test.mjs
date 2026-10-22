@@ -43,7 +43,7 @@ test('HR setup and menu work without candidate onboarding and create only an exp
 test('HR source plans separate agency routes, employer feeds, seeds, controls and legacy configuration without writes',async t=>{
   const s=await setup(t),before=researchBudget(s.repo,s.c,'test');
   const plan=runHr(['discover','--plan','--icp','agency','--run','test'],s.options);
-  assert.equal(plan.network_reads_allowed,false);assert.deepEqual(plan.reusable_sources.feeds.map(f=>f.id),['by-recruiting']);
+  assert.equal(plan.network_reads_allowed,false);assert.deepEqual(plan.reusable_sources.feeds.map(f=>f.id),['bedrock-talent','by-recruiting']);
   assert(plan.reusable_sources.directories.every(d=>d.icp==='agency'));
   assert(plan.company_seeds.every(d=>d.icp==='agency'));assert(plan.company_seeds.some(d=>d.hiring_for==='client'));
   assert(plan.reusable_sources.query_recipes.agency.length>0);assert(!plan.reusable_sources.query_recipes.startup);

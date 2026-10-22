@@ -22,7 +22,7 @@ const remote=(extra={})=>({id:11,position:'Backend Engineer',company:'New Labs',
 const himalaya=(extra={})=>({id:'12',title:'Full Stack Engineer',companyName:'New Labs',applicationLink:'https://himalayas.app/companies/new-labs/jobs/12',guid:'https://himalayas.app/companies/new-labs/jobs/12',description:'Build backend APIs and frontend software.',locationRestrictions:['United States'],pubDate:1770000000,...extra});
 const collect=(s,id,payload,extra={})=>collectDiscoveryFeed(s.repo,s.c,{id,run:'readers',fetchText:async()=>JSON.stringify(payload),...extra});
 
-test('new readers share configuration, preview and budget boundaries without enabling agency collection',async t=>{
+test('employer readers share configuration, preview and budget boundaries without misrouting agency requests',async t=>{
   for(const id of ['remoteok','himalayas']){
     const s=await setup(t,0);s.c.discovery.feeds=[{id,enabled:false}];validateConfig(s.c);
     let calls=0;await assert.rejects(collect(s,id,[],{fetchText:async()=>{calls++;}}),/disabled/);
@@ -32,7 +32,7 @@ test('new readers share configuration, preview and budget boundaries without ena
     const denied=await collect(s,id,[],{fetchText:async()=>{calls++;}});assert.equal(denied.stopping_reason,'request_budget_exhausted');assert.equal(calls,0);
     assert.equal(researchBudget(s.repo,s.c,'readers').attempts.length,0);
   }
-  assert.deepEqual(discoveryFeeds(config()).map(f=>f.id),['remotive','hackernews','remoteok','himalayas','speedrun','by-recruiting']);
+  assert.deepEqual(discoveryFeeds(config()).map(f=>f.id),['remotive','hackernews','remoteok','himalayas','speedrun','by-recruiting','bedrock-talent']);
 });
 
 test('RemoteOK skips only its metadata row, retains raw employer evidence and avoids provider fallback identities',async t=>{

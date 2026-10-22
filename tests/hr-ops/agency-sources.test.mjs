@@ -52,6 +52,8 @@ test('agency yield never turns internal hiring or restricted client demand into 
 test('agency vacancy recipes stay separate from employer feeds and user overrides win',()=>{
   const c=config(),queries=discoveryQueries('agency',c);
   assert(queries.some(q=>q.includes('site:jobs.hireclout.com/jobs/')));
+  assert(queries.some(q=>q.includes('site:jobs.ashbyhq.com')&&q.includes('"our client"')));
+  assert(queries.some(q=>q.includes('site:jobs.ashbyhq.com')&&q.includes('"partnering with"')));
   assert(!discoveryQueries('startup',c).some(q=>q.includes('hireclout')));
   c.discovery.queries.agency=['Our reviewed agency recipe'];
   assert.deepEqual(discoveryQueries('agency',c),['Our reviewed agency recipe']);

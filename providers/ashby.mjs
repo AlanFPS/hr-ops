@@ -163,6 +163,21 @@ function formatLocation(j) {
   return [...new Set(parts)].join(' · ');
 }
 
+// Shared pure normalization. HR collectors reserve their own single request;
+// the retained candidate scanner keeps its existing fetch/retry policy.
+/** @param {any} j @param {string} company */
+export function normalizeAshbyJob(j, company) {
+  return {
+    provider: 'ashby',
+    posting_id: j.id == null ? undefined : String(j.id),
+    requisition_id: j.requisition_id == null ? undefined : String(j.requisition_id),
+    title: j.title || '', url: j.jobUrl || '', company,
+    location: formatLocation(j),
+    description: typeof j.descriptionPlain === 'string' ? j.descriptionPlain : '',
+    salary: parseCompensation(j), postedAt: toEpochMs(j.publishedAt),
+  };
+}
+
 /** @type {Provider} */
 export default {
   id: 'ashby',
@@ -207,20 +222,6 @@ export default {
       { retries: ASHBY_RETRIES, baseDelayMs: ASHBY_BACKOFF_BASE_MS },
     ));
     const jobs = Array.isArray(json?.jobs) ? json.jobs : [];
-    return jobs.map(/** @param {any} j */ (j) => ({
-      provider: 'ashby',
-      posting_id: j.id == null ? undefined : String(j.id),
-      requisition_id: j.requisition_id == null ? undefined : String(j.requisition_id),
-      title: j.title || '',
-      url: j.jobUrl || '',
-      company: entry.name,
-      location: formatLocation(j),
-      // Ashby's posting-api list ships `descriptionPlain` for free (same
-      // payload, no per-job request) — mirrors lever. Enables scan.mjs's
-      // content_filter / visa_filter.
-      description: typeof j.descriptionPlain === 'string' ? j.descriptionPlain : '',
-      salary: parseCompensation(j),
-      postedAt: toEpochMs(j.publishedAt),
-    }));
+    return jobs.map(/** @param {any} j */ (j) => normalizeAshbyJob(j, entry.name));
   },
 };

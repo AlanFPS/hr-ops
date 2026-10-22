@@ -243,6 +243,8 @@
   ],
   "queries": {
     "agency": [
+      "site:jobs.ashbyhq.com \"our client\" \"backend\" recruiting",
+      "site:jobs.ashbyhq.com \"partnering with\" \"full stack\" recruiting",
       "site:jobs.hireclout.com/jobs/ \"full stack\" \"partnering\"",
       "US technical recruiting \"our client\" \"backend\" \"United States\" \"jobs\"",
       "US boutique technical recruiting \"client\" \"backend engineer\" jobs",

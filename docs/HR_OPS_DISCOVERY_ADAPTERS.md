@@ -2,6 +2,8 @@
 
 These adapters extend the existing shared skill, CLI, research ledger, bounded captures and inventory. No MCP, new search service, database, candidate applications or delivery channel is added. Scores, qualification thresholds and approval rules are unchanged.
 
+For the additional Bedrock Talent agency reader and capture-backed company/ATS identity workflow, see [assisted inventory identity review](HR_OPS_IDENTITY_REVIEW.md). The implementation-validation section below preserves the earlier adapter phase and its original smoke limitations.
+
 ## Commands and scope
 
 Configure a research run through `run --action configure` before collection. Each command below reserves one directory/page attempt before dispatch, never retries or paginates automatically, and reports partial coverage:

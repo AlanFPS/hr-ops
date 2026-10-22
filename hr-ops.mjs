@@ -59,6 +59,7 @@ import {setupGuide,commandMenu} from './lib/hr-ops/entrypoints.mjs';
 import {discoveryPlan} from './lib/hr-ops/discovery-plan.mjs';
 import {discoveryFeeds,collectDiscoveryFeed} from './lib/hr-ops/discovery-feeds.mjs';
 import {inventoryView,importInventory,reviewInventory} from './lib/hr-ops/inventory.mjs';
+import {inventoryIdentityPacket,confirmInventoryIdentity} from './lib/hr-ops/inventory-identity.mjs';
 import {PROJECT_ROOT} from './lib/hr-ops/store.mjs';
 import {
   effectiveSources,
@@ -93,9 +94,11 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   inventory [list|queue] [--icp startup|agency|unknown] [--limit 100]
   inventory queue --scope new|refresh|all  New leads or existing prospect refresh briefs
   inventory import|review --input FILE --revision N [--dry-run]  Unqualified lead intake/review
+  inventory assist --input FILE       Read-only identity, cached evidence and ATS-link review packet
+  inventory confirm --input FILE --revision N [--dry-run]  Capture-backed company identity review
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   discover --plan [--icp both|agency|startup]  Reusable sources, seeds, controls and exclusions
-  discover --feed remotive|hackernews|remoteok|himalayas|speedrun|by-recruiting --run ID [--refresh]  Budgeted inventory leads
+  discover --feed remotive|hackernews|remoteok|himalayas|speedrun|by-recruiting|bedrock-talent --run ID [--refresh]  Budgeted inventory leads
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
   capture --run ID --input source.json   Budgeted public GET with retrieval timestamp
   research <company> [--input research.json --revision N]
@@ -227,9 +230,10 @@ export async function main(args = process.argv.slice(2)) {
   }
   if(command==='inventory'){
     for(const key of Object.keys(o))assert(['json','summary','dry-run','icp','limit','input','revision','scope'].includes(key),`--${key} is not supported by inventory`);
-    assert(['list','queue','import','review'].includes(selector??'list'),'Use inventory list, queue, import or review');
-    const mutation=['import','review'].includes(selector);
-    assert(mutation?!!o.input&&!o.icp&&!o.limit:!o.input&&!o.revision,'Inventory import/review require --input; list/queue use filters only');
+    assert(['list','queue','import','review','assist','confirm'].includes(selector??'list'),'Use inventory list, queue, import, review, assist or confirm');
+    const usesInput=['import','review','confirm','assist'].includes(selector);
+    assert(usesInput?!!o.input&&!o.icp&&!o.limit:!o.input&&!o.revision,'Inventory import/review/assist/confirm require --input; list/queue use filters only');
+    if(selector==='assist')assert(!o.revision&&!o['dry-run'],'Identity assistance is read-only and does not accept --revision or --dry-run');
   }
   const root = dataRoot(),
     repo = new LocalRepository(root);
@@ -257,6 +261,8 @@ export async function main(args = process.argv.slice(2)) {
   }
   else if(command==='inventory'){
     if(selector==='import'||selector==='review')result=await (selector==='import'?importInventory:reviewInventory)(repo,c,input(o.input),mutationOpts());
+    else if(selector==='assist')result=inventoryIdentityPacket(repo,c,input(o.input),{now});
+    else if(selector==='confirm')result=await confirmInventoryIdentity(repo,c,input(o.input),mutationOpts());
     else result=inventoryView(repo,c,{now,queue:selector==='queue',scope:o.scope??'new',icp:o.icp??'both',limit:o.limit?integer(o.limit,'--limit'):1000});
   }
   else if (command === "build") result = buildInfo();
