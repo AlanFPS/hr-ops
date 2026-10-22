@@ -184,3 +184,12 @@ test('onboarding cannot rebind an account when history appeared after preview',a
  const before=profile(s);await assert.rejects(applyOnboarding(s.repo,{preview_fingerprint:preview.preview_fingerprint},{expectedRevision:saved.revision}),/separate workspace/);
  assert.equal(profile(s),before);assert.equal(readWorkspace(s.repo).linkedin_profile_url,sender);assert.equal(readOnboarding(s.repo).pending,undefined);
 });
+test('source override drafts use the real source validator and preserve valid disabled overrides',async t=>{
+ const s=await setup(t),before=checkpoint(s);
+ for(const source of [{website:'not-a-url',enabled:true},{website:'https://fixture.example',enabled:'false'},{website:'https://fixture.example',name:'Fixture',provider:'unknown',icp:'agency'}]){
+  await assert.rejects(saveOnboarding(s.repo,{answers:{source_overrides:known({sources:[source]})}},{expectedRevision:0}),/Invalid discovery source overrides/);assert.equal(checkpoint(s),before);
+ }
+ const answers=core({source_overrides:known({sources:[{website:'https://fixture.example',enabled:false}],feeds:[{id:'bedrock-talent',enabled:false}]})});
+ const r=await reviewed(s,answers);await apply(s,r);assert.equal(loadConfig(s.root).discovery.sources[0].enabled,false);assert.equal(loadConfig(s.root).discovery.feeds[0].enabled,false);
+ assert.equal(runHr(['doctor'],s.opts).ok,true);
+});

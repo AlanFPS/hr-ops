@@ -53,6 +53,8 @@ node hr-ops.mjs onboarding apply --input reviewed.json --revision 1
 
 All core IDs need a response before preview. Save the other answers in further revision-checked calls; do not manufacture unknown/skip answers without the user's choice. `preview.json` is `{}`. The preview contains exact file changes, unresolved answers and `preview_fingerprint`; it does not write anything. Show the consolidated review to the user, then put that exact token in `reviewed.json`:
 
+Source overrides also pass the actual discovery-source validator before saving and previewing. Malformed URLs, invalid enabled flags and unsupported providers fail without changing the draft; legitimate domain-only disabled overrides remain valid.
+
 ```json
 {"preview_fingerprint":"64_HEX_CHARACTERS_FROM_THE_ACTUAL_PREVIEW"}
 ```
