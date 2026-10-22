@@ -1,5 +1,23 @@
 # HR setup and command navigation
 
+## Shared guided interview
+
+Read `docs/HR_OPS_ONBOARDING.md`. At conversation start, if doctor reports `onboarding.offer: true`, offer the two-stage interview once. Do not start interviewing without the user's acceptance. Declining is non-blocking and is remembered only for this conversation. Existing initialized roots without a checkpoint remain valid legacy-configured workspaces. Never turn this offer into a CV interview or silently initialize the code checkout.
+
+Stage one: inspect root selection, obtain an explicit absolute destination/name/purpose for a new workspace, create with the existing API, explicitly select it and verify `workspace inspect` and `doctor`. Start with no transferred prospects, configuration, inbox history or cookies. New creation seeds the private onboarding checkpoint. The actual CUP Latam operating workspace must not be created during software implementation or acceptance.
+
+Stage two: call `onboarding status` and ask two or three related questions at a time, using its core question IDs. Cover identity, actual services/delivery limits, talent focus, client targeting, supported differentiators and working preferences. Offer pricing, guarantees, availability, source overrides and LinkedIn URLs later. Accept unknown or skip. Prefill only from this selected workspace or the human's current statements; label shipped defaults and proposed answers. Existing values are not proof that the user confirmed them. Never hard-code CUP Latam or any other firm's identity as product defaults.
+
+Save responses with `onboarding save` and the returned revision. Only explicit user responses or an explicit decision to retain current settings become known answers. `source: existing_configuration` is a consistency check, not proof of human approval. Unknown/skipped answers have no value and leave active settings untouched. If the user retracts a prior fact, explain and preview an explicit null or empty-list replacement instead of silently retaining or deleting it.
+
+Keep services accurate: sourcing/recruiting does not imply payroll, employment, EOR, guaranteed placements, legal coverage or ready candidates. Talent focus describes research priorities, not verified hiring-country eligibility. Do not change qualification thresholds or weights. Preserve disabled source overrides. Offer a 300-character LinkedIn editorial ceiling, explaining it is configurable and not a platform limit; keep messages extremely concise. New outreach already rejects em dashes. Put writing instructions and ICP prioritization in the managed custom-mode section, not system instructions or firm credentials.
+
+Agency size means recruiter count; startup size means employee count. Do not swap them. The shared role-family answer applies to both ICPs. Describe additional industry or country preferences as advisory where the current configuration has no deterministic filter; never claim they are enforced automatically.
+
+When core questions have responses (including unknown/skip), call `onboarding apply --dry-run` with `{}`. Show one consolidated review of changes, known firm facts, advisory preferences, preserved settings, unknowns and readiness gaps. After actual user review, apply that exact preview fingerprint and revision. Do not manufacture a confirmation or delivery authorization. If settings changed, reload/reconcile the draft explicitly before making another preview. Leave original answers in the draft while the user considers the summary.
+
+Resume from the checkpoint on interruption. A pending application must be resumed with its original fingerprint and current revision; independent target edits stop recovery. Do not edit canonical JSON or remove the receipt to bypass a conflict. Completion must report unknowns and next optional steps, not claim that live accounts or commercial results are validated. Missing email must not block research or LinkedIn drafting. Do not launch discovery, browse LinkedIn, log in or send anything as a side effect of setup.
+
 Use `node hr-ops.mjs menu` for the HR command groups and `node hr-ops.mjs setup` for the read-only setup guide. Both work before a valid profile exists. Do not run the retained Career-Ops installer or candidate onboarding for HR setup.
 
 For a new workspace, obtain an explicit absolute destination, workspace name and experimental/operating purpose. Read `templates/hr-ops-setup.example.json` and supply only confirmed firm facts and requested preferences. Use `setup --destination ... --input ...` or the equivalent `workspace create`. The destination must be new or empty. Existing data, inbox state, profile facts and cookies must never be copied implicitly. Use `--dry-run` to inspect without writes when useful.

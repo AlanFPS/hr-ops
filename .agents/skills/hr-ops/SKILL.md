@@ -10,6 +10,8 @@ Find the project root by walking upward from this skill to the directory contain
 
 Read the root instructions, `modes/hr-ops/_shared.md`, the user `config/profile.yml` HR-Ops block and user custom mode if present. Load only the relevant mode below. Use configured output language (English by default).
 
+If the start-of-conversation doctor exposes `onboarding.offer: true`, offer `modes/hr-ops/setup.md` once, non-blockingly. The shared two-stage flow saves draft answers, previews one review summary and applies only its reviewed fingerprint. Unknown facts remain unknown; configured business context is user-stated, not verified credentials or hiring-country permission. Existing initialized workspaces without an onboarding checkpoint do not require re-onboarding.
+
 | Request | Mode |
 |---|---|
 | Set up an HR workspace / show available operations | `modes/hr-ops/setup.md` |

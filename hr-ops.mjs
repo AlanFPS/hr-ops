@@ -61,6 +61,7 @@ import {discoveryFeeds,collectDiscoveryFeed} from './lib/hr-ops/discovery-feeds.
 import {inventoryView,importInventory,reviewInventory} from './lib/hr-ops/inventory.mjs';
 import {inventoryIdentityPacket,confirmInventoryIdentity} from './lib/hr-ops/inventory-identity.mjs';
 import {PROJECT_ROOT} from './lib/hr-ops/store.mjs';
+import {onboardingStatus,onboardingHealth,saveOnboarding,applyOnboarding} from './lib/hr-ops/onboarding.mjs';
 import {
   effectiveSources,
   inspectSources,
@@ -76,6 +77,8 @@ const HELP = `HR-Ops - local recruiting client operations (draft-only)
 Usage: node hr-ops.mjs <command> [company-or-id] [options]
   menu                                HR command groups and natural-language entrypoints
   setup [--destination ABSOLUTE_DIR --input setup.json]  Guide or clean HR workspace creation
+  onboarding status                   Read-only guided interview and readiness
+  onboarding save|apply --input FILE --revision N [--dry-run]  Resumable draft or reviewed application
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
   workspace create --destination ABSOLUTE_DIR --input setup.json
   workspace inspect|configure [--input identity.json]  Explicit workspace/account identity
@@ -235,6 +238,11 @@ export async function main(args = process.argv.slice(2)) {
     assert(usesInput?!!o.input&&!o.icp&&!o.limit:!o.input&&!o.revision,'Inventory import/review/assist/confirm require --input; list/queue use filters only');
     if(selector==='assist')assert(!o.revision&&!o['dry-run'],'Identity assistance is read-only and does not accept --revision or --dry-run');
   }
+  if(command==='onboarding'){
+    assert(['status','save','apply'].includes(selector),'Use onboarding status, save or apply');
+    for(const k of Object.keys(o))assert(['input','revision','dry-run','json','summary'].includes(k),`--${k} is not supported by onboarding`);
+    assert(selector==='status'?!o.input&&!o.revision&&!o['dry-run']:!!o.input&&o.revision!==undefined,'Onboarding save/apply require input and revision; status is read-only');
+  }
   const root = dataRoot(),
     repo = new LocalRepository(root);
   const c = ['setup','menu'].includes(command)||(command==='workspace'&&selector==='create')?null:loadConfig(root);
@@ -249,6 +257,10 @@ export async function main(args = process.argv.slice(2)) {
     expectedRevision: integer(o.revision, "--revision"),
   });
   if(command==='menu'){assert(!selector,'menu has no selector');result=commandMenu(PROJECT_ROOT);}
+  else if(command==='onboarding'){
+    if(selector==='status')result=onboardingStatus(repo);
+    else result=await (selector==='save'?saveOnboarding:applyOnboarding)(repo,input(o.input),mutationOpts());
+  }
   else if(command==='setup'){
     assert(!selector,'setup uses --destination and --input, not a selector');
     if(o.input||o.destination){assert(o.input&&o.destination,'--input and --destination required');result={...await createWorkspace(o.destination,input(o.input),{dryRun}),code_root:PROJECT_ROOT,selection_instruction:'Set HR_OPS_ROOT to root explicitly; run the AI client in code_root. Creation does not select the workspace.',next_command:['node','hr-ops.mjs','doctor']};}
@@ -316,6 +328,7 @@ export async function main(args = process.argv.slice(2)) {
       root_selection:dataRootInfo(),
       workspace:diagnostic.errors.some(e=>e.file==='workspace.json')?null:readWorkspace(repo),
       workspace_warning:existsSync(join(repo.dir,'workspace.json'))?null:'Workspace identity is unconfigured; browser operations require explicit configuration',
+      onboarding:diagnostic.errors.some(e=>e.file==='onboarding.json')?{state:'invalid_or_interrupted'}:onboardingHealth(repo),
       build: buildInfo(),
       errors,
       partial: errors.length > 0,

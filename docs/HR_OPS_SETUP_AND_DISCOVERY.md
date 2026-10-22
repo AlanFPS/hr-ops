@@ -4,6 +4,8 @@ HR-Ops is a local workspace and shared agent skill. Code remains in the checkout
 
 ## HR-first entrypoints
 
+The [shared two-stage onboarding interview](HR_OPS_ONBOARDING.md) offers fresh/incomplete workspaces technical setup followed by a resumable business interview. The agent asks questions, saves drafts and applies only after a consolidated review. Existing initialized roots without a checkpoint remain valid. Use `onboarding status` for the exact catalog and readiness; setup itself never opens a browser or starts discovery.
+
 Run `npm start`, `npm run menu` or `node hr-ops.mjs menu` for HR operations. `npm run setup` or `node hr-ops.mjs setup` prints a read-only setup guide. No arguments to the core CLI still print its help. Existing npm script meanings remain intact; the menu explicitly labels candidate-only dashboard commands and the retained Career-Ops installer as legacy.
 
 Create a new workspace with `node hr-ops.mjs setup --destination ABSOLUTE_EMPTY_DIRECTORY --input setup.json`. The input is the existing `workspace create` contract, illustrated by `templates/hr-ops-setup.example.json`: required workspace name and purpose, plus optional confirmed firm configuration and preferences. Purpose is `experimental` or `operating`. Use `--dry-run` to preview. A new or empty destination is mandatory; creation never overwrites a workspace, copies the active profile/pipeline/browser state or selects the result automatically.

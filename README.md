@@ -1,5 +1,7 @@
 # HR-Ops
 
+Guided setup: [two-stage workspace and business onboarding](docs/HR_OPS_ONBOARDING.md), shared across clients. Use `node hr-ops.mjs onboarding status`; draft answers stay inactive until reviewed apply.
+
 Local client acquisition for a LATAM recruiting firm selling to U.S. companies. Discover prospects → research hiring needs → qualify → identify contacts → draft personalized outreach → track human-reported follow-ups.
 
 HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Research and drafting never send.** An optional [human-operated Playwright sender](docs/HR_OPS_LINKEDIN.md) handles one individually confirmed LinkedIn direct message at a time. It is not a LinkedIn-approved integration and has not been validated against a live account.
