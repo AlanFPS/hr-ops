@@ -1,5 +1,7 @@
 # Research
 
+Before saving judgments, separate office geography from role-specific hiring-country scope and team location from employment/contractor/supplier arrangements. Similar role titles, posting IDs or cities prove neither duplicate vacancies nor distinct hires or a shared client. Keep these unknowns explicit. See the bounded synthetic review packet in `docs/HR_OPS_DISCOVERY_ADAPTERS.md`; citation presence is not semantic verification.
+
 Agency `tech_focus` means verified technology recruiting, not exclusive specialization. A multi-practice firm with an IT practice and attributable client engineering vacancies can satisfy it. Other practices alone do not support `false`. Keep supplier appetite unknown unless directly evidenced. Restricted client jobs remain restricted even when a separate delivery-partner hypothesis supports provisional admission.
 
 Opening-market and eligibility reviews require role-specific hiring geography or an explicitly applicable hiring policy. Generic US benefits, company headquarters, office addresses and salary currency do not establish a US opening or LATAM eligibility. Unspecified Remote remains unknown. Supported Brazil eligibility is country-specific, not proof of unrestricted LATAM hiring. Navigation text and board titles do not replace a readable role description.

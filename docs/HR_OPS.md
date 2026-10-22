@@ -2,6 +2,8 @@
 
 HR-first navigation and repeatable source reuse: [setup, command menu, discovery plans and bounded public feeds](HR_OPS_SETUP_AND_DISCOVERY.md). The retained Career-Ops installer and dashboards remain explicitly labeled candidate tools.
 
+Additional startup and agency readers, configurable portfolio scope and the evidence judgment packet: [discovery adapters](HR_OPS_DISCOVERY_ADAPTERS.md).
+
 Company inventory: [combined source layers, supplied-list intake, identity review and the research queue](HR_OPS_INVENTORY.md). Inventory decisions are separate from prospect qualification, suppression and sending authorization.
 
 Research execution: [safe artifact transport, discovery origins, candidate identity and source priority](HR_OPS_RESEARCH_EXECUTION.md). Use `scripts/hr-ops-artifact.mjs` for file/stdin data transport; never embed external text in shell code.

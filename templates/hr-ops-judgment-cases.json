@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "purpose": "Synthetic, bounded review cases derived from release-acceptance failure patterns. No real company claims or interactions.",
+  "cases": [
+    {
+      "id": "office-market",
+      "source": "Backend Engineer. Work remotely within the Americas and Europe. Our offices are in New York and Columbus. The employer serves U.S. customers.",
+      "proposed_claim": "This vacancy explicitly accepts U.S. hires because the company has U.S. offices.",
+      "reference": {
+        "judgment": "unsupported",
+        "why": "Office presence and customer market do not establish the role's permitted hiring countries.",
+        "correction": "Americas/Europe remote scope is observed; specific countries and engagement arrangements remain unknown. LATAM eligibility is possible, not confirmed.",
+        "software_case": "office-market"
+      }
+    },
+    {
+      "id": "team-engagement",
+      "source": "Our team works from Brazil, Argentina and the United States. Backend Engineer: remote within Americas time zones.",
+      "proposed_claim": "They directly employ LATAM engineers and therefore do not use recruiting suppliers.",
+      "reference": {
+        "judgment": "unsupported",
+        "why": "Team locations do not establish employment arrangements, recruiting partners or supplier appetite.",
+        "correction": "LATAM team presence is observed. Direct employment, contractors and supplier use remain unknown. A partner-fit hypothesis needs a separate incremental-value basis.",
+        "software_case": "team-engagement"
+      }
+    },
+    {
+      "id": "overlapping-postings",
+      "source": "A recruiting agency lists posting A, Backend Engineer, and posting B, Full Stack Engineer, in Austin. Both mention a confidential technology client. No requisition identifiers or client names are published.",
+      "proposed_claim": "These are definitely the same client's duplicate vacancy. Alternatively we can pitch two distinct hires.",
+      "reference": {
+        "judgment": "unsupported",
+        "why": "Neither duplicate identity, shared client identity nor distinct requisitions is supported by these listings.",
+        "correction": "Two published listings may overlap. Discuss either search without asserting a shared client or exact number of hires.",
+        "software_case": "overlapping-postings"
+      }
+    },
+    {
+      "id": "restricted-agency",
+      "source": "A U.S. technology recruiting firm publishes a current backend search for a client. Remote within the United States only; current U.S. work authorization required. No delivery-partner policy is published.",
+      "proposed_claim": "This is a confirmed LATAM-serviceable opening and the agency wants a delivery partner.",
+      "reference": {
+        "judgment": "unsupported",
+        "why": "The observed vacancy is restricted. Partnership appetite is unknown and must not be manufactured from client demand.",
+        "correction": "Record restricted client demand. A supported future partnership hypothesis may permit provisional exploration; do not offer LATAM candidates for this restricted vacancy.",
+        "software_case": "restricted-agency"
+      }
+    }
+  ]
+}

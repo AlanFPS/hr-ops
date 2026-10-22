@@ -27,7 +27,7 @@
       "provider": "manual",
       "careers_url": "https://www.byrecruiting.com/careers",
       "hiring_for": "client",
-      "notes": "First-party board and linked /jobs/348 role body verified. One reviewed full-stack client listing explicitly included US, Canada and LatAm. Reverify current demand and country scope; raw board counts are not distinct hires. Recruiter count, supplier appetite and incremental value beyond existing LATAM coverage remain unknown. Current official leadership is on /about.",
+      "notes": "First-party board and linked /jobs/348 role body verified. One reviewed full-stack client listing explicitly included US, Canada and LatAm. Reverify current demand and country scope; raw board counts are not distinct hires. Recruiter count, supplier appetite and incremental value beyond existing LATAM coverage remain unknown. Current official leadership is on /about. Optional bounded board collection: discover --feed by-recruiting --run ID; linked role bodies remain independently review-required.",
       "identity_evidence": {
         "id": "starter-by-recruiting-20261019",
         "url": "https://www.byrecruiting.com/careers",

@@ -36,6 +36,17 @@ const DEFAULT_MAX_PAGES = 6; // × PER_PAGE = the 300-job default scan
 // 2026-08), same policy as workday.mjs's cap.
 const MAX_PAGES_CAP = 1000;
 
+// Additive single-page primitive for budgeted HR discovery. The legacy scanner
+// below keeps its existing pagination and retry behavior.
+export async function fetchSpeedrunPage(ctx, target) {
+  assertFeedUrl(target);
+  const parsed = new URL(target);
+  if (parsed.pathname !== '/api/v1/jobs') throw new Error('Expected Speedrun jobs search endpoint');
+  const data = await ctx.fetchJson(target, {redirect: 'error'});
+  if (!data || !Array.isArray(data.jobs)) throw new Error('Invalid Speedrun jobs payload');
+  return data;
+}
+
 /** @param {string} url */
 function assertFeedUrl(url) {
   let parsed;

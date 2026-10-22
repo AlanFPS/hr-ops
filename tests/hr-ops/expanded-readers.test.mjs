@@ -32,7 +32,7 @@ test('new readers share configuration, preview and budget boundaries without ena
     const denied=await collect(s,id,[],{fetchText:async()=>{calls++;}});assert.equal(denied.stopping_reason,'request_budget_exhausted');assert.equal(calls,0);
     assert.equal(researchBudget(s.repo,s.c,'readers').attempts.length,0);
   }
-  assert.deepEqual(discoveryFeeds(config()).map(f=>f.id),['remotive','hackernews','remoteok','himalayas']);
+  assert.deepEqual(discoveryFeeds(config()).map(f=>f.id),['remotive','hackernews','remoteok','himalayas','speedrun','by-recruiting']);
 });
 
 test('RemoteOK skips only its metadata row, retains raw employer evidence and avoids provider fallback identities',async t=>{

@@ -81,6 +81,7 @@ test('identity aliases cannot join two canonical prospects or use shared ATS/soc
   const before=readInventory(s.repo).revision,g=userRows(s)[0];
   await assert.rejects(review(s,g,{identity:identity('https://fictional.example',['https://other.example'])}),/multiple canonical prospects/);
   await assert.rejects(review(s,g,{identity:identity('https://jobs.ashbyhq.com/example')}),/shared ATS/);
+  await assert.rejects(review(s,g,{identity:identity('https://speedrun-talent-network.com/companies/example')}),/shared ATS/);
   assert.equal(readInventory(s.repo).revision,before);
   await assert.rejects(review(s,g,{identity:{website:'https://company.example',aliases:[],evidence:[]}}),/supporting evidence/);
 });

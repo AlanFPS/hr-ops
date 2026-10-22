@@ -255,6 +255,7 @@ const SYSTEM_PATHS = [
   'scripts/hr-ops-pilot.mjs',
   'scripts/hr-ops-artifact.mjs',
   'scripts/hr-ops-benchmark.mjs',
+  'scripts/hr-ops-judgment.mjs',
   'scripts/export-ats-text.mjs',
   'scripts/followup-sweep.sh',
   'story-provenance-check.mjs',

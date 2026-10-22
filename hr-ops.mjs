@@ -95,7 +95,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   inventory import|review --input FILE --revision N [--dry-run]  Unqualified lead intake/review
   discover [--starter] [--run ID] [--input prospects.json] [--icp both|agency|startup] [--limit 10]
   discover --plan [--icp both|agency|startup]  Reusable sources, seeds, controls and exclusions
-  discover --feed remotive|hackernews|remoteok|himalayas --run ID [--refresh]  Budgeted inventory leads
+  discover --feed remotive|hackernews|remoteok|himalayas|speedrun|by-recruiting --run ID [--refresh]  Budgeted inventory leads
   budget --run ID [--input attempt.json]  Inspect/reserve search or page budget
   capture --run ID --input source.json   Budgeted public GET with retrieval timestamp
   research <company> [--input research.json --revision N]
