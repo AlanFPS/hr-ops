@@ -61,7 +61,7 @@ import {discoveryFeeds,collectDiscoveryFeed} from './lib/hr-ops/discovery-feeds.
 import {inventoryView,importInventory,reviewInventory} from './lib/hr-ops/inventory.mjs';
 import {inventoryIdentityPacket,confirmInventoryIdentity} from './lib/hr-ops/inventory-identity.mjs';
 import {PROJECT_ROOT} from './lib/hr-ops/store.mjs';
-import {onboardingStatus,onboardingHealth,saveOnboarding,applyOnboarding} from './lib/hr-ops/onboarding.mjs';
+import {onboardingStatus,onboardingHealth,saveOnboarding,applyOnboarding,reconcileOnboarding} from './lib/hr-ops/onboarding.mjs';
 import {
   effectiveSources,
   inspectSources,
@@ -79,6 +79,7 @@ Usage: node hr-ops.mjs <command> [company-or-id] [options]
   setup [--destination ABSOLUTE_DIR --input setup.json]  Guide or clean HR workspace creation
   onboarding status                   Read-only guided interview and readiness
   onboarding save|apply --input FILE --revision N [--dry-run]  Resumable draft or reviewed application
+  onboarding reconcile --input FILE --revision N [--dry-run]  Keep current settings and reopen an interrupted draft
   init [--input firm-config.json]       Seed user configuration; preserve existing setup
   workspace create --destination ABSOLUTE_DIR --input setup.json
   workspace inspect|configure [--input identity.json]  Explicit workspace/account identity
@@ -239,9 +240,9 @@ export async function main(args = process.argv.slice(2)) {
     if(selector==='assist')assert(!o.revision&&!o['dry-run'],'Identity assistance is read-only and does not accept --revision or --dry-run');
   }
   if(command==='onboarding'){
-    assert(['status','save','apply'].includes(selector),'Use onboarding status, save or apply');
+    assert(['status','save','apply','reconcile'].includes(selector),'Use onboarding status, save, apply or reconcile');
     for(const k of Object.keys(o))assert(['input','revision','dry-run','json','summary'].includes(k),`--${k} is not supported by onboarding`);
-    assert(selector==='status'?!o.input&&!o.revision&&!o['dry-run']:!!o.input&&o.revision!==undefined,'Onboarding save/apply require input and revision; status is read-only');
+    assert(selector==='status'?!o.input&&!o.revision&&!o['dry-run']:!!o.input&&o.revision!==undefined,'Onboarding save/apply/reconcile require input and revision; status is read-only');
   }
   const root = dataRoot(),
     repo = new LocalRepository(root);
@@ -259,7 +260,7 @@ export async function main(args = process.argv.slice(2)) {
   if(command==='menu'){assert(!selector,'menu has no selector');result=commandMenu(PROJECT_ROOT);}
   else if(command==='onboarding'){
     if(selector==='status')result=onboardingStatus(repo);
-    else result=await (selector==='save'?saveOnboarding:applyOnboarding)(repo,input(o.input),mutationOpts());
+    else result=await ({save:saveOnboarding,apply:applyOnboarding,reconcile:reconcileOnboarding}[selector])(repo,input(o.input),mutationOpts());
   }
   else if(command==='setup'){
     assert(!selector,'setup uses --destination and --input, not a selector');

@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import * as yaml from 'js-yaml';
 import {createWorkspace,readWorkspace,configureWorkspace} from '../../lib/hr-ops/workspace.mjs';
 import {LocalRepository,initialize,loadConfig} from '../../lib/hr-ops/store.mjs';
-import {ONBOARDING_QUESTIONS,onboardingStatus,readOnboarding,saveOnboarding,applyOnboarding} from '../../lib/hr-ops/onboarding.mjs';
+import {ONBOARDING_QUESTIONS,onboardingStatus,readOnboarding,saveOnboarding,applyOnboarding,reconcileOnboarding,readOnboardingRecoveries} from '../../lib/hr-ops/onboarding.mjs';
 import {diagnostics,backup,restore,verifyBackup} from '../../lib/hr-ops/maintenance.mjs';
 import {hash,DEFAULTS,firmFingerprint,configurationFingerprint,canonical,validateConfig} from '../../lib/hr-ops/model.mjs';
 import {saveDraft,draftCurrent,qualify,researchTasks,outreachBrief} from '../../lib/hr-ops/operations.mjs';
@@ -16,13 +16,15 @@ import {runHr} from '../../lib/hr-ops/client.mjs';
 import {writeFileAtomic} from '../../tracker-utils.mjs';
 import {config,prospect,draft,input,auth} from './fixtures.mjs';
 import {startInbox} from '../../lib/hr-ops/inbox-import.mjs';
+import {inspectSources,sourceCatalog} from '../../lib/hr-ops/sources.mjs';
+import {discoveryFeeds} from '../../lib/hr-ops/feed-contract.mjs';
 const CODE=fileURLToPath(new URL('../../',import.meta.url));
 const known=value=>({status:'known',value,source:'user_confirmed'});
 const core=(overrides={})=>({...Object.fromEntries(ONBOARDING_QUESTIONS.filter(q=>q.core).map(q=>[q.id,{status:'unknown'}])),...overrides});
-async function setup(t){
+async function setup(t,config){
  const parent=fs.mkdtempSync(join(tmpdir(),'hr-onboard-')),root=join(parent,'workspace');
  t.after(()=>fs.rmSync(parent,{recursive:true,force:true,maxRetries:5,retryDelay:50}));
- await createWorkspace(root,{name:'Synthetic Firm Workspace',purpose:'experimental'});
+ await createWorkspace(root,{name:'Synthetic Firm Workspace',purpose:'experimental',...(config?{config}:{})});
  return {parent,root,repo:new LocalRepository(root),opts:{cwd:CODE,env:{...process.env,HR_OPS_ROOT:root}}};
 }
 const profile=s=>fs.readFileSync(join(s.root,'config/profile.yml'),'utf8');
@@ -192,4 +194,155 @@ test('source override drafts use the real source validator and preserve valid di
  const answers=core({source_overrides:known({sources:[{website:'https://fixture.example',enabled:false}],feeds:[{id:'bedrock-talent',enabled:false}]})});
  const r=await reviewed(s,answers);await apply(s,r);assert.equal(loadConfig(s.root).discovery.sources[0].enabled,false);assert.equal(loadConfig(s.root).discovery.feeds[0].enabled,false);
  assert.equal(runHr(['doctor'],s.opts).ok,true);
+});
+
+const settingBytes=s=>Object.fromEntries(['config/profile.yml','modes/_custom.md','data/hr-ops/workspace.json'].map(path=>[path,fs.existsSync(join(s.root,path))?fs.readFileSync(join(s.root,path),'utf8'):null]));
+async function interrupted(s,{afterProfile=false}={}){
+ const r=await reviewed(s,core({firm_name:known('Planned firm'),writing_preferences:known('Concise.')}));let writes=0;
+ await assert.rejects(applyOnboarding(s.repo,{preview_fingerprint:r.preview.preview_fingerprint},{expectedRevision:r.saved.revision,
+  write:(path,body)=>{if(++writes===(afterProfile?2:1))throw Error('Injected interruption');writeFileAtomic(path,body);}}),/Injected interruption/);
+ return r;
+}
+
+test('partial cadence answers preserve nondefault intervals and disabled follow-ups',async t=>{
+ const s=await setup(t,{followups:{first_days:5,subsequent_days:23,max_followups:0}}),r=await reviewed(s,core({followups:known({first_days:3})}));
+ assert.deepEqual(loadConfig(s.root).followups,{first_days:5,subsequent_days:23,max_followups:0});
+ const proposed=yaml.load(r.preview.changes.find(c=>c.path==='config/profile.yml').after);
+ assert.deepEqual(proposed.hr_ops.followups,{first_days:3,subsequent_days:23,max_followups:0});
+ await apply(s,r);assert.deepEqual(loadConfig(s.root).followups,proposed.hr_ops.followups);
+ for(const value of [7,[],null,{typo:3}])await assert.rejects(saveOnboarding(s.repo,{answers:{followups:known(value)}},{expectedRevision:readOnboarding(s.repo).revision}));
+});
+
+test('source additions preserve domain aliases, disabled feeds and unmentioned filter values',async t=>{
+ const seed=sourceCatalog().sources[0];
+ const s=await setup(t,{discovery:{starter_sources:true,sources:[{website:seed.website,enabled:false}],
+  feeds:[{id:'remotive',enabled:false},{id:'speedrun',enabled:false,filters:{scope:'speedrun',wp:'remote'}}]}});
+ const r=await reviewed(s,core({source_overrides:known({sources:[{website:'https://unrelated.example',enabled:false}],feeds:[{id:'remoteok',enabled:false},{id:'speedrun',filters:{q:'backend'}}]})}));
+ await apply(s,r);const c=loadConfig(s.root);
+ assert.equal(c.discovery.sources.length,2);assert(!inspectSources(c).sources.some(x=>x.name===seed.name));
+ assert.equal(discoveryFeeds(c).find(x=>x.id==='remotive').enabled,false);
+ assert.equal(discoveryFeeds(c).find(x=>x.id==='remoteok').enabled,false);
+ assert.deepEqual(c.discovery.feeds.find(x=>x.id==='speedrun'),{id:'speedrun',enabled:false,filters:{scope:'speedrun',wp:'remote',q:'backend'}});
+ const next=await reviewed(s,{source_overrides:known({sources:[{...seed,website:seed.website.replace('https://','https://www.'),enabled:true}],feeds:[{id:'remotive',enabled:true}]})});
+ await apply(s,next);const enabled=loadConfig(s.root);
+ assert.equal(enabled.discovery.sources.length,2);assert(inspectSources(enabled).sources.some(x=>x.name===seed.name));
+ assert.equal(discoveryFeeds(enabled).find(x=>x.id==='remotive').enabled,true);
+ assert.equal(discoveryFeeds(enabled).find(x=>x.id==='remoteok').enabled,false);
+});
+
+test('partial existing source updates remain independently readable and duplicate updates fail before save',async t=>{
+ const source={website:'https://custom-source.example',name:'Synthetic source',icp:'agency',provider:'manual',
+  identity_evidence:{id:'synthetic-source',url:'https://custom-source.example/jobs',excerpt:'Synthetic fixture source publishes client vacancies.',observed_at:new Date().toISOString(),source_type:'primary'}};
+ const s=await setup(t,{discovery:{sources:[source]}});
+ const saved=await saveOnboarding(s.repo,{answers:core({source_overrides:known({sources:[{website:'https://www.custom-source.example',notes:'Updated notes only.'}]})})},{expectedRevision:0});
+ assert.equal(readOnboarding(s.repo).answers.source_overrides.value.sources[0].provider,source.provider);
+ const preview=await applyOnboarding(s.repo,{}, {expectedRevision:saved.revision,dryRun:true});await apply(s,{saved,preview});
+ assert.equal(loadConfig(s.root).discovery.sources[0].notes,'Updated notes only.');
+ for(const value of [{sources:[{website:source.website,enabled:false},{website:'https://www.custom-source.example',enabled:false}]},{feeds:[{id:'remotive',enabled:false},{id:'remotive',enabled:true}]}]){
+  const before=checkpoint(s);await assert.rejects(saveOnboarding(s.repo,{answers:{source_overrides:known(value)}},{expectedRevision:readOnboarding(s.repo).revision}),/Duplicate/);assert.equal(checkpoint(s),before);
+ }
+});
+
+test('status resolves applied composite values and existing configuration confirmations after restart',async t=>{
+ const s=await setup(t),r=await reviewed(s,core({role_families:known(['backend']),icp_priority:known('agency'),writing_preferences:known('Keep messages short.'),
+  linkedin_profile_url:known('https://www.linkedin.com/in/fixture-person'),linkedin_page_url:known('https://www.linkedin.com/company/fixture-page'),source_overrides:known({starter_sources:true})}));
+ await apply(s,r);const status=runHr(['onboarding','status'],s.opts),values=Object.fromEntries(status.questions.map(q=>[q.id,q.active_value]));
+ assert.deepEqual(values.role_families,['backend']);assert.equal(values.icp_priority,'agency');assert.equal(values.writing_preferences,'Keep messages short.');
+ assert.equal(values.linkedin_profile_url,'https://www.linkedin.com/in/fixture-person');assert.equal(values.linkedin_page_url,'https://www.linkedin.com/company/fixture-page');
+ assert.equal(values.source_overrides.starter_sources,true);
+ const answers=Object.fromEntries(['role_families','icp_priority','writing_preferences','source_overrides','linkedin_profile_url','linkedin_page_url'].map(id=>[id,{status:'known',value:values[id],source:'existing_configuration'}]));
+ const before=settingBytes(s);await saveOnboarding(s.repo,{answers},{expectedRevision:status.revision});assert.deepEqual(settingBytes(s),before);
+ await assert.rejects(saveOnboarding(s.repo,{answers:{icp_priority:{status:'known',value:'startup',source:'existing_configuration'}}},{expectedRevision:readOnboarding(s.repo).revision}),/differs from active/);
+});
+
+test('different role families remain visible per ICP rather than becoming a false shared confirmation',async t=>{
+ const s=await setup(t,{icps:{agency:{role_families:['backend']},startup:{role_families:['fullstack']}}});
+ const role=onboardingStatus(s.repo).questions.find(q=>q.id==='role_families');assert.deepEqual(role.active_value,{agency:['backend'],startup:['fullstack']});
+ await assert.rejects(saveOnboarding(s.repo,{answers:{role_families:{status:'known',value:['backend'],source:'existing_configuration'}}},{expectedRevision:0}),/differs from active/);
+});
+
+test('onboarding research readiness agrees with health failures while optional email and incomplete interviews stay nonblocking',async t=>{
+ const s=await setup(t);assert.equal(onboardingStatus(s.repo).readiness.research,'ready');assert.equal(loadConfig(s.root).firm.email,null);
+ assert.equal(runHr(['doctor'],s.opts).readiness.research.state,'ready');
+ await interrupted(s);assert.equal(onboardingStatus(s.repo).readiness.research,'invalid_state');
+ const broken=await setup(t);fs.writeFileSync(join(broken.repo.records,'1234567890abcdef.json'),'{}');
+ assert.equal(onboardingStatus(broken.repo).readiness.research,'invalid_state');assert.equal(diagnostics(broken.repo).ok,false);
+ const source=await setup(t,{discovery:{sources:[{website:'https://bad-source.example',enabled:true}]}});
+ assert.equal(onboardingStatus(source.repo).readiness.research,'invalid_state');
+ const migration=await setup(t);fs.writeFileSync(join(migration.repo.dir,'migration-v2.json'),JSON.stringify({status:'applying',backup:'fixture-backup',ids:[]}));
+ assert.equal(onboardingStatus(migration.repo).readiness.research,'invalid_state');
+});
+
+test('malformed managed preferences receive structured diagnostics without breaking doctor output',async t=>{
+ const s=await setup(t);fs.mkdirSync(join(s.root,'modes'),{recursive:true});fs.writeFileSync(join(s.root,'modes/_custom.md'),'<!-- hr-ops-onboarding:start -->');
+ assert.equal(onboardingStatus(s.repo).readiness.research,'invalid_state');assert.match(onboardingStatus(s.repo).preference_error,/Malformed/);
+ const {spawnSync}=await import('node:child_process');const child=spawnSync(process.execPath,[join(CODE,'hr-ops.mjs'),'doctor'],{cwd:CODE,env:s.opts.env,encoding:'utf8'});
+ assert.equal(child.status,1);const doctor=JSON.parse(child.stdout);assert.equal(doctor.ok,false);assert(doctor.errors.some(e=>e.file==='modes/_custom.md'));
+});
+
+test('reviewed reconciliation retains independent settings before and between writes and resumes normal operation',async t=>{
+ for(const afterProfile of [false,true]){
+  const s=await setup(t),old=await interrupted(s,{afterProfile});
+  const raw=yaml.load(profile(s));raw.hr_ops.firm.name='Independent firm';fs.writeFileSync(join(s.root,'config/profile.yml'),yaml.dump(raw));
+  fs.mkdirSync(join(s.root,'modes'),{recursive:true});fs.writeFileSync(join(s.root,'modes/_custom.md'),'Independent procedural instruction.\n');
+  const w=readWorkspace(s.repo);w.name='Independent workspace name';fs.writeFileSync(join(s.repo.dir,'workspace.json'),JSON.stringify(w,null,2)+'\n');
+  const revision=readOnboarding(s.repo).revision,before=settingBytes(s),stateBefore=checkpoint(s);
+  const pending=await applyOnboarding(s.repo,{}, {expectedRevision:revision,dryRun:true});assert.equal(pending.applicable,false);
+  assert(pending.conflicts.some(c=>c.path==='config/profile.yml'&&c.target));assert(pending.conflicts.some(c=>c.path==='data/hr-ops/workspace.json'&&!c.target));
+  const preview=runHr(['onboarding','reconcile','--input','-','--revision',String(revision),'--dry-run'],{...s.opts,input:{}});
+  assert.equal(checkpoint(s),stateBefore);assert.deepEqual(settingBytes(s),before);assert.equal(readOnboardingRecoveries(s.repo).length,0);
+  await assert.rejects(reconcileOnboarding(s.repo,{}, {expectedRevision:revision}),/reconciliation_fingerprint/);
+  const result=runHr(['onboarding','reconcile','--input','-','--revision',String(revision)],{...s.opts,input:{reconciliation_fingerprint:preview.reconciliation_fingerprint}});
+  assert.equal(result.needs_new_review,true);assert.equal(result.settings_changed,false);assert.deepEqual(settingBytes(s),before);
+  assert.equal(readOnboarding(s.repo).pending,undefined);assert.equal(readOnboardingRecoveries(s.repo).length,1);assert.equal(diagnostics(s.repo).ok,true);
+  const saved=await saveOnboarding(s.repo,{answers:{firm_name:{status:'unknown'},writing_preferences:known('Keep this new concise preference.')}},{expectedRevision:result.revision});
+  await assert.rejects(applyOnboarding(s.repo,{preview_fingerprint:old.preview.preview_fingerprint},{expectedRevision:saved.revision}),/preview_fingerprint/);
+  const fresh=await applyOnboarding(s.repo,{}, {expectedRevision:saved.revision,dryRun:true});await apply(s,{saved,preview:fresh});
+  assert.equal(loadConfig(s.root).firm.name,'Independent firm');assert.equal(readWorkspace(s.repo).name,'Independent workspace name');
+  assert(fs.readFileSync(join(s.root,'modes/_custom.md'),'utf8').startsWith('Independent procedural instruction.\n'));
+  assert.equal((await s.repo.discover(input())).created,true);
+ }
+});
+
+test('reconciliation rejects stale previews and revisions without changing settings or receipts',async t=>{
+ const s=await setup(t);await interrupted(s);const revision=readOnboarding(s.repo).revision;
+ const preview=await reconcileOnboarding(s.repo,{}, {expectedRevision:revision,dryRun:true});
+ fs.appendFileSync(join(s.root,'config/profile.yml'),'\n# Later independent edit\n');const state=checkpoint(s),before=settingBytes(s);
+ await assert.rejects(reconcileOnboarding(s.repo,{reconciliation_fingerprint:preview.reconciliation_fingerprint},{expectedRevision:revision}),/reconciliation_fingerprint/);
+ await assert.rejects(reconcileOnboarding(s.repo,{}, {expectedRevision:revision-1,dryRun:true}),/revision conflict/);
+ assert.equal(checkpoint(s),state);assert.deepEqual(settingBytes(s),before);assert.equal(readOnboardingRecoveries(s.repo).length,0);
+ const fresh=await reconcileOnboarding(s.repo,{}, {expectedRevision:revision,dryRun:true});
+ await reconcileOnboarding(s.repo,{reconciliation_fingerprint:fresh.reconciliation_fingerprint},{expectedRevision:revision});
+ await assert.rejects(reconcileOnboarding(s.repo,{}, {expectedRevision:revision+1,dryRun:true}),/No interrupted/);
+});
+
+test('interruption after recovery archive creation is retryable without duplicate receipts',async t=>{
+ const s=await setup(t);await interrupted(s);const revision=readOnboarding(s.repo).revision;
+ const preview=await reconcileOnboarding(s.repo,{}, {expectedRevision:revision,dryRun:true}),state=checkpoint(s),before=settingBytes(s);
+ await assert.rejects(reconcileOnboarding(s.repo,{reconciliation_fingerprint:preview.reconciliation_fingerprint},{expectedRevision:revision,
+  write:(path,body)=>{if(path.endsWith('onboarding.json'))throw Error('Injected receipt interruption');writeFileAtomic(path,body);}}),/Injected receipt/);
+ assert.equal(checkpoint(s),state);assert.deepEqual(settingBytes(s),before);const archives=readOnboardingRecoveries(s.repo);assert.equal(archives.length,1);
+ await reconcileOnboarding(s.repo,{reconciliation_fingerprint:preview.reconciliation_fingerprint},{expectedRevision:revision});
+ assert.deepEqual(readOnboardingRecoveries(s.repo),archives);assert.deepEqual(settingBytes(s),before);assert.equal(diagnostics(s.repo).ok,true);
+});
+
+test('backup and restore validate reconciliation history and retain editable drafts without browser state',async t=>{
+ const s=await setup(t);await interrupted(s);const revision=readOnboarding(s.repo).revision;
+ const preview=await reconcileOnboarding(s.repo,{}, {expectedRevision:revision,dryRun:true});
+ await reconcileOnboarding(s.repo,{reconciliation_fingerprint:preview.reconciliation_fingerprint},{expectedRevision:revision});
+ const saved=await backup(s.repo),dest=join(s.parent,'restored-with-recovery');restore(saved.path,dest,{dryRun:false});const restored=new LocalRepository(dest);
+ assert.deepEqual(readOnboardingRecoveries(restored),readOnboardingRecoveries(s.repo));assert.deepEqual(readOnboarding(restored),readOnboarding(s.repo));
+ assert(verifyBackup(saved.path).files.some(f=>f.path.includes('/onboarding-recoveries/')));assert.equal(diagnostics(restored).ok,true);
+ const archive=readOnboardingRecoveries(s.repo)[0];fs.writeFileSync(join(s.repo.dir,'onboarding-recoveries',archive.file),'{}');
+ assert.equal(diagnostics(s.repo).ok,false);assert(diagnostics(s.repo).errors.some(e=>e.file==='onboarding-recoveries'));
+ await assert.rejects(s.repo.discover(input()),/recovery archive version/);
+});
+
+test('inconsistent completion and unresolved metadata fail closed while unknown and skipped responses remain valid',async t=>{
+ const s=await setup(t),r=await reviewed(s);await apply(s,r);const valid=readOnboarding(s.repo);
+ for(const corrupt of [{...valid,completed:[]},{...valid,completed:valid.completed.filter(id=>id!=='firm_name')},{...valid,unresolved:{...valid.unresolved,email:'unknown'}}]){
+  fs.writeFileSync(join(s.repo.dir,'onboarding.json'),JSON.stringify(corrupt));assert.equal(diagnostics(s.repo).ok,false);
+  await assert.rejects(s.repo.discover(input()),/completion|core responses/i);
+ }
+ fs.writeFileSync(join(s.repo.dir,'onboarding.json'),JSON.stringify(valid));assert.equal(diagnostics(s.repo).ok,true);assert.equal(onboardingStatus(s.repo).core_complete,true);
 });

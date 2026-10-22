@@ -12,6 +12,8 @@ Read the root instructions, `modes/hr-ops/_shared.md`, the user `config/profile.
 
 If the start-of-conversation doctor exposes `onboarding.offer: true`, offer `modes/hr-ops/setup.md` once, non-blockingly. The shared two-stage flow saves draft answers, previews one review summary and applies only its reviewed fingerprint. Unknown facts remain unknown; configured business context is user-stated, not verified credentials or hiring-country permission. Existing initialized workspaces without an onboarding checkpoint do not require re-onboarding.
 
+For an interrupted onboarding apply with independent edits, use the setup mode's reviewed `onboarding reconcile` flow. It preserves current settings and archives the old receipt; reopened answers require a fresh consolidated apply review. Never remove a receipt or force an old plan over new settings.
+
 | Request | Mode |
 |---|---|
 | Set up an HR workspace / show available operations | `modes/hr-ops/setup.md` |
