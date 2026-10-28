@@ -23,7 +23,7 @@ For an interrupted onboarding apply with independent edits, use the setup mode's
 | Qualify / explain a score | `modes/hr-ops/qualify.md` |
 | Find decision makers | `modes/hr-ops/contacts.md` |
 | Prepare outreach / top N drafts | `modes/hr-ops/outreach.md` |
-| Explicitly request assisted LinkedIn sending | `modes/hr-ops/linkedin-send.md` |
+| Send LinkedIn messages, connection requests or InMail on the user's instruction | `modes/hr-ops/linkedin-send.md` |
 | Check LinkedIn inbox / import actual replies | `modes/hr-ops/inbox.md` |
 | Who needs a follow-up / log a reply | `modes/hr-ops/followups.md` |
 | Show pipeline or company status | `modes/hr-ops/pipeline.md` |

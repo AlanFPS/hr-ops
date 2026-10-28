@@ -26,4 +26,4 @@ For a new workspace, obtain an explicit absolute destination, workspace name and
 
 Creation does not select a workspace. Select explicitly through the existing HR data-root mechanism, keep the agent in the code checkout, then run `workspace inspect` and `doctor`. Missing business email does not block research or LinkedIn drafts. No browser installation, MCP server, native Codex slash commands or other AI client is required for research. Codex, Claude Code and clients using the shared skill follow the same modes. OpenClaw remains uninstalled.
 
-The retained dashboards and scaffolder are explicitly legacy candidate tools. Preserve their meaning and upstream provenance. For HR operation use the menu, CLI pipeline and dossiers. Browser inbox and sending are separate explicitly invoked human-operated workflows; setup and source collection authorize neither.
+The retained dashboards and scaffolder are explicitly legacy candidate tools. Preserve their meaning and upstream provenance. For HR operation use the menu, CLI pipeline and dossiers. Browser inbox and LinkedIn sending are separate, explicitly requested workflows; setup and source collection authorize neither.

@@ -95,7 +95,7 @@ Run retention and inventory copies in current records, before/after snapshots, c
 
 ## Enforcement and limits
 
-Code enforces schemas, references, revisions, identity checks, suppression, coarse admission, message lengths and draft structures. Agents/operators must check source meaning, hiring scope, contact remit, hypotheses, commercial truth, native-tool budgets and genuine approval provenance. Local approval JSON is an audit record, not a security boundary against filesystem access. Future autonomous runtimes require independent permissions. The core CLI has no delivery or external CRM API; the optional LinkedIn adapter remains a separate human-operated workflow.
+Code enforces schemas, references, revisions, identity checks, suppression, coarse admission, message lengths and draft structures. Agents/operators must check source meaning, hiring scope, contact remit, hypotheses, commercial truth, native-tool budgets and genuine approval provenance. Local approval JSON is an audit record, not a security boundary against filesystem access. Future autonomous runtimes require independent permissions. The core CLI has no delivery or external CRM API; the optional LinkedIn adapter remains a separate workflow that needs the user's instruction for each send or batch.
 
 Firm email is still unconfigured. Protected disaster recovery and commercial calibration remain operating requirements, separate from software defects. No tests prove commercial success or universal prompt-injection resistance.
 

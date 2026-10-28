@@ -16,9 +16,20 @@ test('role-specific restriction and size evidence defeat generic remote marketin
   c.icps.startup.employee_range=[5,500];assert.equal(scoreProspect(p,c,now).recommendation,'QUALIFIED');
 });
 test('unknown size receives partial fit points without claiming complete evidence coverage',()=>{const p=prospect(),c=config();p.facts.employee_count={value:null,confidence:'unknown',evidence:[]};const s=scoreProspect(p,c,now);assert.equal(s.coverage,85);assert.equal(s.dimensions.fit.points,7.5);assert.equal(s.dimensions.fit.known,false);});
-test('functional owner outranks a large-company founder and ranking explains why',()=>{
+test('reachable functional contacts rank before C-level executives and ranking explains why',()=>{
   const p=prospect(),c=config();applyResearch(p,{contacts:[{name:'Aaron Founder',title:'CEO',url:'https://fictional.example/team',verified_at:now.toISOString(),evidence:['site']},{name:'Bea Talent',title:'Talent Lead',url:'https://fictional.example/team',verified_at:now.toISOString(),evidence:['site']}]},now);
-  const people=rankedContacts(p,c,now);assert.equal(people[0].title,'CTO');assert.equal(people[1].title,'Talent Lead');assert.match(people[0].reason,/engineering/);
+  const people=rankedContacts(p,c,now);assert.deepEqual(people.map(x=>x.title),['Talent Lead','CTO','CEO']);
+  assert.deepEqual(people.map(x=>x.reach_tier),['reachable','executive','executive']);assert.match(people[1].reason,/engineering/);
+});
+test('engineering managers, team leads and recruiters are relevant contacts; sales and product roles are not',()=>{
+  const p=prospect(),c=config();
+  for(const title of ['Engineering Manager','Senior Software Engineering Manager','Tech Lead','Technical Recruiter','Talent Acquisition Partner']){
+    p.contacts[0].title=title;const [x]=rankedContacts(p,c,now);assert.equal(x.priority,2,title);assert.equal(x.relevance,'decision-maker',title);assert.equal(x.reach_tier,'reachable',title);}
+  for(const title of ['Business Development Manager','Product Manager','Account Manager','Recruiting Coordinator']){
+    p.contacts[0].title=title;assert.equal(rankedContacts(p,c,now)[0].relevance,'other',title);}
+  p.icp='agency';
+  for(const title of ['Senior Recruiter','Account Manager','Delivery Manager']){
+    p.contacts[0].title=title;const [x]=rankedContacts(p,c,now);assert.equal(x.priority,1,title);assert.equal(x.reach_tier,'reachable',title);}
 });
 test('research and changed firm facts invalidate drafts; regenerating identical text refreshes it',()=>{
   const p=prospect(),c=config();saveDraft(p,draft(p),c,now);assert.equal(draftCurrent(p.drafts[0],p,c,now),true);

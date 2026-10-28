@@ -4,7 +4,7 @@ Guided setup: [two-stage workspace and business onboarding](docs/HR_OPS_ONBOARDI
 
 Local client acquisition for a LATAM recruiting firm selling to U.S. companies. Discover prospects → research hiring needs → qualify → identify contacts → draft personalized outreach → track human-reported follow-ups.
 
-HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Research and drafting never send.** An optional [human-operated Playwright sender](docs/HR_OPS_LINKEDIN.md) handles one individually confirmed LinkedIn direct message at a time. It is not a LinkedIn-approved integration and has not been validated against a live account.
+HR-Ops runs directly in Codex or Claude Code through a shared skill. No MCP server, native Codex slash commands or OpenClaw installation are required. **Research and drafting never send.** An optional [Playwright LinkedIn sender](docs/HR_OPS_LINKEDIN.md) sends one approved draft at a time as a direct message, connection request or InMail, either in a human-operated terminal or unattended on the user's instruction. It is not a LinkedIn-approved integration and has not been validated against a live account.
 
 An explicit [LinkedIn inbox check](docs/HR_OPS_INBOX.md) opens a private browser for human login, then reads and imports clear business interactions. Uncertain identity, history or timestamps stay in review. Source-attributed research reports help compare discovery results across both ICPs.
 

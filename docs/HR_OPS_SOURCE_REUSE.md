@@ -30,7 +30,7 @@ HR-Ops can use these sources to identify employers. A job listing is a research 
 | SolidJobs engineering, marketing, sales, HR, logistics, finance and other categories | Retained examples, outside the default backend/full-stack acquisition search | Select software work only when relevant; these categories are not additional startup lists |
 | Kariyer, Yenibiris, Secretcv, Isin Olsun, Jobstreet Indonesia, Glints Indonesia | Low priority under the current U.S. ICP | Regional hiring does not establish U.S. presence, cross-border hiring or service fit |
 | Telegram job channels | Optional unverified leads, disabled in the retained template | Identity, freshness and permission require review. No automatic channel scraping |
-| LinkedIn search recipe | Company-published profile references and human research only within the existing workflow | This catalog does not authorize profile scraping, automated connections or messaging |
+| LinkedIn search recipe | Company-published profile references and human research only within the existing workflow | Contact research may search LinkedIn under `modes/hr-ops/contacts.md`; invitations and messages go only through `modes/hr-ops/linkedin-send.md` on the user's instruction |
 | 138 tracked company boards | A reusable pool of employers to screen, including Resend, Clerk and WorkOS | The list includes large enterprises and companies outside the target market. Do not import it wholesale or regard legacy enabled flags as HR qualification |
 
 ## Catalog additions and verification limits

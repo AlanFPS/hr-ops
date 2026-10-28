@@ -353,7 +353,7 @@ export async function main(args = process.argv.slice(2)) {
     result.readiness={
       research:{state:result.ok?'ready':'invalid_state',missing_configuration:result.initialized?[]:['profile']},
       personal_profile_inbox:{state:!result.ok?'invalid_state':!account?'missing_configuration':'unvalidated',missing_configuration:account?[]:['workspace.linkedin_profile_url'],migration_needed:errors.some(e=>e.file==='inbox/state.json')?null:inboxSummary(repo).migration_needed,unvalidated_behavior:['Real-account business import remains a supervised setup check']},
-      human_operated_sending:{state:!result.ok?'invalid_state':!account||!c.firm.sender_name?'missing_configuration':'unvalidated',missing_configuration:[...(!account?['workspace.linkedin_profile_url']:[]),...(!c.firm.sender_name?['firm.sender_name']:[])],unvalidated_behavior:['Exact-message approval and supervised account validation required for each send']},
+      linkedin_sending:{state:!result.ok?'invalid_state':!account||!c.firm.sender_name?'missing_configuration':'unvalidated',missing_configuration:[...(!account?['workspace.linkedin_profile_url']:[]),...(!c.firm.sender_name?['firm.sender_name']:[])],unvalidated_behavior:['Message, connection request and InMail flows have not been validated against the live LinkedIn interface; each send needs a user instruction and a saved human login']},
       page_messaging:{state:'unsupported'},
     };
     if (!result.ok) process.exitCode = 1;

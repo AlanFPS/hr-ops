@@ -39,7 +39,7 @@ Review listing supports `--state pending|resolved|discarded|all`, `--reason TEXT
 
 Every canonical repository write attempts dossier publication under the same lock. Saved reports contain prospect revision, configuration fingerprint, generation time and a content hash. `doctor` reports missing/stale/failed dossiers, including changes caused by evidence aging. `reports refresh` regenerates them without changing records, revisions or historical decisions. `--dry-run` lists report status. A failed report write leaves the successful canonical record intact and returns a visible warning. Reports are derived, never the source of truth.
 
-Doctor retains its health exit semantics. Capability readiness separately describes research, personal-profile inbox and human-operated sending as ready, missing configuration, invalid state or unvalidated. A configured account does not prove real business-import or delivery behavior. Missing business email does not block research or LinkedIn-only work. No configuration grants permission to send.
+Doctor retains its health exit semantics. Capability readiness separately describes research, personal-profile inbox and LinkedIn sending (`linkedin_sending`) as ready, missing configuration, invalid state or unvalidated. A configured account does not prove real business-import or delivery behavior. Missing business email does not block research or LinkedIn-only work. No configuration grants permission to send.
 
 ## Discovery continuity
 

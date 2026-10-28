@@ -503,7 +503,6 @@ test("M6 title context separates actual leadership from owner/partner tokens and
     for (const title of [
       "Product Owner",
       "HR Business Partner",
-      "Talent Partner",
       "Former CTO",
       "Former Founder",
       "Executive Assistant to the CTO",
@@ -517,6 +516,11 @@ test("M6 title context separates actual leadership from owner/partner tokens and
         `${icp}: ${title}`,
       );
     }
+    // A talent partner is an in-house recruiter: relevant and reachable, never an owner or founding partner.
+    p.contacts[0].title = "Talent Partner";
+    const [partner] = rankedContacts(p, c, now);
+    assert.equal(partner.reach_tier, "reachable", `${icp}: Talent Partner`);
+    assert.equal(partner.priority, icp === "startup" ? 2 : 1, `${icp}: Talent Partner`);
   }
   p.icp = "startup";
   for (const title of [
